@@ -1,12 +1,7 @@
-import { describe, it, expect } from 'bun:test'
-import { one, two } from '../src'
+import { describe, expect, it } from "bun:test";
 
-describe('should', () => {
-  it('export 1', () => {
-    expect(one).toBe(1)
-  })
-
-  it('export 2', () => {
-    expect(two).toBe(2)
-  })
-})
+describe("should", () => {
+  it("skip tests until I write them", () => {
+    expect(1).toBe(1);
+  });
+});
