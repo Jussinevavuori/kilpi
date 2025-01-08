@@ -116,14 +116,19 @@ Defining the rules have been left as an exercise to the reader. Whether you chec
 
 ## Todo
 
-### Minor
+### Smarter queries
 
-- Smarter queries
-	- React-query like query cache
-	- Client-side fetch permission dedpuing
-- In-place rules (See below)
+- React-query like query cache
+- Client-side fetch permission dedpuing
+
+### Open-source
+
 - Contributing guide
+- Documentation (See below)
 - Tests
+- Publish to NPM
+
+### In-place rules
 
 ```ts
 // In-place rules API for one-off rules
@@ -165,6 +170,9 @@ await Fine.protect("Bookings:read", myBooking)
 		- Mutation
 	- Client-side usages
 		- Hide component / Show alt state
+- Writing new plugins
+	- Server
+	- Client
 
 ---
 
