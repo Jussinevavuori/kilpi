@@ -1,0 +1,6 @@
+bun.lockb
+build.ts
+/.github
+/.vscode
+/node_modules
+/test

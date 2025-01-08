@@ -1,25 +1,181 @@
-# bun starter
+# Fine-grained authorization
 
-## Getting Started
+## Why do you need fine-grained authorization?
 
-Click the [Use this template](https://github.com/wobsoriano/bun-lib-starter/generate) button to create a new repository with the contents starter.
+Does your application have organizations which consist of multiple members with different roles optionally across different teams that access multiple projects that may be shared between organizations or external teams or singular members where who can read a document in a project depends on whether it is published or a draft but still application admins should be able access them?
 
-OR
+Or do you just have to limit some content to authenticated users only?
 
-Run `bun create wobsoriano/bun-lib-starter ./my-lib`.
+Either way, use this as your solid fine-grained authorization framework.
 
-## Setup
+Rolling your own authorization will most likely always end up in a mess of spaghetti, once you realize how complex it is to create a scalable, maintainable, developer-friendly authentication framework that also provides a good user experience. Or even worse, you have complex authorization checks littered across your components, server endpoints, pages, and CSS.
 
-```bash
-# install dependencies
-bun install
+---
 
-# test the app
-bun test
+## Features
 
-# build the app, available under dist
-bun run build
+✅ Framework-agnostic _(Can be made to work with any stack with plugins)_
+
+✅ Authentication-agnostic _(Bring your own authentication solution)_
+
+✅ Server-first authorization rules _(All rules are evaluated on the server as they should be)_
+
+✅ Client-only usable 
+
+✅ Asynchronous authorization rules _(Fetch data while evaluating rule)_
+
+✅ Client-side utilities _(Queries permission from server with batching and caching)_
+
+✅ Protecting queries
+
+✅ Role-based access control (RBAC) support
+
+✅ Attribute-based access control (ABAC) support
+
+✅ Subject narrowing
+
+---
+
+## Opinions
+
+### Server-first
+
+All authorization checks are done server first. This is done for several reasons:
+
+- Security -- you can not trust the client to do authorization checks.
+- Allows for asynchronous rules that fetch data if required.
+- Simpler programming model due to restrictions.
+- Smaller client-bundle as your entire authorization logic stays on the server.
+
+There is nothing stopping you from using this in a client-only application -- but what are you protecting if you don't have a server? Alternatively, to alter the UI client-side you can use the `fine/client` package to query the server for permission to show pieces of UI.
+
+### Queries vs Mutations
+
+The project considers different strategies for protecting queries and mutations:
+
+#### Mutations
+
+For mutations, the project keeps it simple. Whether you are writing HTTP endpoints, tRPC procedures or GraphQL mutations, you can always just call `await Fine.protect(...)` to protect your mutation.
+
+#### Queries
+
+For queries, we provide the `const myQuery = Fine.createQuery(queryFn, protectorFn)` wrapper function. It ensures that no matter where you access your data, you can always be confident that no data ever leaks. This is due to it exposing three functions:
+
+- `myQuery()` for accessing the `queryFn()` directly as-is, when you need the data but it won't be exposed to the user (e.g. in a mutation).
+- `myQuery.safe()` for accessing the data or returning null for unauthorized.
+- `myQuery.protect()` for accessing the data or throwing for unauthorized. You can throw a redirect, unauthorized / forbidden error, or a plain error - define your own behaviour with e.g. `Fine.onProtect(() => redirect(...))` on a per-page level.
+
+This way, when creating a page, you don't have to remember every piece of data the page will access and attempt to protect each query separately.
+
+```ts
+// Before
+function DashboardPage(params) {
+  await protect("user:read", params.userId)
+	const user = await getUser();
+	let documents = await getUserDocuments();
+	try {
+		await Promise.all(documents.map(doc => protect("document:read", doc)))
+	} catch {
+		// Unauhtorized to read some document
+		documents = [];
+	}
+}
+
+// After
+function DashboardPage(params) {
+	const user = await getUser.protect();
+	const documents = await getUserDocuments.safe() ?? [];
+}
 ```
+
+### Rules-as-code
+
+Defining the rules have been left as an exercise to the reader. Whether you check the user's permissions, membership, subscription, role, authentication status or date of birth, rules allow to compose any custom logic to permit operations.
+
+---
+
+## Supported scenarios
+
+✅ Authenticated vs. non-authenticated users
+
+✅ Freemium vs. Premium users
+
+✅ Role-based access control in organizations
+
+✅ And much more complicated scenarios...
+
+---
+
+## Supported frameworks
+
+✅ React
+
+✅ Next.js
+
+---
+
+## Todo
+
+### Minor
+
+- Smarter queries
+	- React-query like query cache
+	- Client-side fetch permission dedpuing
+- In-place rules (See below)
+- Contributing guide
+- Tests
+
+```ts
+// In-place rules API for one-off rules
+await Fine.protect(
+	(Rule) => (
+		Rule
+			.subject(subject => subject ? subject : false) // Ensure subject exists
+			.create<Booking>((subject, booking) => {
+				return subject.user.id === booking.userId
+			})
+	),
+	myBooking
+)
+
+// Instead of (for one-offs)
+await Fine.protect("Bookings:read", myBooking) 
+```
+
+### Documentation
+
+- Usage
+	- Setup server
+	- Setup client
+- Writing rules
+	- Two patterns
+		- Provide full resource to rule.
+		- Provide resource ID to rule and fetch during check.
+	- Authed vs Public
+	- Freemium vs Premium
+	- Organization RBAC
+	- Complex organization ABAC document access
+- Opinions
+- React / Next.js usage
+	- Server-side usages
+		- Page
+		- Component
+			- Hide component / Show alt state
+		- Query
+		- Mutation
+	- Client-side usages
+		- Hide component / Show alt state
+
+---
+
+## Install
+
+1. Clone repo.
+1. Install dependencies with `bun install`.
+1. Run tests with `bun test`.
+1. Build with `bun run build` (or `bun run watch:build`).
+
+---
 
 ## License
 

@@ -9,8 +9,11 @@
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
     "noEmit": true,
     "outDir": "dist",
+    "jsx": "react",
     "resolveJsonModule": true
   }
 }
