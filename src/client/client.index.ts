@@ -2,24 +2,24 @@ import { z } from "zod";
 import { createBatcher } from "../lib/create-batcher";
 import { createClientSideCache } from "../lib/create-client-side-cache";
 import { createClientSideValueCache } from "../lib/create-client-side-value-cache";
-import { FinePlugin } from "../lib/create-plugin";
+import { KilpiPlugin } from "../lib/create-plugin";
 import { createSubscribable } from "../lib/create-subscribable";
-import { FineError } from "../lib/error";
+import { KilpiError } from "../lib/error";
 import type { Permission } from "../lib/permission";
 import type { InferRuleResource, InferRuleSubjectNarrowed } from "../lib/rule";
 import type { GetRuleByKey, Ruleset, RulesetKeys } from "../lib/ruleset";
 import type { createClient as createServerClient } from "../server/server.index";
 
 export function createClient<
-  TFine extends Pick<ReturnType<typeof createServerClient<any, any, any>>, "$$types">
+  TKilpi extends Pick<ReturnType<typeof createServerClient<any, any, any>>, "$$types">
 >(options: { secret: string; endpoint: string }) {
   // Ensure secret and endpoint provided
-  if (!options.secret) throw new FineError.InvalidSetup(`No secret provided to Fine client.`);
-  if (!options.endpoint) throw new FineError.InvalidSetup(`No endpoint provided to Fine client.`);
+  if (!options.secret) throw new KilpiError.InvalidSetup(`No secret provided to Kilpi client.`);
+  if (!options.endpoint) throw new KilpiError.InvalidSetup(`No endpoint provided to Kilpi client.`);
 
   // Extract types
-  type Subject = TFine["$$types"]["subject"];
-  type Ruleset = TFine["$$types"]["ruleset"];
+  type Subject = TKilpi["$$types"]["subject"];
+  type Ruleset = TKilpi["$$types"]["ruleset"];
 
   // Invalidation pubsub channel
   const invalidationSubscribable = createSubscribable<void>();
@@ -55,7 +55,7 @@ export function createClient<
 
         // Error
         if (response.status !== 200) {
-          throw new FineError.FineFetchSubjectFailed(
+          throw new KilpiError.FetchSubjectFailed(
             `Failed to get subject (${response.status} ${
               response.statusText
             }): ${await response.text()}`
@@ -77,7 +77,7 @@ export function createClient<
       subjectCache.set(result);
       return result;
     } catch (error) {
-      throw new FineError.Internal(`Failed to fetch permission`, { cause: error });
+      throw new KilpiError.Internal(`Failed to fetch permission`, { cause: error });
     }
   }
 
@@ -95,7 +95,7 @@ export function createClient<
 
       // Throw non-200 statuses as errors
       if (response.status !== 200) {
-        throw new FineError.FineFetchPermissionFailed(
+        throw new KilpiError.FetchPermissionFailed(
           `Failed to fetch permissions (${response.status} ${
             response.statusText
           }): ${await response.text()}`
@@ -114,7 +114,7 @@ export function createClient<
       // Return result if data was succesfully parsed
       const result = jsonSchema.safeParse(await response.json());
       if (!result.success) {
-        throw new FineError.FineFetchPermissionFailed(`Invalid response from Fine endpoint.`);
+        throw new KilpiError.FetchPermissionFailed(`Invalid response from Kilpi endpoint.`);
       }
       return result.data;
     }
@@ -143,7 +143,7 @@ export function createClient<
       permissionCache.set([key, resource], result);
       return result;
     } catch (error) {
-      throw new FineError.Internal(`Failed to fetch permission`, { cause: error });
+      throw new KilpiError.Internal(`Failed to fetch permission`, { cause: error });
     }
   }
 
@@ -157,14 +157,14 @@ export function createClient<
     onInvalidate,
 
     // Pass types through
-    $$types: {} as TFine["$$types"],
+    $$types: {} as TKilpi["$$types"],
   };
 }
 
-export type FineClientInstance<
+export type KilpiClientInstance<
   TSubject,
   TRuleset extends Ruleset<TSubject>,
-  TPlugin extends FinePlugin
+  TPlugin extends KilpiPlugin
 > = ReturnType<
   typeof createClient<{
     $$types: {
@@ -175,6 +175,6 @@ export type FineClientInstance<
   }>
 >;
 
-export const FineClient = {
+export const KilpiClient = {
   createClient,
 };

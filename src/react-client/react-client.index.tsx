@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { FineClientInstance } from "../client/client.index";
+import type { KilpiClientInstance } from "../client/client.index";
 import { InferRuleResource, InferRuleSubjectNarrowed } from "../lib/rule";
 import { GetRuleByKey, Ruleset, RulesetKeys } from "../lib/ruleset";
 
-export type CreateFineReactClientOptions = {
+export type CreateKilpiReactClientOptions = {
   defaultComponents?: {
     Loading?: React.ReactNode;
     Denied?: React.ReactNode;
@@ -59,17 +59,17 @@ export type HasPermissionProps<
   Error?: React.ReactNode;
 } & UsePermissionOptions<TSubject, TRuleset, TKey>;
 
-export function createFineReactClient<TSubject, const TRuleset extends Ruleset<TSubject>>(
-  FineClient: FineClientInstance<TSubject, TRuleset, any>,
-  globalOptions: CreateFineReactClientOptions = {}
+export function createKilpiReactClient<TSubject, const TRuleset extends Ruleset<TSubject>>(
+  KilpiClient: KilpiClientInstance<TSubject, TRuleset, any>,
+  globalOptions: CreateKilpiReactClientOptions = {}
 ) {
   /**
-   * Signal that gets a new value each time the `FineClient.invalidate` function is called. Used as
+   * Signal that gets a new value each time the `KilpiClient.invalidate` function is called. Used as
    * a dependency in `useEffect` to trigger re-fetching of data.
    */
   function useInvalidationSignal() {
     const [signal, setSignal] = useState(0);
-    useEffect(() => FineClient.onInvalidate(() => setSignal((_) => _ + 1)), [setSignal]);
+    useEffect(() => KilpiClient.onInvalidate(() => setSignal((_) => _ + 1)), [setSignal]);
     return signal;
   }
 
@@ -88,7 +88,7 @@ export function createFineReactClient<TSubject, const TRuleset extends Ruleset<T
     useEffect(() => {
       setPermission({ status: "loading" });
 
-      FineClient.getPermission(options.to, options.on)
+      KilpiClient.getPermission(options.to, options.on)
         .then((result) => {
           if (result.granted) {
             setPermission({ status: "granted", subject: result.subject });
@@ -114,7 +114,7 @@ export function createFineReactClient<TSubject, const TRuleset extends Ruleset<T
     const [subject, setSubject] = useState<UseSubjectReturn<TSubject>>({ status: "loading" });
 
     useEffect(() => {
-      FineClient.getSubject()
+      KilpiClient.getSubject()
         .then((subject) => {
           setSubject({ status: "success", subject });
         })

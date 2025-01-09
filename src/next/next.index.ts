@@ -11,7 +11,7 @@ const getPerRequestOnProtectCache = cache(() => ({
 /**
  * Create next plugin.
  */
-export function createFineNextPlugin(options: { disableWrapQueryInReactCache?: boolean }) {
+export function createNextKilpiPlugin(options: { disableWrapQueryInReactCache?: boolean }) {
   return createPlugin({
     pluginName: "next",
 

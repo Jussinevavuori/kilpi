@@ -1,4 +1,4 @@
-import { FineError } from "../lib/error";
+import { KilpiError } from "../lib/error";
 import { InferRuleResource, InferRuleSubjectNarrowed } from "../lib/rule";
 import {
   getRuleByKey,
@@ -45,7 +45,7 @@ export function setupProtectors<TSubject, const TRuleset extends Ruleset<TSubjec
     protectCallStackSize++;
     if (protectCallStackSize > protectCallStackSizeThreshold) {
       throw new Error(
-        "🚨 Fine protect() called too many times recursively. This is" +
+        "🚨 Kilpi.protect() called too many times recursively. This is" +
           "usually caused by a rule fetching a resource using a protected " +
           "query, causing a recursive loop. Ensure no rule uses protected " +
           "queries or otherwise calls protect()."
@@ -73,7 +73,7 @@ export function setupProtectors<TSubject, const TRuleset extends Ruleset<TSubjec
         if (onProtect) onProtect();
       }
 
-      throw new FineError.PermissionDenied("Permission denied");
+      throw new KilpiError.PermissionDenied("Permission denied");
     }
 
     // Granted, return subject

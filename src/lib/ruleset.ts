@@ -1,4 +1,4 @@
-import { FineError } from "./error";
+import { KilpiError } from "./error";
 import { InferRuleResource, Rule } from "./rule";
 import { DeepObject, Equals, RecursiveKeysTo, RecursiveValueByKey } from "./types";
 
@@ -70,7 +70,7 @@ export function getRuleByKey<
   const rule = keys.reduce<any>((index, k) => index[k], ruleset);
 
   // Ensure permission is found and is a valid permission
-  if (typeof rule !== "function") throw new FineError.Internal(`Rule not found (${key})`);
+  if (typeof rule !== "function") throw new KilpiError.Internal(`Rule not found (${key})`);
 
   // Typecast as this can not be done type-safely without
   return rule as GetRuleByKey<TRuleset, TKey>;

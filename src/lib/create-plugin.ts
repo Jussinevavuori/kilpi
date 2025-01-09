@@ -24,11 +24,11 @@ export function createPlugin<const TPluginName extends string, TInterface>(plugi
   wrapProtectedQuery?: <TQuery extends (...args: any[]) => any>(query: TQuery) => TQuery;
 
   /**
-   * Interface to use. Accessibe via `Fine.{pluginName}.{methodName}...`.
+   * Interface to use. Accessibe via `Kilpi.{pluginName}.{methodName}...`.
    */
   interface: TInterface;
 }) {
   return plugin;
 }
 
-export type FinePlugin = ReturnType<typeof createPlugin>;
+export type KilpiPlugin = ReturnType<typeof createPlugin>;

@@ -1,1 +1,1 @@
-export { FineError } from "../lib/error";
+export { KilpiError } from "../lib/error";

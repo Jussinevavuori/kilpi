@@ -53,7 +53,7 @@ All authorization checks are done server first. This is done for several reasons
 - Simpler programming model due to restrictions.
 - Smaller client-bundle as your entire authorization logic stays on the server.
 
-There is nothing stopping you from using this in a client-only application -- but what are you protecting if you don't have a server? Alternatively, to alter the UI client-side you can use the `fine/client` package to query the server for permission to show pieces of UI.
+There is nothing stopping you from using this in a client-only application -- but what are you protecting if you don't have a server? Alternatively, to alter the UI client-side you can use the `kilpi/client` package to query the server for permission to show pieces of UI.
 
 ### Queries vs Mutations
 
@@ -61,15 +61,15 @@ The project considers different strategies for protecting queries and mutations:
 
 #### Mutations
 
-For mutations, the project keeps it simple. Whether you are writing HTTP endpoints, tRPC procedures or GraphQL mutations, you can always just call `await Fine.protect(...)` to protect your mutation.
+For mutations, the project keeps it simple. Whether you are writing HTTP endpoints, tRPC procedures or GraphQL mutations, you can always just call `await Kilpi.protect(...)` to protect your mutation.
 
 #### Queries
 
-For queries, we provide the `const myQuery = Fine.createQuery(queryFn, protectorFn)` wrapper function. It ensures that no matter where you access your data, you can always be confident that no data ever leaks. This is due to it exposing three functions:
+For queries, we provide the `const myQuery = Kilpi.createQuery(queryFn, protectorFn)` wrapper function. It ensures that no matter where you access your data, you can always be confident that no data ever leaks. This is due to it exposing three functions:
 
 - `myQuery()` for accessing the `queryFn()` directly as-is, when you need the data but it won't be exposed to the user (e.g. in a mutation).
 - `myQuery.safe()` for accessing the data or returning null for unauthorized.
-- `myQuery.protect()` for accessing the data or throwing for unauthorized. You can throw a redirect, unauthorized / forbidden error, or a plain error - define your own behaviour with e.g. `Fine.onProtect(() => redirect(...))` on a per-page level.
+- `myQuery.protect()` for accessing the data or throwing for unauthorized. You can throw a redirect, unauthorized / forbidden error, or a plain error - define your own behaviour with e.g. `Kilpi.onProtect(() => redirect(...))` on a per-page level.
 
 This way, when creating a page, you don't have to remember every piece of data the page will access and attempt to protect each query separately.
 
@@ -126,7 +126,7 @@ Defining the rules have been left as an exercise to the reader. Whether you chec
 
 - Server and Client plugins
 - Improved plugin API
-- Pass Fine instance and types to plugins automatically (client must be created separately first)
+- Pass Kilpi instance and types to plugins automatically (client must be created separately first)
 - React-client and React-server to plugins (Server and client plugins respectively)
 
 ### Smarter queries
@@ -140,12 +140,13 @@ Defining the rules have been left as an exercise to the reader. Whether you chec
 - Documentation (See below)
 - Tests
 - Publish to NPM
+- CI/CD to npm
 
 ### In-place rules
 
 ```ts
 // In-place rules API for one-off rules
-await Fine.protect(
+await Kilpi.protect(
 	(Rule) => (
 		Rule
 			.subject(subject => subject ? subject : false) // Ensure subject exists
@@ -157,7 +158,7 @@ await Fine.protect(
 )
 
 // Instead of (for one-offs)
-await Fine.protect("Bookings:read", myBooking) 
+await Kilpi.protect("Bookings:read", myBooking) 
 ```
 
 ### Documentation

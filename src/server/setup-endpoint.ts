@@ -31,7 +31,7 @@ export function setupEndpoint<TSubject, const TRuleset extends Ruleset<TSubject>
      * Web-standard endpoint implementation. Works similarly as `getPermission` for an array
      * of rules.
      */
-    return async function fineEndpoint(request: Request) {
+    return async function kilpiEndpoint(request: Request) {
       try {
         // Secret not provided
         if (!secret) return new Response("No secret setup on server", { status: 501 });

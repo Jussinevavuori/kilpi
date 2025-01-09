@@ -1,9 +1,9 @@
 import React, { Suspense } from "react";
 import { InferRuleResource } from "../lib/rule";
 import { GetRuleByKey, Ruleset, RulesetKeys } from "../lib/ruleset";
-import { FineServerInstance } from "../server/server.index";
+import { KilpiServerInstance } from "../server/server.index";
 
-export type CreateFineReactServerOptions = {
+export type CreateKilpiReactServerOptions = {
   defaultComponents?: {
     Loading?: React.ReactNode;
     Denied?: React.ReactNode;
@@ -23,9 +23,9 @@ type AccessProps<
   Denied?: React.ReactNode;
 };
 
-export function createFineReactServer<TSubject, const TRuleset extends Ruleset<TSubject>>(
-  Fine: FineServerInstance<TSubject, TRuleset, any>,
-  globalOptions: CreateFineReactServerOptions = {}
+export function createKilpiReactServer<TSubject, const TRuleset extends Ruleset<TSubject>>(
+  Kilpi: KilpiServerInstance<TSubject, TRuleset, any>,
+  globalOptions: CreateKilpiReactServerOptions = {}
 ) {
   /**
    * Inner access implementation. Seperate component for suspendability.
@@ -34,7 +34,7 @@ export function createFineReactServer<TSubject, const TRuleset extends Ruleset<T
     props: AccessProps<TSubject, TRuleset, TKey>
   ) {
     // Get permission
-    const permission = await Fine.getPermission(props.to, props.on);
+    const permission = await Kilpi.getPermission(props.to, props.on);
 
     // Granted
     if (permission.granted) return props.children;

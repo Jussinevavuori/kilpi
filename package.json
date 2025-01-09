@@ -1,10 +1,10 @@
 {
-  "name": "fine",
+  "name": "kilpi",
   "version": "0.1.0",
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jussinevavuori/fine.git"
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
   },
   "dependencies": {
     "@types/react": "^19.0.3",
@@ -48,12 +48,12 @@
       "require": "./dist/react-server/react-server.index.cjs"
     }
   },
-  "bugs": "https://github.com/jussinevavuori/fine/issues",
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
   "description": "",
   "files": [
     "dist"
   ],
-  "homepage": "https://github.com/jussinevavuori/fine#readme",
+  "homepage": "https://github.com/jussinevavuori/kilpi#readme",
   "keywords": [
     "bun",
     "fine-grained",

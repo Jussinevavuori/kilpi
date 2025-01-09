@@ -1,4 +1,4 @@
-import { createPlugin, FinePlugin } from "../lib/create-plugin";
+import { createPlugin, KilpiPlugin } from "../lib/create-plugin";
 import { initializeRules } from "../lib/rule";
 import { Ruleset } from "../lib/ruleset";
 import { setupCreateQuery } from "./setup-create-query";
@@ -98,12 +98,12 @@ export function createClient<
   };
 }
 
-export type FineServerInstance<
+export type KilpiServerInstance<
   TSubject,
   TRuleset extends Ruleset<TSubject>,
-  TPlugin extends FinePlugin
+  TPlugin extends KilpiPlugin
 > = ReturnType<typeof createClient<TSubject, TRuleset, TPlugin>>;
 
-export const FineServer = {
+export const KilpiServer = {
   createClient,
 };

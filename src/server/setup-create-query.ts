@@ -1,6 +1,6 @@
-import { FinePlugin } from "../lib/create-plugin";
+import { KilpiPlugin } from "../lib/create-plugin";
 
-export function setupCreateQuery(options: { plugins?: FinePlugin[] } = {}) {
+export function setupCreateQuery(options: { plugins?: KilpiPlugin[] } = {}) {
   return function createQuery<TQuery extends (...args: any[]) => any>(
     originalQuery: TQuery,
     protector?: (result: Awaited<ReturnType<TQuery>>, ...args: Parameters<TQuery>) => any

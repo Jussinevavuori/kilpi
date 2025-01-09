@@ -1,60 +1,60 @@
 /**
- * Fine internal error.
+ * Kilpi internal error.
  */
-class FineInternalError extends Error {
+class KilpiInternalError extends Error {
   constructor(message: string, options: { cause?: unknown } = {}) {
     super(message, options);
-    this.name = "FineInternalError";
+    this.name = "KilpiInternalError";
   }
 }
 
 /**
  * Permission denied error.
  */
-class FinePermissionDeniedError extends Error {
+class KilpiPermissionDeniedError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "FinePermissionDeniedError";
+    this.name = "KilpiPermissionDeniedError";
   }
 }
 
 /**
  * Setup error
  */
-class FineInvalidSetupError extends Error {
+class KilpiInvalidSetupError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "FineInvalidSetupError";
+    this.name = "KilpiInvalidSetupError";
   }
 }
 
 /**
  * Client fetch permission failed error
  */
-class FineFetchPermissionFailedError extends Error {
+class KilpiFetchPermissionFailedError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "FineFetchPermissionFailedError";
+    this.name = "KilpiFetchPermissionFailedError";
   }
 }
 
 /**
  * Client fetch subject failed error
  */
-class FineFetchSubjectFailedError extends Error {
+class KilpiFetchSubjectFailedError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "FineFetchSubjectFailedError";
+    this.name = "KilpiFetchSubjectFailedError";
   }
 }
 
 /**
- * All fine-errors.
+ * All Kilpi errors.
  */
-export const FineError = {
-  Internal: FineInternalError,
-  InvalidSetup: FineInvalidSetupError,
-  PermissionDenied: FinePermissionDeniedError,
-  FineFetchSubjectFailed: FineFetchSubjectFailedError,
-  FineFetchPermissionFailed: FineFetchPermissionFailedError,
+export const KilpiError = {
+  Internal: KilpiInternalError,
+  InvalidSetup: KilpiInvalidSetupError,
+  PermissionDenied: KilpiPermissionDeniedError,
+  FetchSubjectFailed: KilpiFetchSubjectFailedError,
+  FetchPermissionFailed: KilpiFetchPermissionFailedError,
 };
