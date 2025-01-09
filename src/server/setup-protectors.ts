@@ -16,8 +16,10 @@ export function setupProtectors<TSubject, const TRuleset extends Ruleset<TSubjec
   getSubject: () => Promise<TSubject>,
   ruleset: TRuleset,
 
-  // Access current onProtect behaviour if available
-  getOnProtect?: () => undefined | (() => never)
+  options: {
+    // Access current onProtect behaviour if available
+    getOnProtect?: () => undefined | (() => never);
+  }
 ) {
   // Keep track of recursive protect calls. If this number exceeds the protect call stack size
   // threshold, we assume the user is stuck in a recursive loop and throw an error. This is usually
@@ -66,8 +68,8 @@ export function setupProtectors<TSubject, const TRuleset extends Ruleset<TSubjec
 
     // Denied -- run stored onProtect function or throw error
     if (!permission.granted) {
-      if (getOnProtect) {
-        const onProtect = getOnProtect();
+      if (options.getOnProtect) {
+        const onProtect = options.getOnProtect();
         if (onProtect) onProtect();
       }
 

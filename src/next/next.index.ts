@@ -32,8 +32,6 @@ export function createFineNextPlugin(options: { disableWrapQueryInReactCache?: b
       },
     },
 
-    interface: {
-      test: () => 1 as const,
-    },
+    interface: {},
   });
 }

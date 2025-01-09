@@ -18,10 +18,14 @@ export function createClient<
   getSubject,
   rules,
   plugins,
+  defaults = {},
 }: {
   getSubject: () => Promise<TSubject>;
   rules: TRuleset | ((Rule: ReturnType<typeof initializeRules<TSubject>>) => TRuleset);
   plugins?: TPlugin[];
+  defaults: {
+    onProtect?: () => never;
+  };
 }) {
   /**
    * Setup rules with Rule client.
@@ -34,19 +38,24 @@ export function createClient<
   const createEndpoint = setupEndpoint({ getSubject, ruleset });
 
   /**
+   * Plugin that is used to store `onProtect`
+   */
+  const onProtectStorage = plugins?.find((_) => !!_.onProtect)?.onProtect!;
+
+  /**
    * Setup protector
    */
-  const { getPermission, hasPermission, protect } = setupProtectors(getSubject, ruleset);
+  const { getPermission, hasPermission, protect } = setupProtectors(getSubject, ruleset, {
+    // Select `onProtect` behaviour
+    getOnProtect() {
+      return onProtectStorage.get() || defaults.onProtect;
+    },
+  });
 
   /**
    * Setup query creator
    */
   const createQuery = setupCreateQuery({ plugins });
-
-  /**
-   * Plugin that is used to store `onProtect`
-   */
-  const onProtectStorage = plugins?.find((_) => !!_.onProtect)?.onProtect!;
 
   /**
    * On protect functionality. Important: If no plugin defines a per-request storage for the

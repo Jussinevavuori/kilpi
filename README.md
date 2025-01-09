@@ -1,3 +1,9 @@
+**WARNING: THIS LIBRARY IS IN ALPHA -- A WORK IN PROGRESS -- USAGE AT YOUR OWN RISK**
+
+Until version 1.0.0, the API is subject to breaking changes without a major version bump. This is not meant for production use by external users yet. Rather it is an internal project that is being developed in the open.
+
+---
+
 # Fine-grained authorization
 
 ## Why do you need fine-grained authorization?
@@ -115,6 +121,13 @@ Defining the rules have been left as an exercise to the reader. Whether you chec
 ---
 
 ## Todo
+
+### Better plugin system
+
+- Server and Client plugins
+- Improved plugin API
+- Pass Fine instance and types to plugins automatically (client must be created separately first)
+- React-client and React-server to plugins (Server and client plugins respectively)
 
 ### Smarter queries
 
