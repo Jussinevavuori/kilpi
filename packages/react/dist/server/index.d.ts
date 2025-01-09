@@ -220,9 +220,9 @@ export declare function createKilpiReactServerComponents<TSubject extends object
 		Denied?: import("react").ReactNode;
 		to: TRulekey;
 	} & (TRulekey extends RecursiveKeysTo<TRuleset, TRuleset extends Ruleset<infer TSubject_1> ? Rule<any, TSubject_1, TSubject_1> : never, ":"> ? {
-		on: InferRuleResource<EnsureTypeIsRule<RecursiveValueByKey<TRuleset, TRulekey, ":">>>;
-	} : {
 		on: never;
+	} : {
+		on: InferRuleResource<EnsureTypeIsRule<RecursiveValueByKey<TRuleset, TRulekey, ":">>>;
 	})) => import("react").JSX.Element;
 };
 

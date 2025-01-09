@@ -3,7 +3,7 @@ import {
   InferRuleResource,
   Ruleset,
   RulesetKeys,
-  RulesetKeysWithResource,
+  RulesetKeysWithoutResource,
 } from "@kilpi/core";
 import { KilpiServerClient } from "@kilpi/server";
 import React, { Suspense } from "react";
@@ -21,9 +21,9 @@ export function createAccessComponent<
     Loading?: React.ReactNode;
     Denied?: React.ReactNode;
     to: TRulekey;
-  } & (TRulekey extends RulesetKeysWithResource<TRuleset>
-    ? { on: InferRuleResource<GetRuleByKey<TRuleset, TRulekey>> }
-    : { on: never });
+  } & (TRulekey extends RulesetKeysWithoutResource<TRuleset>
+    ? { on: never }
+    : { on: InferRuleResource<GetRuleByKey<TRuleset, TRulekey>> });
 
   /**
    * Render children only if access to={key} (and optionally on={resource}) granted to current
