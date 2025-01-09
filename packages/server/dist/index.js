@@ -4120,25 +4120,6 @@ function getRuleConstructors() {
     return {
       async getPermission(subject2, resource) {
         if (Array.isArray(resource)) {
-          const grants = await Promise.all(resource.map((r) => check(subject2)));
-          const allGranted = grants.every((g) => typeof g === "boolean" ? g : g.granted);
-          if (allGranted)
-            return Permission.Grant(subject2);
-          const message = grants.reduce((msg, g) => msg || typeof g === "boolean" || g.granted ? msg : g.message, undefined);
-          return Permission.Deny(message);
-        }
-        const granted = await check(subject2);
-        return granted ? Permission.Grant(subject2) : Permission.Deny();
-      },
-      getNarrowedSubject(subject2) {
-        return subject2;
-      }
-    };
-  }
-  function createOn(check) {
-    return {
-      async getPermission(subject2, resource) {
-        if (Array.isArray(resource)) {
           const grants = await Promise.all(resource.map((r) => check(subject2, r)));
           const allGranted = grants.every((g) => typeof g === "boolean" ? g : g.granted);
           if (allGranted)
@@ -4157,21 +4138,6 @@ function getRuleConstructors() {
   function subject(getNarrowedSubject) {
     return {
       create(check) {
-        return {
-          async getPermission(subject2, resource) {
-            const narrowedSubject = getNarrowedSubject(subject2);
-            if (narrowedSubject === false)
-              return Permission.Deny();
-            const granted = await check(narrowedSubject);
-            if (typeof granted === "boolean") {
-              return granted ? Permission.Grant(narrowedSubject) : Permission.Deny();
-            }
-            return granted;
-          },
-          getNarrowedSubject
-        };
-      },
-      createOn(check) {
         return {
           async getPermission(subject2, resource) {
             const narrowedSubject = getNarrowedSubject(subject2);
@@ -4198,7 +4164,6 @@ function getRuleConstructors() {
   }
   return {
     create,
-    createOn,
     subject
   };
 }

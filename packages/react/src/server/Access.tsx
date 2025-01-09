@@ -1,10 +1,4 @@
-import {
-  GetRuleByKey,
-  InferRuleResource,
-  Ruleset,
-  RulesetKeys,
-  RulesetKeysWithoutResource,
-} from "@kilpi/core";
+import { GetRuleByKey, InferRuleResource, Ruleset, RulesetKeys } from "@kilpi/core";
 import { KilpiServerClient } from "@kilpi/server";
 import React, { Suspense } from "react";
 import { CreateReactServerComponentOptions } from "./types";
@@ -13,17 +7,19 @@ export function createAccessComponent<
   TSubject extends object | undefined | null,
   TRuleset extends Ruleset<TSubject>
 >(Kilpi: KilpiServerClient<TSubject, TRuleset>, options: CreateReactServerComponentOptions) {
-  /**
-   * Base access props
-   */
-  type AccessPropsBase<TRulekey extends RulesetKeys<TRuleset>> = {
+  type AccessPropsBase = {
     children?: React.ReactNode;
     Loading?: React.ReactNode;
     Denied?: React.ReactNode;
-    to: TRulekey;
-  } & (TRulekey extends RulesetKeysWithoutResource<TRuleset>
-    ? { on: never }
-    : { on: InferRuleResource<GetRuleByKey<TRuleset, TRulekey>> });
+  };
+
+  /**
+   * Base access props
+   */
+  type AccessProps<TRulekey extends RulesetKeys<TRuleset>> = AccessPropsBase &
+    {
+      [Key in RulesetKeys<TRuleset>]: InferRuleResource<GetRuleByKey<TRuleset, Key>>;
+    }[TRulekey];
 
   /**
    * Render children only if access to={key} (and optionally on={resource}) granted to current
@@ -33,11 +29,10 @@ export function createAccessComponent<
    * On load, render Loading component (or global default unless opted out with `null`).
    */
 
-  function Access<TRulekey extends RulesetKeys<TRuleset>>(props: AccessPropsBase<TRulekey>) {
+  function Access<TRulekey extends RulesetKeys<TRuleset>>(props: AccessProps<TRulekey>) {
     // Async component for suspending by parnent
     async function SuspendableImplementatin() {
       // Get permission
-      // @ts-expect-error - TS doesn't understand this is a valid key
       const permission = await Kilpi.getPermission(props.to, props.on);
 
       // No permission, render Denied component

@@ -88,14 +88,12 @@ export type CreatePostEndpointOptions<TSubject extends object | null | undefined
 	secret: string;
 };
 declare function getRuleConstructors<TSubject extends object | null | undefined, TNarrowedSubject extends object | null | undefined = TSubject>(): {
-	create: (check: (subject: TSubject) => MaybePromise<boolean | Permission<TSubject>>) => Rule<void, TSubject>;
-	createOn: <TResource>(check: (subject: TSubject, resource: TResource) => MaybePromise<boolean | Permission<TSubject>>) => Rule<TResource | TResource[], TSubject>;
+	create: <TResource>(check: (subject: TSubject, resource: TResource) => MaybePromise<boolean | Permission<TSubject>>) => Rule<TResource | TResource[], TSubject>;
 	subject: <TSubjectNarrowed>(getNarrowedSubject: (subject: TSubject) => false | TSubjectNarrowed) => {
-		create(check: (subject: TSubjectNarrowed) => MaybePromise<boolean | Permission<TSubjectNarrowed>>): Rule<void, TSubject, TSubjectNarrowed>;
 		/**
 		 * Create a rule after subject narrowing for a specific resource.
 		 */
-		createOn<TResource_1>(check: (subject: TSubjectNarrowed, resource: TResource_1) => MaybePromise<boolean | Permission<TSubjectNarrowed>>): Rule<TResource_1 | TResource_1[], TSubject, TSubjectNarrowed>;
+		create<TResource_1>(check: (subject: TSubjectNarrowed, resource: TResource_1) => MaybePromise<boolean | Permission<TSubjectNarrowed>>): Rule<TResource_1 | TResource_1[], TSubject, TSubjectNarrowed>;
 	};
 };
 export type RuleConstructors<TSubject extends object | null | undefined> = ReturnType<typeof getRuleConstructors<TSubject>>;
