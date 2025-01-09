@@ -3,9 +3,13 @@
   "description": "Fine-grained authorization",
   "version": "0.1.0",
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
+  "devDependencies": {
+    "bun-plugin-dts": "^0.3.0"
   },
   "workspaces": [
     "apps/*",
@@ -20,10 +24,9 @@
     "abac",
     "rbac"
   ],
-  "license": "MIT",
   "scripts": {
     "build": "bun run build.ts",
-    "watch:build": "bun run --watch build.ts --watch ",
+    "dev": "bun run --watch build.ts --watch ",
     "prepublishOnly": "bun run build"
   },
   "type": "module"

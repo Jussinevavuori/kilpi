@@ -122,7 +122,14 @@ Defining the rules have been left as an exercise to the reader. Whether you chec
 
 ## Todo
 
-### Better plugin system
+### Automatic filtering of arrays with `.safe()`
+
+```ts
+const result = await myListQuery() // [UNALLOWED_1, ALLOWED_1, ALLOWED_2, UNALLOWED_2];
+const safeResult = await myListQuery.safe() // Now `null`, should be [ALLOWED_1, ALLOWED_2];
+```
+
+### Plugin system
 
 - Server and Client plugins
 - Improved plugin API

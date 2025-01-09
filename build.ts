@@ -1,7 +1,8 @@
-import { $ } from "bun";
 import dts from "bun-plugin-dts";
 import { Chalk } from "chalk";
 import { watch } from "fs";
+import fs from "node:fs/promises";
+import Path from "path";
 
 // Initialize chalk
 const C = new Chalk();
@@ -13,55 +14,41 @@ async function build() {
   // Start measuring build time
   const startingTime = performance.now();
 
-  // Read package.json
-  const packageJson = await Bun.file("./package.json").json();
-  const exports = packageJson.exports as Record<
-    string,
-    { types: string; import: string; require: string }
-  >;
+  type Build = { entrypoints: string[]; outdir: string };
 
-  // Common src and out directories
-  const srcdir = "./src";
-  const outdir = "./dist";
+  /**
+   * List of all entrypoints to outdirs, in order
+   */
+  const builds: Build[] = [
+    { entrypoints: ["packages/core/src/index.ts"], outdir: "packages/core/dist" },
+    { entrypoints: ["packages/server/src/index.ts"], outdir: "packages/server/dist" },
+    { entrypoints: ["packages/client/src/index.ts"], outdir: "packages/client/dist" },
+    { entrypoints: ["packages/react/src/server/index.ts"], outdir: "packages/react/dist/server" },
+    { entrypoints: ["packages/react/src/client/index.ts"], outdir: "packages/react/dist/client" },
+  ];
 
-  // Get entrypoints based on exports (same file but in ./src, not in ./dist and as .ts, not .js).
-  const entrypoints = (
-    await Promise.all(
-      Object.keys(exports).map(async (key) => {
-        const tsPath = exports[key].import.replace(".js", ".ts").replace(outdir, srcdir);
-        const tsxPath = tsPath.replace(".ts", ".tsx");
+  /**
+   * Build a single package
+   */
+  async function buildPackage(build: Build) {
+    // Delete everything inside the outdir first (Do not delete entire outdir to avoid "flashing"
+    // content in editor).
+    await fs.rm(Path.resolve(build.outdir), { recursive: true }).catch(() => {}); // Safely Ignore
 
-        if (await Bun.file(tsPath).exists()) return tsPath;
-        if (await Bun.file(tsxPath).exists()) return tsxPath;
-
-        return "";
-      })
-    )
-  ).filter(Boolean);
-
-  // Delete outdir first
-  try {
-    await $`rm -rf ${outdir}`;
-  } catch (error) {
-    console.error(`❌ Failed to delete outdir: ${error}`);
+    // Build both esm and cjs versions
+    await Promise.all([
+      Bun.build({ ...build, format: "esm", naming: "[dir]/[name].js", plugins: [dts()] }),
+      Bun.build({ ...build, format: "cjs" as any, naming: "[dir]/[name].cjs" }),
+    ]);
   }
 
-  // Build both esm and cjs versions
-  await Promise.all([
-    Bun.build({
-      entrypoints,
-      outdir,
-      plugins: [dts()],
-      format: "esm",
-      naming: "[dir]/[name].js",
-    }),
-    Bun.build({
-      entrypoints,
-      outdir,
-      format: "cjs" as any,
-      naming: "[dir]/[name].cjs",
-    }),
-  ]);
+  /**
+   * Build all packages
+   */
+  for (const build of builds) {
+    await buildPackage(build);
+    console.log(`📦 Built ${build.entrypoints}`);
+  }
 
   /**
    * Measure build time in MS and return it.
@@ -82,7 +69,7 @@ if (
   };
 
   // On change, run new build unless one already running
-  async function handleChange() {
+  async function handleChange(eventType?: string, filename?: string | null) {
     // Respect lock
     if (status.isBuildRunning) return;
 
@@ -93,6 +80,9 @@ if (
 
       // Log rebuild
       console.clear();
+      if (filename && eventType) {
+        console.log(`ℹ️  File changed: ${filename ?? "<null>"} (${eventType})`);
+      }
       console.log(C.gray(`🔨 Rebuilding...`));
 
       // Build
@@ -113,8 +103,11 @@ if (
   // Initial build
   await handleChange();
 
-  // Setup watcher to run a new build whenever ./src changes
-  const watcher = watch("./src", { recursive: true }, handleChange);
+  // Setup watcher to run a new build whenever a file changes
+  const watcher = watch(".", { recursive: true }, (eventType, filename) => {
+    if (filename?.includes("/dist")) return;
+    handleChange(eventType, filename);
+  });
 
   // close watcher when Ctrl-C is pressed
   process.on("SIGINT", () => {

@@ -14,19 +14,14 @@
   },
   "devDependencies": {
     "@types/bun": "^1.1.10",
-    "@types/react": "^19.0.3",
-    "bun-plugin-dts": "^0.3.0",
-    "chalk": "^5.4.1",
-    "react": "^19.0.0"
+    "chalk": "^5.4.1"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "exports": {
-    "types": "./dist/root/root.index.d.ts",
-    "import": "./dist/root/root.index.js",
-    "require": "./dist/root/root.index.cjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
   "files": [
     "dist"
