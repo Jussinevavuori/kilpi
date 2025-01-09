@@ -4143,8 +4143,9 @@ var RULE_KEY_SEPARATOR = ":";
 function getRuleByKey(ruleset, key) {
   const keys = key.split(RULE_KEY_SEPARATOR);
   const rule = keys.reduce((index, k) => index[k], ruleset);
-  if (typeof rule !== "function")
-    throw new KilpiError.Internal(`Rule not found (${key})`);
+  if (typeof rule !== "function") {
+    throw new KilpiError.Internal(`Rule not found: "${key}"`);
+  }
   return rule;
 }
 
