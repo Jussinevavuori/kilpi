@@ -4069,7 +4069,7 @@ var RULE_KEY_SEPARATOR = ":";
 function getRuleByKey(ruleset, key) {
   const keys = key.split(RULE_KEY_SEPARATOR);
   const rule = keys.reduce((index, k) => index[k], ruleset);
-  if (typeof rule !== "function") {
+  if (!("getPermission" in rule) || !("getNarrowedSubject" in rule) || typeof rule.getPermission !== "function" || typeof rule.getNarrowedSubject !== "function") {
     throw new KilpiError.Internal(`Rule not found: "${key}"`);
   }
   return rule;
@@ -4123,18 +4123,28 @@ function createPostEndpoint(options) {
 function createQuery(options) {
   return Object.assign(options.query, {
     async safe(...args) {
-      const result = await options.query(...args);
       try {
+        const result = await options.query(...args);
         await options.protector?.(result, ...args);
         return result;
-      } catch {
+      } catch (e) {
+        if (!(e instanceof KilpiError.PermissionDenied)) {
+          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+        }
         return null;
       }
     },
     async protect(...args) {
-      const result = await options.query(...args);
-      await options.protector?.(result, ...args);
-      return result;
+      try {
+        const result = await options.query(...args);
+        await options.protector?.(result, ...args);
+        return result;
+      } catch (e) {
+        if (!(e instanceof KilpiError.PermissionDenied)) {
+          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+        }
+        throw e;
+      }
     }
   });
 }
@@ -4241,11 +4251,11 @@ var callStackSizeProtector = createCallStackSizeProtector({
 \t`.replace(/\s+/g, " ")
 });
 async function protect(options) {
-  callStackSizeProtector.pop();
+  callStackSizeProtector.push();
   const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
   const rule = getRuleByKey(options.ruleset, options.key);
   const permission = await rule.getPermission(subject, "resource" in options ? options.resource : undefined);
-  callStackSizeProtector.push();
+  callStackSizeProtector.pop();
   if (!permission.granted) {
     if (options.onDeny) {
       await options.onDeny?.({

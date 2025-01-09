@@ -1,3 +1,4 @@
+import { KilpiError } from "./error";
 import { Ruleset } from "./ruleset";
 
 export type CreateQueryOptions<
@@ -27,16 +28,14 @@ export function createQuery<
      * TODO: Automatic filtering of arrays?
      */
     async safe(...args: Parameters<TQuery>): Promise<Awaited<ReturnType<TQuery>> | null> {
-      const result = await options.query(...args);
-
-      // Protection
       try {
+        const result = await options.query(...args);
         await options.protector?.(result, ...args);
-
-        // Passed, can return result
-        return result;
-      } catch {
-        // Failed, return null
+        return result; // Passed
+      } catch (e) {
+        if (!(e instanceof KilpiError.PermissionDenied)) {
+          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+        }
         return null;
       }
     },
@@ -45,9 +44,16 @@ export function createQuery<
      * Fail if authorization check fails
      */
     async protect(...args: Parameters<TQuery>): Promise<Awaited<ReturnType<TQuery>>> {
-      const result = await options.query(...args);
-      await options.protector?.(result, ...args);
-      return result;
+      try {
+        const result = await options.query(...args);
+        await options.protector?.(result, ...args);
+        return result;
+      } catch (e) {
+        if (!(e instanceof KilpiError.PermissionDenied)) {
+          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+        }
+        throw e;
+      }
     },
   });
 }

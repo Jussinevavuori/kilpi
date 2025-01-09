@@ -1,4 +1,4 @@
-// packages/core/dist/index.js
+// node_modules/zod/lib/index.mjs
 var util;
 (function(util2) {
   util2.assertEqual = (val) => val;
@@ -3988,6 +3988,7 @@ var z = /* @__PURE__ */ Object.freeze({
   ZodError
 });
 
+// packages/core/src/error.ts
 class KilpiInternalError extends Error {
   constructor(message, options = {}) {
     super(message, options);
@@ -4029,6 +4030,8 @@ var KilpiError = {
   FetchSubjectFailed: KilpiFetchSubjectFailedError,
   FetchPermissionFailed: KilpiFetchPermissionFailedError
 };
+
+// packages/core/src/ruleset.ts
 var RULE_KEY_SEPARATOR = ":";
 function getRuleByKey(ruleset, key) {
   const keys = key.split(RULE_KEY_SEPARATOR);
@@ -4038,12 +4041,16 @@ function getRuleByKey(ruleset, key) {
   }
   return rule;
 }
+
+// packages/core/src/getPermission.ts
 async function getPermission(options) {
   const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
   const rule = getRuleByKey(options.ruleset, options.key);
   const permission = await rule.getPermission(subject, "resource" in options ? options.resource : undefined);
   return permission;
 }
+
+// packages/core/src/createPostEndpoint.ts
 var requestSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("fetchSubject")
@@ -4084,6 +4091,7 @@ function createPostEndpoint(options) {
     }
   };
 }
+// packages/core/src/createQuery.ts
 function createQuery(options) {
   return Object.assign(options.query, {
     async safe(...args) {
@@ -4112,6 +4120,7 @@ function createQuery(options) {
     }
   });
 }
+// packages/core/src/permission.ts
 function Grant(subject) {
   return {
     granted: true,
@@ -4125,6 +4134,8 @@ function Deny(message) {
   };
 }
 var Permission = { Grant, Deny };
+
+// packages/core/src/getRuleConstructors.ts
 function getRuleConstructors() {
   function create(check) {
     return {
@@ -4177,15 +4188,19 @@ function getRuleConstructors() {
     subject
   };
 }
+
+// packages/core/src/createRuleset.ts
 function createRuleset() {
   return function craeteRulesetImpl(rules) {
     return rules(getRuleConstructors());
   };
 }
+// packages/core/src/hasPermission.ts
 async function hasPermission(options) {
   const permission = await getPermission(options);
   return permission.granted;
 }
+// packages/core/src/callStackSizeProtector.ts
 function createCallStackSizeProtector(options) {
   let size = 0;
   return {
@@ -4204,6 +4219,8 @@ function createCallStackSizeProtector(options) {
     }
   };
 }
+
+// packages/core/src/protect.ts
 var callStackSizeProtector = createCallStackSizeProtector({
   maxStackSize: 50,
   errorMessage: `
@@ -4232,115 +4249,15 @@ async function protect(options) {
   }
   return permission.subject;
 }
-
-// packages/server/src/wrapCreatePostEndpoint.ts
-function wrapCreatePostEndpoint({
-  getSubject,
-  ruleset
-}) {
-  return function wrappedCreatePostEndpoint(options) {
-    return createPostEndpoint({
-      subject: getSubject,
-      ruleset,
-      ...options
-    });
-  };
-}
-
-// packages/server/src/wrapCreateQuery.ts
-function wrapCreateQuery({
-  getSubject,
-  ruleset
-}) {
-  return function wrappedCreateQuery(query, protector) {
-    return createQuery({
-      subject: getSubject,
-      ruleset,
-      query,
-      protector
-    });
-  };
-}
-
-// packages/server/src/wrapGetPermission.ts
-function wrapGetPermission({
-  getSubject,
-  ruleset
-}) {
-  async function wrappedGetPermission(key, resource) {
-    return await getPermission({
-      subject: getSubject,
-      ruleset,
-      key,
-      resource
-    });
-  }
-  return wrappedGetPermission;
-}
-
-// packages/server/src/wrapHasPermission.ts
-function wrapHasPermission({
-  getSubject,
-  ruleset,
-  onDeny
-}) {
-  async function wrappedHasPermission(key, resource) {
-    return await hasPermission({
-      subject: getSubject,
-      ruleset,
-      key,
-      resource
-    });
-  }
-  return wrappedHasPermission;
-}
-
-// packages/server/src/wrapProtect.ts
-function wrapProtect({
-  getSubject,
-  ruleset,
-  onDeny
-}) {
-  async function wrappedProtect(key, resource) {
-    return await protect({
-      subject: getSubject,
-      ruleset,
-      key,
-      resource,
-      onDeny: typeof onDeny === "object" ? onDeny.get() : onDeny
-    });
-  }
-  return wrappedProtect;
-}
-
-// packages/server/src/createServerClient.ts
-function createKilpiServerClient(options) {
-  const ruleset = typeof options.rules === "function" ? options.rules(getRuleConstructors()) : options.rules;
-  const protect2 = wrapProtect({ ...options, ruleset });
-  const getPermission2 = wrapGetPermission({ ...options, ruleset });
-  const hasPermission2 = wrapHasPermission({ ...options, ruleset });
-  const createPostEndpoint2 = wrapCreatePostEndpoint({ ...options, ruleset });
-  const createQuery2 = wrapCreateQuery({ ...options, ruleset });
-  function onDeny(onDenyHandler) {
-    if (typeof options.onDeny === "object") {
-      options.onDeny.set(onDenyHandler);
-    }
-  }
-  return {
-    getSubject: options.getSubject,
-    getPermission: getPermission2,
-    hasPermission: hasPermission2,
-    protect: protect2,
-    onDeny,
-    createPostEndpoint: createPostEndpoint2,
-    createQuery: createQuery2,
-    $$types: {}
-  };
-}
-
-// packages/server/src/index.ts
-var createRuleset2 = createRuleset;
 export {
-  createRuleset2 as createRuleset,
-  createKilpiServerClient
+  protect,
+  hasPermission,
+  getRuleConstructors,
+  getRuleByKey,
+  getPermission,
+  createRuleset,
+  createQuery,
+  createPostEndpoint,
+  RULE_KEY_SEPARATOR,
+  KilpiError
 };

@@ -92,7 +92,7 @@ export async function protect<
     resource?: InferRuleResource<GetRuleByKey<TRuleset, TRulekey>>;
   }
 ): ProtectReturn<TSubject, TRuleset, TRulekey> {
-  callStackSizeProtector.pop();
+  callStackSizeProtector.push();
 
   // Get subject
   const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
@@ -106,7 +106,7 @@ export async function protect<
     "resource" in options ? options.resource : void 0
   );
 
-  callStackSizeProtector.push();
+  callStackSizeProtector.pop();
 
   // Handle denials -- use provided `onDeny()` function if provided. Defaults to throwing an error
   // unless `onDeny` throws an error (or other throwable, e.g. a redirect).

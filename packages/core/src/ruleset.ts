@@ -76,8 +76,14 @@ export function getRuleByKey<
   const keys = key.split(RULE_KEY_SEPARATOR);
   const rule = keys.reduce<any>((index, k) => index[k], ruleset);
 
-  // Ensure permission is found and is a valid permission
-  if (typeof rule !== "function") {
+  // Ensure rule found and has required properties -- this check is enough for us
+  // to be sure that the rule is a valid rule.
+  if (
+    !("getPermission" in rule) ||
+    !("getNarrowedSubject" in rule) ||
+    typeof rule.getPermission !== "function" ||
+    typeof rule.getNarrowedSubject !== "function"
+  ) {
     throw new KilpiError.Internal(`Rule not found: "${key}"`);
   }
 
