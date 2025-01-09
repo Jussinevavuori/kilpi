@@ -1,0 +1,46 @@
+{
+  "name": "@kilpi/next",
+  "description": "Kilpi Next integration",
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
+  "homepage": "https://github.com/jussinevavuori/kilpi#readme",
+  "version": "0.1.0",
+  "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
+  "dependencies": {
+    "zod": "^3.24.1",
+    "@kilpi/core": "workspace:*",
+    "@kilpi/client": "workspace:*",
+    "@kilpi/server": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "next": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.10",
+    "@types/react": "^19.0.3",
+    "bun-plugin-dts": "^0.3.0",
+    "chalk": "^5.4.1",
+    "react": "^19.0.0"
+  },
+  "exports": {
+    "types": "./dist/root/root.index.d.ts",
+    "import": "./dist/root/root.index.js",
+    "require": "./dist/root/root.index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "bun",
+    "fine-grained",
+    "authorization",
+    "abac",
+    "rbac"
+  ],
+  "license": "MIT",
+  "type": "module"
+}

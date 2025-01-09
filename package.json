@@ -1,58 +1,17 @@
 {
   "name": "kilpi",
+  "description": "Fine-grained authorization",
   "version": "0.1.0",
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jussinevavuori/kilpi.git"
   },
-  "dependencies": {
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.1.10",
-    "@types/react": "^19.0.3",
-    "bun-plugin-dts": "^0.3.0",
-    "chalk": "^5.4.1",
-    "react": "^19.0.0"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/root/root.index.d.ts",
-      "import": "./dist/root/root.index.js",
-      "require": "./dist/root/root.index.cjs"
-    },
-    "./client": {
-      "types": "./dist/client/client.index.d.ts",
-      "import": "./dist/client/client.index.js",
-      "require": "./dist/client/client.index.cjs"
-    },
-    "./server": {
-      "types": "./dist/server/server.index.d.ts",
-      "import": "./dist/server/server.index.js",
-      "require": "./dist/server/server.index.cjs"
-    },
-    "./next": {
-      "types": "./dist/next/next.index.d.ts",
-      "import": "./dist/next/next.index.js",
-      "require": "./dist/next/next.index.cjs"
-    },
-    "./react-client": {
-      "types": "./dist/react-client/react-client.index.d.ts",
-      "import": "./dist/react-client/react-client.index.js",
-      "require": "./dist/react-client/react-client.index.cjs"
-    },
-    "./react-server": {
-      "types": "./dist/react-server/react-server.index.d.ts",
-      "import": "./dist/react-server/react-server.index.js",
-      "require": "./dist/react-server/react-server.index.cjs"
-    }
-  },
-  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
-  "description": "",
-  "files": [
-    "dist"
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
   "homepage": "https://github.com/jussinevavuori/kilpi#readme",
   "keywords": [
     "bun",
