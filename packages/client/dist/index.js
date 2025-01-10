@@ -1,4 +1,45 @@
 // packages/core/dist/index.js
+class KilpiInternalError extends Error {
+  constructor(message, options = {}) {
+    super(message, options);
+    this.name = "KilpiInternalError";
+  }
+}
+
+class KilpiPermissionDeniedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiPermissionDeniedError";
+  }
+}
+
+class KilpiInvalidSetupError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiInvalidSetupError";
+  }
+}
+
+class KilpiFetchPermissionFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiFetchPermissionFailedError";
+  }
+}
+
+class KilpiFetchSubjectFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiFetchSubjectFailedError";
+  }
+}
+var KilpiError = {
+  Internal: KilpiInternalError,
+  InvalidSetup: KilpiInvalidSetupError,
+  PermissionDenied: KilpiPermissionDeniedError,
+  FetchSubjectFailed: KilpiFetchSubjectFailedError,
+  FetchPermissionFailed: KilpiFetchPermissionFailedError
+};
 var util;
 (function(util2) {
   util2.assertEqual = (val) => val;
@@ -3987,49 +4028,7 @@ var z = /* @__PURE__ */ Object.freeze({
   quotelessJson,
   ZodError
 });
-
-class KilpiInternalError extends Error {
-  constructor(message, options = {}) {
-    super(message, options);
-    this.name = "KilpiInternalError";
-  }
-}
-
-class KilpiPermissionDeniedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiPermissionDeniedError";
-  }
-}
-
-class KilpiInvalidSetupError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiInvalidSetupError";
-  }
-}
-
-class KilpiFetchPermissionFailedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiFetchPermissionFailedError";
-  }
-}
-
-class KilpiFetchSubjectFailedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiFetchSubjectFailedError";
-  }
-}
-var KilpiError = {
-  Internal: KilpiInternalError,
-  InvalidSetup: KilpiInvalidSetupError,
-  PermissionDenied: KilpiPermissionDeniedError,
-  FetchSubjectFailed: KilpiFetchSubjectFailedError,
-  FetchPermissionFailed: KilpiFetchPermissionFailedError
-};
-var requestSchema = z.discriminatedUnion("action", [
+var endpointRequestSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("fetchSubject")
   }),
@@ -4040,20 +4039,28 @@ var requestSchema = z.discriminatedUnion("action", [
 ]);
 function createCallStackSizeProtector(options) {
   let size = 0;
-  return {
-    push() {
-      size++;
-      if (size > options.maxStackSize) {
-        throw new KilpiError.Internal(options.errorMessage);
-      }
-    },
-    pop() {
-      size--;
-      if (size < 0) {
-        size = 0;
-        console.warn(`CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`);
-      }
+  function push() {
+    size++;
+    if (size > options.maxStackSize) {
+      throw new KilpiError.Internal(options.errorMessage);
     }
+  }
+  function pop() {
+    size--;
+    if (size < 0) {
+      size = 0;
+      console.warn(`CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`);
+    }
+  }
+  return {
+    async run(fn) {
+      push();
+      const result = await fn();
+      pop();
+      return result;
+    },
+    push,
+    pop
   };
 }
 var callStackSizeProtector = createCallStackSizeProtector({
@@ -8167,7 +8174,7 @@ async function sendEndpointRequest(body, options) {
   }
 }
 
-// packages/client/src/index.ts
+// packages/client/src/createKilpiClientSideClient.ts
 function createKilpiClientSideClient(options) {
   if (!options.secret)
     throw new KilpiError.InvalidSetup(`No secret provided to Kilpi client.`);
@@ -8223,7 +8230,7 @@ function createKilpiClientSideClient(options) {
         }
       });
     },
-    $$types: {}
+    $$infer: null
   };
 }
 export {

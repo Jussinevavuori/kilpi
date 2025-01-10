@@ -1,26 +1,15 @@
 import { describe, expect, it } from "bun:test";
-import { createQuery, KilpiError, protect } from "../src";
-import { TestUtils } from "./testUtils";
+import { KilpiError } from "../src";
+import { TestKilpi, TestUtils } from "./testUtils";
 
 describe("createQuery", async () => {
   /**
    * Get a document by ID, protected by the "docs:ownDocument" rule
    */
-  const getDoc = createQuery({
-    ruleset: TestUtils.ruleset,
-    subject: TestUtils.getSubject,
-    query(id: string) {
-      return TestUtils.getDocument(id);
-    },
-    async protector(doc, id) {
-      await protect({
-        ruleset: TestUtils.ruleset,
-        subject: TestUtils.getSubject,
-        key: "docs:ownDocument",
-        resource: doc,
-      });
-    },
-  });
+  const getDoc = TestKilpi.createProtectedQuery(
+    async (id: string) => await TestUtils.getDocument(id),
+    (doc, id) => TestKilpi.protect("docs:ownDocument", doc)
+  );
 
   const doc1 = await getDoc("doc1");
 

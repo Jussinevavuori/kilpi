@@ -3,7 +3,7 @@
   "description": "Kilpi React integration",
   "bugs": "https://github.com/jussinevavuori/kilpi/issues",
   "homepage": "https://github.com/jussinevavuori/kilpi#readme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
   "repository": {
     "type": "git",

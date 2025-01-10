@@ -1,4 +1,2 @@
-import { createRuleset as createRuleset_fromCore } from "@kilpi/core";
-
-export * from "./createServerClient";
-export const createRuleset = createRuleset_fromCore;
+export { KilpiCore } from "@kilpi/core";
+export * from "./createKilpiServerClient";

@@ -23,8 +23,8 @@ async function build() {
     { entrypoints: ["packages/core/src/index.ts"], outdir: "packages/core/dist" },
     { entrypoints: ["packages/server/src/index.ts"], outdir: "packages/server/dist" },
     { entrypoints: ["packages/client/src/index.ts"], outdir: "packages/client/dist" },
-    { entrypoints: ["packages/react/src/server/index.ts"], outdir: "packages/react/dist/server" },
-    { entrypoints: ["packages/react/src/client/index.ts"], outdir: "packages/react/dist/client" },
+    { entrypoints: ["packages/react/src/server/index.tsx"], outdir: "packages/react/dist/server" },
+    { entrypoints: ["packages/react/src/client/index.tsx"], outdir: "packages/react/dist/client" },
   ];
 
   /**

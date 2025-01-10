@@ -1,3 +1,110 @@
+// packages/core/src/error.ts
+class KilpiInternalError extends Error {
+  constructor(message, options = {}) {
+    super(message, options);
+    this.name = "KilpiInternalError";
+  }
+}
+
+class KilpiPermissionDeniedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiPermissionDeniedError";
+  }
+}
+
+class KilpiInvalidSetupError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiInvalidSetupError";
+  }
+}
+
+class KilpiFetchPermissionFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiFetchPermissionFailedError";
+  }
+}
+
+class KilpiFetchSubjectFailedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "KilpiFetchSubjectFailedError";
+  }
+}
+var KilpiError = {
+  Internal: KilpiInternalError,
+  InvalidSetup: KilpiInvalidSetupError,
+  PermissionDenied: KilpiPermissionDeniedError,
+  FetchSubjectFailed: KilpiFetchSubjectFailedError,
+  FetchPermissionFailed: KilpiFetchPermissionFailedError
+};
+// packages/core/src/permission.ts
+function Grant(subject) {
+  return {
+    granted: true,
+    subject
+  };
+}
+function Deny(message) {
+  return {
+    granted: false,
+    message
+  };
+}
+var Permission = { Grant, Deny };
+
+// packages/core/src/rule.ts
+function createRule(guard, check) {
+  async function evaluateRule(unguardedSubject, resource) {
+    const guardResult = guard(unguardedSubject);
+    if (!guardResult)
+      return Permission.Deny();
+    const subject = guardResult.subject;
+    if (Array.isArray(resource)) {
+      const grants = await Promise.all(resource.map((r) => check(subject, r)));
+      const allGranted = grants.every((g) => typeof g === "boolean" ? g : g.granted);
+      if (allGranted) {
+        return Permission.Grant(subject);
+      }
+      const message = grants.reduce((msg, g) => msg || typeof g === "boolean" || g.granted ? msg : g.message, undefined);
+      return Permission.Deny(message);
+    }
+    const granted = await check(subject, resource);
+    if (typeof granted === "boolean") {
+      return granted ? Permission.Grant(subject) : Permission.Deny();
+    }
+    return granted;
+  }
+  return Object.assign(evaluateRule, { guard });
+}
+var RULE_KEY_SEPARATOR = ":";
+function getRuleByKey(ruleset, key) {
+  const keys = key.split(RULE_KEY_SEPARATOR);
+  const rule = keys.reduce((index, k) => index[k], ruleset);
+  if (!("getPermission" in rule) || !("getNarrowedSubject" in rule) || typeof rule.getPermission !== "function" || typeof rule.getNarrowedSubject !== "function") {
+    throw new KilpiError.Internal(`Rule not found: "${key}"`);
+  }
+  return rule;
+}
+
+// packages/core/src/kilpiCoreConstructor.ts
+function createKilpiConstructor() {
+  return {
+    create(check) {
+      return createRule((subject) => ({ subject }), check);
+    },
+    guard(guardFn) {
+      return Object.assign(guardFn, {
+        create(check) {
+          return createRule(guardFn, check);
+        }
+      });
+    }
+  };
+}
+
 // node_modules/zod/lib/index.mjs
 var util;
 (function(util2) {
@@ -3988,70 +4095,8 @@ var z = /* @__PURE__ */ Object.freeze({
   ZodError
 });
 
-// packages/core/src/error.ts
-class KilpiInternalError extends Error {
-  constructor(message, options = {}) {
-    super(message, options);
-    this.name = "KilpiInternalError";
-  }
-}
-
-class KilpiPermissionDeniedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiPermissionDeniedError";
-  }
-}
-
-class KilpiInvalidSetupError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiInvalidSetupError";
-  }
-}
-
-class KilpiFetchPermissionFailedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiFetchPermissionFailedError";
-  }
-}
-
-class KilpiFetchSubjectFailedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "KilpiFetchSubjectFailedError";
-  }
-}
-var KilpiError = {
-  Internal: KilpiInternalError,
-  InvalidSetup: KilpiInvalidSetupError,
-  PermissionDenied: KilpiPermissionDeniedError,
-  FetchSubjectFailed: KilpiFetchSubjectFailedError,
-  FetchPermissionFailed: KilpiFetchPermissionFailedError
-};
-
-// packages/core/src/ruleset.ts
-var RULE_KEY_SEPARATOR = ":";
-function getRuleByKey(ruleset, key) {
-  const keys = key.split(RULE_KEY_SEPARATOR);
-  const rule = keys.reduce((index, k) => index[k], ruleset);
-  if (!("getPermission" in rule) || !("getNarrowedSubject" in rule) || typeof rule.getPermission !== "function" || typeof rule.getNarrowedSubject !== "function") {
-    throw new KilpiError.Internal(`Rule not found: "${key}"`);
-  }
-  return rule;
-}
-
-// packages/core/src/getPermission.ts
-async function getPermission(options) {
-  const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
-  const rule = getRuleByKey(options.ruleset, options.key);
-  const permission = await rule.getPermission(subject, "resource" in options ? options.resource : undefined);
-  return permission;
-}
-
-// packages/core/src/createPostEndpoint.ts
-var requestSchema = z.discriminatedUnion("action", [
+// packages/core/src/schemas.ts
+var endpointRequestSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("fetchSubject")
   }),
@@ -4060,167 +4105,36 @@ var requestSchema = z.discriminatedUnion("action", [
     rules: z.object({ key: z.string(), resource: z.any().optional() }).array()
   })
 ]);
-function createPostEndpoint(options) {
-  return async function kilpiEndpoint(request) {
-    try {
-      if (!options.secret)
-        return new Response("No secret setup on server", { status: 501 });
-      if (request.headers.get("authorization") !== `Bearer ${options.secret}`) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-      const body = requestSchema.parse(await request.json());
-      const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
-      switch (body.action) {
-        case "fetchSubject": {
-          return Response.json(subject);
-        }
-        case "fetchPermissions": {
-          const permissions = Promise.all(body.rules.map(async ({ key, resource }) => {
-            return await getPermission({
-              subject,
-              ruleset: options.ruleset,
-              key,
-              resource
-            });
-          }));
-          return Response.json(permissions);
-        }
-      }
-    } catch (error) {
-      return new Response(`Invalid request`, { status: 400 });
-    }
-  };
-}
-// packages/core/src/createQuery.ts
-function createQuery(options) {
-  return Object.assign(options.query, {
-    async safe(...args) {
-      try {
-        const result = await options.query(...args);
-        await options.protector?.(result, ...args);
-        return result;
-      } catch (e) {
-        if (!(e instanceof KilpiError.PermissionDenied)) {
-          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
-        }
-        return null;
-      }
-    },
-    async protect(...args) {
-      try {
-        const result = await options.query(...args);
-        await options.protector?.(result, ...args);
-        return result;
-      } catch (e) {
-        if (!(e instanceof KilpiError.PermissionDenied)) {
-          console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
-        }
-        throw e;
-      }
-    }
-  });
-}
-// packages/core/src/permission.ts
-function Grant(subject) {
-  return {
-    granted: true,
-    subject
-  };
-}
-function Deny(message) {
-  return {
-    granted: false,
-    message
-  };
-}
-var Permission = { Grant, Deny };
 
-// packages/core/src/getRuleConstructors.ts
-function getRuleConstructors() {
-  function create(check) {
-    return {
-      async getPermission(subject2, resource) {
-        if (Array.isArray(resource)) {
-          const grants = await Promise.all(resource.map((r) => check(subject2, r)));
-          const allGranted = grants.every((g) => typeof g === "boolean" ? g : g.granted);
-          if (allGranted)
-            return Permission.Grant(subject2);
-          const message = grants.reduce((msg, g) => msg || typeof g === "boolean" || g.granted ? msg : g.message, undefined);
-          return Permission.Deny(message);
-        }
-        const granted = await check(subject2, resource);
-        return granted ? Permission.Grant(subject2) : Permission.Deny();
-      },
-      getNarrowedSubject(subject2) {
-        return subject2;
-      }
-    };
-  }
-  function subject(getNarrowedSubject) {
-    return {
-      create(check) {
-        return {
-          async getPermission(subject2, resource) {
-            const narrowedSubject = getNarrowedSubject(subject2);
-            if (narrowedSubject === false)
-              return Permission.Deny();
-            if (Array.isArray(resource)) {
-              const grants = await Promise.all(resource.map((r) => check(narrowedSubject, r)));
-              const allGranted = grants.every((g) => typeof g === "boolean" ? g : g.granted);
-              if (allGranted)
-                return Permission.Grant(narrowedSubject);
-              const message = grants.reduce((msg, g) => msg || typeof g === "boolean" || g.granted ? msg : g.message, undefined);
-              return Permission.Deny(message);
-            }
-            const granted = await check(narrowedSubject, resource);
-            if (typeof granted === "boolean") {
-              return granted ? Permission.Grant(narrowedSubject) : Permission.Deny();
-            }
-            return granted;
-          },
-          getNarrowedSubject
-        };
-      }
-    };
-  }
-  return {
-    create,
-    subject
-  };
-}
-
-// packages/core/src/createRuleset.ts
-function createRuleset() {
-  return function craeteRulesetImpl(rules) {
-    return rules(getRuleConstructors());
-  };
-}
-// packages/core/src/hasPermission.ts
-async function hasPermission(options) {
-  const permission = await getPermission(options);
-  return permission.granted;
-}
-// packages/core/src/callStackSizeProtector.ts
+// packages/core/src/utils/callStackSizeProtector.ts
 function createCallStackSizeProtector(options) {
   let size = 0;
-  return {
-    push() {
-      size++;
-      if (size > options.maxStackSize) {
-        throw new KilpiError.Internal(options.errorMessage);
-      }
-    },
-    pop() {
-      size--;
-      if (size < 0) {
-        size = 0;
-        console.warn(`CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`);
-      }
+  function push() {
+    size++;
+    if (size > options.maxStackSize) {
+      throw new KilpiError.Internal(options.errorMessage);
     }
+  }
+  function pop() {
+    size--;
+    if (size < 0) {
+      size = 0;
+      console.warn(`CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`);
+    }
+  }
+  return {
+    async run(fn) {
+      push();
+      const result = await fn();
+      pop();
+      return result;
+    },
+    push,
+    pop
   };
 }
 
-// packages/core/src/protect.ts
+// packages/core/src/KilpiCore.ts
 var callStackSizeProtector = createCallStackSizeProtector({
   maxStackSize: 50,
   errorMessage: `
@@ -4231,33 +4145,116 @@ var callStackSizeProtector = createCallStackSizeProtector({
 \t\tprotect() or protected queries with .protect() or .safe().
 \t`.replace(/\s+/g, " ")
 });
-async function protect(options) {
-  callStackSizeProtector.push();
-  const subject = typeof options.subject === "function" ? await options.subject() : options.subject;
-  const rule = getRuleByKey(options.ruleset, options.key);
-  const permission = await rule.getPermission(subject, "resource" in options ? options.resource : undefined);
-  callStackSizeProtector.pop();
-  if (!permission.granted) {
-    if (options.onDeny) {
-      await options.onDeny?.({
-        message: permission.message,
-        rule,
-        subject
-      });
-    }
+
+class KilpiCore {
+  getSubject;
+  ruleset;
+  guards;
+  $$infer = null;
+  constructor(getSubject, construct) {
+    const { guards, rules } = construct(createKilpiConstructor());
+    this.getSubject = getSubject;
+    this.ruleset = rules;
+    this.guards = guards;
+  }
+  async getPermission(key, resource) {
+    const subject = await this.getSubject();
+    const rule = getRuleByKey(this.ruleset, key);
+    const permission = await rule(subject, resource);
+    return permission;
+  }
+  async hasPermission(key, resource) {
+    const subject = await this.getSubject();
+    const rule = getRuleByKey(this.ruleset, key);
+    const permission = await rule(subject, resource);
+    return permission.granted;
+  }
+  async protect(key, resource, onDeny) {
+    const { subject, rule, permission } = await callStackSizeProtector.run(async () => {
+      const subject2 = await this.getSubject();
+      const rule2 = getRuleByKey(this.ruleset, key);
+      const permission2 = await rule2(subject2, resource);
+      return { subject: subject2, rule: rule2, permission: permission2 };
+    });
+    if (permission.granted)
+      return permission.subject;
+    if (onDeny)
+      await onDeny?.({ message: permission.message, rule, subject });
     throw new KilpiError.PermissionDenied(permission.message ?? "Unauthorized");
   }
-  return permission.subject;
+  get guard() {
+    return new Proxy(this.guards, {
+      get: async (guards, key) => {
+        const guard = guards[key];
+        if (!guard)
+          throw new KilpiError.Internal(`Guard "${key}" not found.`);
+        const subject = await this.getSubject();
+        const guardResult = await guard(subject);
+        if (!guardResult)
+          throw new KilpiError.PermissionDenied("Unauthorized");
+        return guardResult.subject;
+      }
+    });
+  }
+  createProtectedQuery(query, protector) {
+    return Object.assign(query, {
+      async safe(...args) {
+        try {
+          const result = await query(...args);
+          await protector?.(result, ...args);
+          return result;
+        } catch (e) {
+          if (!(e instanceof KilpiError.PermissionDenied)) {
+            console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+          }
+          return null;
+        }
+      },
+      async protect(...args) {
+        try {
+          const result = await query(...args);
+          await protector?.(result, ...args);
+          return result;
+        } catch (e) {
+          if (!(e instanceof KilpiError.PermissionDenied)) {
+            console.warn(`createQuery safe() method errored with unexpected error: ${e}`);
+          }
+          throw e;
+        }
+      }
+    });
+  }
+  createPostEndpoint(options) {
+    return async (request) => {
+      try {
+        if (!options.secret)
+          return new Response("No secret setup on server", { status: 501 });
+        if (request.headers.get("authorization") !== `Bearer ${options.secret}`) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        const body = endpointRequestSchema.parse(await request.json());
+        const subject = await this.getSubject();
+        switch (body.action) {
+          case "fetchSubject": {
+            return Response.json(subject);
+          }
+          case "fetchPermissions": {
+            const permissions = Promise.all(body.rules.map(({ key, resource }) => this.getPermission(key, resource)));
+            return Response.json(permissions);
+          }
+        }
+      } catch (error) {
+        return new Response(`Invalid request`, { status: 400 });
+      }
+    };
+  }
 }
 export {
-  protect,
-  hasPermission,
-  getRuleConstructors,
   getRuleByKey,
-  getPermission,
-  createRuleset,
-  createQuery,
-  createPostEndpoint,
+  endpointRequestSchema,
+  createRule,
   RULE_KEY_SEPARATOR,
-  KilpiError
+  Permission,
+  KilpiError,
+  KilpiCore
 };

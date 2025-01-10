@@ -1,107 +1,56 @@
 import { describe, expect, it } from "bun:test";
-import { KilpiError, protect } from "../src";
-import { TestDocument, TestUtils } from "./testUtils";
+import { KilpiError } from "../src";
+import { TestDocument, TestKilpi, TestUtils } from "./testUtils";
 
 describe("protect", () => {
-  const resource: TestDocument = { id: "doc1", userId: "user1" };
+  const doc: TestDocument = { id: "doc1", userId: "user1" };
+  const Denied = KilpiError.PermissionDenied;
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "public",
-        })
-      ).resolves.toBe(null);
+      expect(TestKilpi.protect("public", null)).resolves.toBe(null);
     });
   });
 
   it("should grant public when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "public",
-        })
-      ).resolves.toMatchObject(subject);
+      expect(TestKilpi.protect("public", null)).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny and throw authed when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "authed",
-        })
-      ).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      expect(TestKilpi.protect("authed", null)).rejects.toBeInstanceOf(Denied);
     });
   });
 
   it("should grant authed when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "authed",
-        })
-      ).resolves.toMatchObject(subject);
+      expect(TestKilpi.protect("authed", null)).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny resource when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "docs:ownDocument",
-          resource,
-        })
-      ).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
     });
   });
 
   it("should grant if owner of resource", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "docs:ownDocument",
-          resource,
-        })
-      ).resolves.toMatchObject(subject);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny if not owner of resource", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "docs:ownDocument",
-          resource,
-        })
-      ).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
     });
   });
 
   it("should work on deeply nested keys", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
-      expect(
-        protect({
-          subject: TestUtils.getSubject,
-          ruleset: TestUtils.ruleset,
-          key: "docs:deeply:nested:rule",
-          resource,
-        })
-      ).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      expect(TestKilpi.protect("docs:deeply:nested:rule", doc)).rejects.toBeInstanceOf(Denied);
     });
   });
 });

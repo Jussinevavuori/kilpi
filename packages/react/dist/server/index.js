@@ -997,12 +997,12 @@ var require_react = __commonJS((exports, module) => {
   }
 });
 
-// packages/react/src/server/Access.tsx
+// packages/react/src/server/index.tsx
 var import_react = __toESM(require_react(), 1);
-function createAccessComponent(Kilpi, options) {
+function createKilpiReactServerComponents(KilpiCore, options) {
   function Access(props) {
-    async function SuspendableImplementatin() {
-      const permission = await Kilpi.getPermission(props.to, props.on);
+    async function SuspendableImplementation() {
+      const permission = await KilpiCore.getPermission(props.key, props.resource);
       if (!permission.granted) {
         return props.Denied === null ? null : props.Denied ?? options.DefaultDeniedComponent;
       }
@@ -1010,14 +1010,8 @@ function createAccessComponent(Kilpi, options) {
     }
     return /* @__PURE__ */ import_react.default.createElement(import_react.Suspense, {
       fallback: props.Loading === null ? null : props.Loading ?? options.DefaultLoadingComponent
-    }, /* @__PURE__ */ import_react.default.createElement(SuspendableImplementatin, null));
+    }, /* @__PURE__ */ import_react.default.createElement(SuspendableImplementation, null));
   }
-  return Access;
-}
-
-// packages/react/src/server/index.ts
-function createKilpiReactServerComponents(Kilpi, options) {
-  const Access = createAccessComponent(Kilpi, options);
   return { Access };
 }
 export {

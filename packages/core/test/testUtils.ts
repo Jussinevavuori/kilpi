@@ -1,4 +1,4 @@
-import { createRuleset } from "../src";
+import { KilpiCore } from "../src";
 
 /**
  * Example subject
@@ -49,27 +49,37 @@ async function getDocument(id: string) {
 }
 
 /**
- * Test ruleset
+ * Test definitions
  */
-const ruleset = createRuleset<TestSubject | null>()((Rule) => {
-  const Authed = Rule.subject((subject) => (subject ? subject : false)).create;
+export const TestKilpi = new KilpiCore(getSubject, ({ guard, create }) => {
+  const Public = guard((subject) => ({ subject }));
+  const Authed = guard((subject) => (subject ? { subject } : null));
 
   return {
-    // Pass always
-    public: Rule.create(() => true),
+    guards: {
+      Public,
+      Authed,
+    },
+    rules: {
+      // Pass always
+      public: Public.create(() => true),
 
-    // Authed only
-    authed: Authed(() => true),
+      // Pass always (without Public guard)
+      public2: create(() => true),
 
-    // Nested keys
-    docs: {
-      // Authed only if ID matches
-      ownDocument: Authed<TestDocument>((user, doc) => user.id === doc.userId),
+      // Authed only
+      authed: Authed.create(() => true),
 
-      // Deeply nested rule
-      deeply: {
-        nested: {
-          rule: Authed<TestDocument>((user, doc) => user.id === doc.userId),
+      // Nested keys
+      docs: {
+        // Authed only if ID matches
+        ownDocument: Authed.create<TestDocument>((user, doc) => user.id === doc.userId),
+
+        // Deeply nested rule
+        deeply: {
+          nested: {
+            rule: Authed.create<TestDocument>((user, doc) => user.id === doc.userId),
+          },
         },
       },
     },
@@ -83,16 +93,15 @@ async function runAs<TSubject extends TestSubject | null>(
   subject: TSubject,
   fn: (subject: TSubject) => void | Promise<void>
 ) {
-  testState.subject = subject;
-  await fn(subject);
-  testState.subject = null;
+  testState.subject = subject; // Sign in
+  await fn(subject); // Run as signed in
+  testState.subject = null; // Sign out
 }
 
 /**
  * Export test utilities
  */
 export const TestUtils = {
-  ruleset,
   runAs,
   getSubject,
   getDocument,
