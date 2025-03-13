@@ -14,8 +14,6 @@
     "noEmit": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "types": ["node", "bun"],
-    "baseUrl": ".",
-    "typeRoots": ["../../node_modules/@types"]
+    "baseUrl": "."
   }
 }

@@ -4,4 +4,4 @@ Until version 1.0.0, the API is subject to breaking changes without a major vers
 
 # Fine-grained authorization
 
-Core package for Kilpi fine-grained authorization. Do not use directly, instead, use with `@kilpi/server`.
+Core package for Kilpi fine-grained authorization. 

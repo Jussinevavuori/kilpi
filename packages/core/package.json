@@ -7,12 +7,11 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jussinevavuori/kilpi.git"
-  },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "zod": "^3.24.1"
@@ -20,10 +19,17 @@
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
   "homepage": "https://kilpi.vercel.app",
   "bugs": "https://github.com/jussinevavuori/kilpi/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
   "keywords": [
     "fine-grained",
     "authorization",
     "abac",
     "rbac"
-  ]
+  ],
+  "devDependencies": {
+    "vitest": "^3.0.8"
+  }
 }

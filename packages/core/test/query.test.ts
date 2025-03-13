@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { KilpiError } from "../src";
 import { TestKilpi, TestUtils } from "./testUtils";
 
@@ -6,12 +6,15 @@ describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, protected by the "docs:ownDocument" rule
    */
-  const getDoc = TestKilpi.query(async (id: string) => await TestUtils.getDocument(id), {
-    async protector({ output }) {
-      await TestKilpi.protect("docs:ownDocument", output);
-      return output;
+  const getDoc = TestKilpi.query(
+    async (id: string) => await TestUtils.getDocument(id),
+    {
+      async protector({ output }) {
+        await TestKilpi.protect("docs:ownDocument", output);
+        return output;
+      },
     },
-  });
+  );
 
   /**
    * Get a document by ID, only returns userId if own document.
@@ -29,11 +32,14 @@ describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, only returns userId if own document.
    */
-  const getDocs = TestKilpi.query(async () => await TestUtils.listAllDocuments(), {
-    async protector({ output, subject }) {
-      return output.filter((_) => _.userId === subject?.id);
+  const getDocs = TestKilpi.query(
+    async () => await TestUtils.listAllDocuments(),
+    {
+      async protector({ output, subject }) {
+        return output.filter((_) => _.userId === subject?.id);
+      },
     },
-  });
+  );
 
   const doc1 = await getDoc.unsafe("doc1");
 
@@ -51,26 +57,36 @@ describe("Kilpi.query", async () => {
 
   await it("safe call resolves or returns null with custom catch", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(null);
+      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(
+        null,
+      );
     });
     await TestUtils.runAs({ id: "user1" }, async () => {
-      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toMatchObject(doc1);
+      await expect(
+        getDoc.protect("doc1").catch(() => null),
+      ).resolves.toMatchObject(doc1);
     });
     await TestUtils.runAs({ id: "user2" }, async () => {
-      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(null);
+      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(
+        null,
+      );
     });
   });
 
   await it("protect call resolves or throws", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
+        KilpiError.PermissionDenied,
+      );
     });
 
     await TestUtils.runAs({ id: "user1" }, async () => {
       await expect(getDoc.protect("doc1")).resolves.toMatchObject(doc1);
     });
     await TestUtils.runAs({ id: "user2" }, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.PermissionDenied);
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
+        KilpiError.PermissionDenied,
+      );
     });
   });
 
@@ -81,13 +97,17 @@ describe("Kilpi.query", async () => {
         throw new TestUtils.TestErrorClass(message ?? "Unauthorized");
       });
       await TestUtils.runAs(null, async () => {
-        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(TestUtils.TestErrorClass);
+        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
+          TestUtils.TestErrorClass,
+        );
       });
       await TestUtils.runAs({ id: "user1" }, async () => {
         await expect(getDoc.protect("doc1")).resolves.toMatchObject(doc1);
       });
       await TestUtils.runAs({ id: "user2" }, async () => {
-        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(TestUtils.TestErrorClass);
+        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
+          TestUtils.TestErrorClass,
+        );
       });
     });
   });
