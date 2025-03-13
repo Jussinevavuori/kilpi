@@ -1,3 +1,4 @@
+export * from "./createKilpi";
 export * from "./error";
 export * from "./KilpiAdapter";
 export * from "./KilpiContext";
