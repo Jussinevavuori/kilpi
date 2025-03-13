@@ -1,5 +1,6 @@
-import { KilpiConstructorArgs, KilpiCore } from "./KilpiCore";
-import { Ruleset } from "./ruleset";
+import type { KilpiConstructorArgs } from "./KilpiCore";
+import { KilpiCore } from "./KilpiCore";
+import type { Ruleset } from "./ruleset";
 
 /**
  * KilpiCore constructor wrapped with a fake name

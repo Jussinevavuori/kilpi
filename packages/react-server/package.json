@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsup src/index.tsx --format cjs,esm --dts",
-    "lint": "tsc",
+    "lint": "eslint && tsc",
     "test": "vitest run",
     "test:watch": "vitest watch"
   },

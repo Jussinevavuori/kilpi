@@ -89,7 +89,8 @@ export class KilpiCore<
    * 3. Defaults (immutable)
    */
   private getContext() {
-    const contextFromAsyncLocalStorage = this.contextAsyncLocalStorage.getStore();
+    const contextFromAsyncLocalStorage =
+      this.contextAsyncLocalStorage.getStore();
     if (contextFromAsyncLocalStorage) return contextFromAsyncLocalStorage;
 
     const contextFromAdapter = this.adapter?.getContext();
@@ -102,7 +103,8 @@ export class KilpiCore<
    * Utility to access mutable context (does not access default variables)
    */
   private getMutableContext() {
-    const contextFromAsyncLocalStorage = this.contextAsyncLocalStorage.getStore();
+    const contextFromAsyncLocalStorage =
+      this.contextAsyncLocalStorage.getStore();
     if (contextFromAsyncLocalStorage) return contextFromAsyncLocalStorage;
 
     const contextFromAdapter = this.adapter?.getContext();
@@ -179,22 +181,29 @@ export class KilpiCore<
     ...inputs: InferRuleInputs<GetRuleByKey<TRules, TKey>>
   ): Promise<InferRuleSubject<GetRuleByKey<TRules, TKey>>> {
     // Evaluate rule within infinite loop protection
-    const { subject, rule, permission } = await KilpiCore.CallStackSizeProtector.run(async () => {
-      const subject = await this.getSubject();
-      const rule = getRuleByKey(this.rules, key);
-      const permission = await rule(subject, ...[...inputs]);
-      return { subject, rule, permission };
-    });
+    const { subject, rule, permission } =
+      await KilpiCore.CallStackSizeProtector.run(async () => {
+        const subject = await this.getSubject();
+        const rule = getRuleByKey(this.rules, key);
+        const permission = await rule(subject, ...[...inputs]);
+        return { subject, rule, permission };
+      });
 
     // Granted
     if (permission.granted) return permission.subject;
 
     // Log denied rule for easier debugging
-    console.warn(`🚫 Rule denied: ${key} (${permission.message || "Unauthorized"})`);
+    console.warn(
+      `🚫 Rule denied: ${key} (${permission.message || "Unauthorized"})`,
+    );
 
     // Handle denials -- use provided function if provided. Defaults to throwing a
     // PermissionDenied error unless `onUnauthorized` throws an error (or other throwable, e.g. a redirect).
-    await this.getContext().onUnauthorized?.({ message: permission.message, rule, subject });
+    await this.getContext().onUnauthorized?.({
+      message: permission.message,
+      rule,
+      subject,
+    });
     throw new KilpiError.PermissionDenied(permission.message ?? "Unauthorized");
   }
 
@@ -253,10 +262,19 @@ export class KilpiCore<
   public query<TInput extends any[], TRawOutput, TRedactedOutput = TRawOutput>(
     query: (...args: TInput) => TRawOutput,
     options: {
-      protector?: KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject>;
+      protector?: KilpiQueryProtector<
+        TInput,
+        TRawOutput,
+        TRedactedOutput,
+        TSubject
+      >;
     } = {},
   ) {
-    return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
+    return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(
+      this,
+      query,
+      options,
+    );
   }
 
   /**
@@ -280,11 +298,15 @@ export class KilpiCore<
 /**
  * Get head of array
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]] ? H : never;
+
+export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]]
+  ? H
+  : never;
 
 /**
  * Get tail of array
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ArrayTail<T extends any[]> = T extends [any, ...infer R] ? R : never;
+
+export type ArrayTail<T extends any[]> = T extends [any, ...infer R]
+  ? R
+  : never;
