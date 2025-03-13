@@ -4,4 +4,4 @@ Until version 1.0.0, the API is subject to breaking changes without a major vers
 
 # Fine-grained authorization
 
-React server and client component bindings for `@kilpi/server`. Initialized with the created clients from each package.
+React server component bindings for Kilpi. Initialized with the created clients from each package.

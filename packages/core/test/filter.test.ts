@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { TestKilpi, TestUtils } from "./testUtils";
 
 describe("Kilpi.filter", async () => {

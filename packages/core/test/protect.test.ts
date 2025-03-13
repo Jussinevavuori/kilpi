@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { KilpiError } from "../src";
 import type { TestDocument } from "./testUtils";
 import { TestKilpi, TestUtils } from "./testUtils";
@@ -33,25 +33,33 @@ describe("protect", () => {
 
   it("should deny resource when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(
+        Denied,
+      );
     });
   });
 
   it("should grant if owner of resource", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(TestKilpi.protect("docs:ownDocument", doc)).resolves.toMatchObject(subject);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).resolves.toMatchObject(
+        subject,
+      );
     });
   });
 
   it("should deny if not owner of resource", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
-      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
+      expect(TestKilpi.protect("docs:ownDocument", doc)).rejects.toBeInstanceOf(
+        Denied,
+      );
     });
   });
 
   it("should work on deeply nested keys", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
-      expect(TestKilpi.protect("docs:deeply:nested:rule", doc)).rejects.toBeInstanceOf(Denied);
+      expect(
+        TestKilpi.protect("docs:deeply:nested:rule", doc),
+      ).rejects.toBeInstanceOf(Denied);
     });
   });
 });
