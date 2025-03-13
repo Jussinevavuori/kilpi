@@ -1,5 +1,5 @@
 {
-  "name": "@kilpi/www",
+  "name": "@kilpi/docs",
   "description": "Kilpi documentation site build with Starlight",
   "version": "0.1.0",
   "license": "MIT",
