@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.5.0
+
+### Minor Changes
+
+- 7de4ff2: Setting up automated releasing
+
 ## 0.4.0
 
 ### Minor Changes
