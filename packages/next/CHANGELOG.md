@@ -1,5 +1,16 @@
 # @kilpi/next
 
+## 0.5.0
+
+### Minor Changes
+
+- 7de4ff2: Setting up automated releasing
+
+### Patch Changes
+
+- Updated dependencies [7de4ff2]
+  - @kilpi/core@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
