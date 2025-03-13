@@ -1,5 +1,16 @@
 # @kilpi/react
 
+## 0.4.0
+
+### Minor Changes
+
+- 60168e1: setup package
+
+### Patch Changes
+
+- Updated dependencies [60168e1]
+  - @kilpi/core@0.4.0
+
 ## 0.1.1
 
 ### Patch Changes
