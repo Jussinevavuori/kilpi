@@ -1,5 +1,5 @@
 {
-  "name": "@kilpi/react",
+  "name": "@kilpi/react-server",
   "description": "Kilpi react server component integration",
   "version": "0.3.0",
   "main": "dist/index.js",
