@@ -1,0 +1,33 @@
+{
+  "name": "@kilpi/react",
+  "description": "Kilpi react server component integration",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
+  "scripts": {
+    "build": "tsup src/index.tsx --format cjs,esm --dts"
+  },
+  "dependencies": {
+    "@kilpi/core": "workspace:*",
+    "@kilpi/server": "workspace:*",
+    "react": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0"
+  },
+  "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+  "homepage": "https://kilpi.vercel.app",
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
+  "keywords": [
+    "fine-grained",
+    "authorization",
+    "abac",
+    "rbac",
+    "react"
+  ]
+}

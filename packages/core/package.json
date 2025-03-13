@@ -1,0 +1,29 @@
+{
+  "name": "@kilpi/core",
+  "description": "Kilpi core",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+  "homepage": "https://kilpi.vercel.app",
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
+  "keywords": [
+    "fine-grained",
+    "authorization",
+    "abac",
+    "rbac"
+  ]
+}
