@@ -28,8 +28,5 @@
     "authorization",
     "abac",
     "rbac"
-  ],
-  "devDependencies": {
-    "vitest": "^3.0.8"
-  }
+  ]
 }
