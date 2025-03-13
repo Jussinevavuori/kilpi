@@ -208,29 +208,12 @@ export class KilpiCore<
   }
 
   /**
-   * Filters resources to those that the user has permission to access. The resource is considered
-   * the first input to the rule, and any additional inputs are passed as is.
-   *
-   * Important note if a rule takes in...
-   * - 0 inputs    -> Not callable.
-   * - 1 input     -> Filters the resources as you would expect
-   * - >= 2 inputs -> Filters the first input as you would expect, the rest are passed as is.
-   *
-   * @example
-   * ```ts
-   *
-   * // Basic usage (rule with 1 input)
-   * const accessibleDocuments = await Kilpi.filter("docs:read", allDocuments);
-   *
-   * // Rule with 2 inputs ("public" passed with each document separately)
-   * const accessibleDocuments = await Kilpi.filter("docs:read", allDocuments, "public");
-   * ```
+   * Filters resources to only those that the user has permission to access.
    */
   async filter<
     TKey extends RulesetKeys<TRules>,
     TResource extends ArrayHead<InferRuleInputs<GetRuleByKey<TRules, TKey>>>,
-    TInputs extends InferRuleInputs<GetRuleByKey<TRules, TKey>>,
-  >(key: TKey, resources: TResource[], ...restInputs: ArrayTail<TInputs>) {
+  >(key: TKey, resources: TResource[]) {
     // Access rule and subject
     const subject = await this.getSubject();
     const rule = getRuleByKey(this.rules, key);
@@ -240,7 +223,7 @@ export class KilpiCore<
     await KilpiCore.CallStackSizeProtector.run(async () =>
       Promise.all(
         resources.map(async (resource) => {
-          const permission = await rule(subject, resource, ...[...restInputs]);
+          const permission = await rule(subject, resource);
           if (permission.granted) accessibleResources.push(resource);
         }),
       ),
