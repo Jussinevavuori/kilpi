@@ -6,7 +6,8 @@
   "scripts": {
     "build": "for d in packages/*; do (cd $d && pnpm run build || exit 1); done",
     "lint": "for d in packages/*; do (cd $d && pnpm run lint || exit 1); done",
-    "test": "for d in packages/*; do (cd $d && pnpm run test || exit 1); done"
+    "test": "for d in packages/*; do (cd $d && pnpm run test || exit 1); done",
+    "release": "pnpm run build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.28.1",
