@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.5.2
+
+### Patch Changes
+
+- d131414: export createKilpi
+
 ## 0.5.1
 
 ### Patch Changes
