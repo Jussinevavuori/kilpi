@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.5.1
+
+### Patch Changes
+
+- c6fb2f9: test fixed releasing
+- Updated dependencies [c6fb2f9]
+  - @kilpi/core@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
