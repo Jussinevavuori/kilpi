@@ -1,9 +1,12 @@
 {
   "name": "@kilpi/react",
   "description": "Kilpi react server component integration",
-  "version": "0.1.1",
-  "license": "MIT",
+  "version": "0.3.0",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "private": false,
   "scripts": {
     "build": "tsup src/index.tsx --format cjs,esm --dts",
     "lint": "eslint && tsc",

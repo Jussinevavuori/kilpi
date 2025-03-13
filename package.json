@@ -2,6 +2,8 @@
   "name": "kilpi",
   "description": "Kilpi monorepo",
   "version": "0.1.0",
+  "type": "module",
+  "private": false,
   "license": "MIT",
   "scripts": {
     "build": "pnpm -r run build",

@@ -7,6 +7,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "type": "module",
+  "private": false,
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "lint": "eslint && tsc",

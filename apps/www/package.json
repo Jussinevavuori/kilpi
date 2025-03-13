@@ -4,6 +4,7 @@
   "version": "0.1.1",
   "license": "MIT",
   "type": "module",
+  "private": false,
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
