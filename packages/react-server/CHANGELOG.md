@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.6.1
+
+### Patch Changes
+
+- e64791d: Fix `.npmignore` files for each package, as it was omitting required files.
+- Updated dependencies [e64791d]
+  - @kilpi/core@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
