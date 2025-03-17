@@ -1,5 +1,12 @@
 # @kilpi/next
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [03e75da]
+  - @kilpi/core@0.6.3
+
 ## 0.6.2
 
 ### Patch Changes
