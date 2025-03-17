@@ -1,5 +1,16 @@
 # @kilpi/react
 
+## 0.6.0
+
+### Minor Changes
+
+- 155ac6a: Renaming APIs:
+
+### Patch Changes
+
+- Updated dependencies [155ac6a]
+  - @kilpi/core@0.6.0
+
 ## 0.5.2
 
 ### Patch Changes

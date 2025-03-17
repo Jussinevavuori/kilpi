@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.6.0
+
+### Minor Changes
+
+- 155ac6a: Renaming APIs:
+
 ## 0.5.2
 
 ### Patch Changes
