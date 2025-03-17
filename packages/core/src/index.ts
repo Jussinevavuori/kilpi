@@ -16,10 +16,10 @@ export {
   type KilpiRequestContext,
 } from "./kilpi-request-context";
 export {
+  Policy,
   type AnyPolicyInput,
   type InferPolicyInputs,
   type InferPolicySubject,
-  type Policy,
 } from "./policy";
 export {
   getPolicyByKey,
