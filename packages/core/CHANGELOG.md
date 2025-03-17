@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.6.2
+
+### Patch Changes
+
+- 30a123f: fix adapter initialization, add tests
+
 ## 0.6.1
 
 ### Patch Changes
