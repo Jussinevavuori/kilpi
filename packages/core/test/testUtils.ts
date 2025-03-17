@@ -1,5 +1,4 @@
 import { Policy } from "src/policy";
-import { KilpiCore } from "../src";
 
 // Test subject
 export type TestSubject = {
@@ -52,37 +51,34 @@ const AuthedPolicy = Policy.as((subject: TestSubject | null) =>
   subject ? { subject } : null,
 );
 
-// Test Kilpi instance
-export const TestKilpi = new KilpiCore({
-  // Connect to mocked getSubject
-  getSubject,
+// All test policies
+const policies = {
+  // Always fail
+  never: Policy.new(() => false),
 
-  // Create custom policies
-  policies: {
-    // Pass always
-    public: PublicPolicy.new(() => true),
+  // Pass always
+  public: PublicPolicy.new(() => true),
 
-    // Authed only
-    authed: AuthedPolicy.new(() => true),
+  // Authed only
+  authed: AuthedPolicy.new(() => true),
 
-    // Nested keys
-    docs: {
-      // Authed only if ID matches
-      ownDocument: AuthedPolicy.new(
-        (user, doc: TestDocument) => user.id === doc.userId,
-      ),
+  // Nested keys
+  docs: {
+    // Authed only if ID matches
+    ownDocument: AuthedPolicy.new(
+      (user, doc: TestDocument) => user.id === doc.userId,
+    ),
 
-      // Deeply nested policy
-      deeply: {
-        nested: {
-          policy: AuthedPolicy.new(
-            (user, doc: TestDocument) => user.id === doc.userId,
-          ),
-        },
+    // Deeply nested policy
+    deeply: {
+      nested: {
+        policy: AuthedPolicy.new(
+          (user, doc: TestDocument) => user.id === doc.userId,
+        ),
       },
     },
   },
-});
+} as const;
 
 // Custom test error class for testing throwing custom errors
 class TestErrorClass extends Error {
@@ -112,4 +108,5 @@ export const TestUtils = {
   getDocument,
   listAllDocuments,
   TestErrorClass,
+  policies,
 };

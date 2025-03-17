@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { KilpiError } from "../src";
-import { TestKilpi, TestUtils } from "./testUtils";
+import { KilpiCore, KilpiError } from "../src";
+import { TestUtils } from "./testUtils";
+
+// Test Kilpi instance
+const Kilpi = new KilpiCore({
+  getSubject: TestUtils.getSubject,
+  policies: TestUtils.policies,
+});
 
 describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, protected by the "docs:ownDocument" policy
    */
-  const getDoc = TestKilpi.query(
+  const getDoc = Kilpi.query(
     async (id: string) => await TestUtils.getDocument(id),
     {
       async protector({ output }) {
-        await TestKilpi.authorize("docs:ownDocument", output);
+        await Kilpi.authorize("docs:ownDocument", output);
         return output;
       },
     },
@@ -19,7 +25,7 @@ describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, only returns userId if own document.
    */
-  const getPublicRedactedDoc = TestKilpi.query(
+  const getPublicRedactedDoc = Kilpi.query(
     async (id: string) => await TestUtils.getDocument(id),
     {
       async protector({ output, subject }) {
@@ -32,14 +38,11 @@ describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, only returns userId if own document.
    */
-  const getDocs = TestKilpi.query(
-    async () => await TestUtils.listAllDocuments(),
-    {
-      async protector({ output, subject }) {
-        return output.filter((_) => _.userId === subject?.id);
-      },
+  const getDocs = Kilpi.query(async () => await TestUtils.listAllDocuments(), {
+    async protector({ output, subject }) {
+      return output.filter((_) => _.userId === subject?.id);
     },
-  );
+  });
 
   const doc1 = await getDoc.unsafe("doc1");
 
@@ -91,8 +94,8 @@ describe("Kilpi.query", async () => {
   });
 
   await it("protect call respects onDeny", async () => {
-    await TestKilpi.runWithContext(async () => {
-      TestKilpi.onUnauthorized(({ message }) => {
+    await Kilpi.runWithContext(async () => {
+      Kilpi.onUnauthorized(({ message }) => {
         console.log(`🔵 I was called!!`);
         throw new TestUtils.TestErrorClass(message ?? "Unauthorized");
       });

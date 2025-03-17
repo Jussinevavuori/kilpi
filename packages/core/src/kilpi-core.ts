@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { Authorization } from "./authorization";
 import { KilpiError } from "./error";
-import type { KilpiAdapter } from "./kilpi-adapter";
+import type { KilpiAdapter, KilpiAdapterInitializer } from "./kilpi-adapter";
 import type { KilpiQueryProtector } from "./kilpi-query";
 import { KilpiQuery } from "./kilpi-query";
 import { type KilpiRequestContext } from "./kilpi-request-context";
@@ -31,7 +31,7 @@ export type KilpiConstructorArgs<
    * Connect your framework of choice with an adapter. Primarily responsible for automatically
    * prodiving a request context.
    */
-  adapter?: KilpiAdapter;
+  adapter?: KilpiAdapterInitializer;
 
   /**
    * Default behaviour when no context is provided (either explicitly or via adapter).
@@ -99,7 +99,11 @@ export class KilpiCore<
     this.getSubject = args.getSubject;
     this.policies = args.policies;
     this.defaults = args.defaults;
-    this.adapter = args.adapter;
+
+    // Initialize adapter
+    this.adapter = args.adapter?.({
+      defaults: args.defaults,
+    });
 
     // Setup async local storage
     this.contextAsyncLocalStorage = new AsyncLocalStorage();

@@ -1,18 +1,25 @@
+import { KilpiCore } from "src";
 import { describe, expect, it } from "vitest";
-import { TestKilpi, TestUtils } from "./testUtils";
+import { TestUtils } from "./testUtils";
+
+// Test Kilpi instance
+const Kilpi = new KilpiCore({
+  getSubject: TestUtils.getSubject,
+  policies: TestUtils.policies,
+});
 
 describe("Kilpi.filter", async () => {
   await it("filters", async () => {
     const docs = await TestUtils.listAllDocuments();
 
     await TestUtils.runAs(null, async () => {
-      const filtered = await TestKilpi.filter("docs:ownDocument", docs);
+      const filtered = await Kilpi.filter("docs:ownDocument", docs);
       const expected: typeof filtered = [];
       expect(filtered).toMatchObject(expected);
     });
 
     await TestUtils.runAs({ id: "user1" }, async () => {
-      const filtered = await TestKilpi.filter("docs:ownDocument", docs);
+      const filtered = await Kilpi.filter("docs:ownDocument", docs);
       const expected = docs.filter((_) => _.userId === "user1");
       expect(filtered).toMatchObject(expected);
     });
