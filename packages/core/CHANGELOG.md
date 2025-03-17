@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.6.1
+
+### Patch Changes
+
+- e64791d: Fix `.npmignore` files for each package, as it was omitting required files.
+
 ## 0.6.0
 
 ### Minor Changes
