@@ -10,12 +10,6 @@ yarn-error.log*
 pnpm-debug.log*
 bun.lockb
 
-# Build artifacts
-dist/
-build/
-out/
-coverage/
-
 # Source control
 .git/
 .gitignore
@@ -50,13 +44,6 @@ example/
 !README.md
 docs/
 doc/
-
-# TypeScript
-tsconfig.json
-tsconfig.*.json
-*.ts
-*.tsx
-*.d.ts
 
 # Misc
 .DS_Store
