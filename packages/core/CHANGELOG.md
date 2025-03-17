@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.6.3
+
+### Patch Changes
+
+- 03e75da: fix export of Policy
+
 ## 0.6.2
 
 ### Patch Changes
