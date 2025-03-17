@@ -1,12 +1,13 @@
-import type { KilpiCore } from "./KilpiCore";
+import type { KilpiCore } from "./kilpi-core";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject> = (args: {
-  input: TInput;
-  output: Awaited<TRawOutput>;
-  subject: TSubject;
-}) => TRedactedOutput;
+export type KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject> =
+  (args: {
+    input: TInput;
+    output: Awaited<TRawOutput>;
+    subject: TSubject;
+  }) => TRedactedOutput;
 
 /**
  * Create protected queries. This pattern enables protection of data at the query level, allowing
@@ -81,7 +82,9 @@ export class KilpiQuery<
     this.query = query;
 
     // Assign protector or use no-op protector by default
-    this.protector = options?.protector ?? ((args) => args.output as unknown as TRedactedOutput);
+    this.protector =
+      options?.protector ??
+      ((args) => args.output as unknown as TRedactedOutput);
   }
 
   // ===============================================================================================

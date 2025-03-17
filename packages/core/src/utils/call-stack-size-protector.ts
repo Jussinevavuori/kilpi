@@ -1,22 +1,27 @@
 import { KilpiError } from "../error";
 
 /**
- * For usage in functions which may due to their nature be easy to accidentally call in an infinite
- * recursive loop. By tracking the recursive stack size with this protector function, we are able to
- * cut the recursive loop off at a certain point and throw a more readable error message to the
- * user.
+ * Utility for making debugging of infinite loops easier.
+ *
+ * Wrap blocks which may be called recursively infinitively with `.run(fn)` (or manually with
+ * `.push()` and `.pop()`). If the stack size exceeds the limit, an error is thrown with the provided
+ * error message. This is meant to be thrown before a stack overflow error occurs, to provide a more
+ * helpful error message to the user.
  */
 export function createCallStackSizeProtector(options: {
   maxStackSize: number;
   errorMessage: string;
 }) {
+  // Current call stack size counter.
   let size = 0;
+
   /**
    * Mark function as started. Errors out if the stack size is exceeded with helpful error message.
    */
   function push() {
     size++;
 
+    // Overflow alert. Max call stack size exceeded.
     if (size > options.maxStackSize) {
       throw new KilpiError.Internal(options.errorMessage);
     }
@@ -28,11 +33,11 @@ export function createCallStackSizeProtector(options: {
   function pop() {
     size--;
 
-    // Underflow alert
+    // Underflow alert. If this case is logged, you are calling pop() more times than push().
     if (size < 0) {
       size = 0;
       console.warn(
-        `CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`
+        `CallStack size protector negative, resetting to 0. Ensure you are calling pop() only once per push().`,
       );
     }
   }

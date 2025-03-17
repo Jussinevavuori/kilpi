@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { TestDocument, TestSubject } from "./testUtils";
 import { TestKilpi, TestUtils } from "./testUtils";
 
-describe("getPermission", () => {
+describe("Kilpi.getAuthorization", () => {
   const resource: TestDocument = { id: "doc1", userId: "user1" };
 
   const Denied = { granted: false, message: undefined };
@@ -10,7 +10,7 @@ describe("getPermission", () => {
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(TestKilpi.getPermission("public")).resolves.toMatchObject(
+      expect(TestKilpi.getAuthorization("public")).resolves.toMatchObject(
         Granted(null),
       );
     });
@@ -18,7 +18,7 @@ describe("getPermission", () => {
 
   it("should grant public when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(TestKilpi.getPermission("public")).resolves.toMatchObject(
+      expect(TestKilpi.getAuthorization("public")).resolves.toMatchObject(
         Granted(subject),
       );
     });
@@ -26,13 +26,15 @@ describe("getPermission", () => {
 
   it("should deny authed when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(TestKilpi.getPermission("authed")).resolves.toMatchObject(Denied);
+      expect(TestKilpi.getAuthorization("authed")).resolves.toMatchObject(
+        Denied,
+      );
     });
   });
 
   it("should grant authed when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(TestKilpi.getPermission("authed")).resolves.toMatchObject(
+      expect(TestKilpi.getAuthorization("authed")).resolves.toMatchObject(
         Granted(subject),
       );
     });
@@ -41,7 +43,7 @@ describe("getPermission", () => {
   it("should deny authed resource check when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
       expect(
-        TestKilpi.getPermission("docs:ownDocument", resource),
+        TestKilpi.getAuthorization("docs:ownDocument", resource),
       ).resolves.toMatchObject(Denied);
     });
   });
@@ -49,7 +51,7 @@ describe("getPermission", () => {
   it("should grant authed resource check when authed as correct user", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
       expect(
-        TestKilpi.getPermission("docs:ownDocument", resource),
+        TestKilpi.getAuthorization("docs:ownDocument", resource),
       ).resolves.toMatchObject(Granted(subject));
     });
   });
@@ -57,7 +59,7 @@ describe("getPermission", () => {
   it("should deny authed resource check when authed as incorrect user", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
       expect(
-        TestKilpi.getPermission("docs:ownDocument", resource),
+        TestKilpi.getAuthorization("docs:ownDocument", resource),
       ).resolves.toMatchObject(Denied);
     });
   });
@@ -65,7 +67,7 @@ describe("getPermission", () => {
   it("should work on deeply nested keys", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
       expect(
-        TestKilpi.getPermission("docs:deeply:nested:rule", resource),
+        TestKilpi.getAuthorization("docs:deeply:nested:policy", resource),
       ).resolves.toMatchObject(Denied);
     });
   });

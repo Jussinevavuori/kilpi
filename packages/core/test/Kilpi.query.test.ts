@@ -4,13 +4,13 @@ import { TestKilpi, TestUtils } from "./testUtils";
 
 describe("Kilpi.query", async () => {
   /**
-   * Get a document by ID, protected by the "docs:ownDocument" rule
+   * Get a document by ID, protected by the "docs:ownDocument" policy
    */
   const getDoc = TestKilpi.query(
     async (id: string) => await TestUtils.getDocument(id),
     {
       async protector({ output }) {
-        await TestKilpi.protect("docs:ownDocument", output);
+        await TestKilpi.authorize("docs:ownDocument", output);
         return output;
       },
     },
@@ -76,7 +76,7 @@ describe("Kilpi.query", async () => {
   await it("protect call resolves or throws", async () => {
     await TestUtils.runAs(null, async () => {
       await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-        KilpiError.PermissionDenied,
+        KilpiError.AuthorizationDenied,
       );
     });
 
@@ -85,7 +85,7 @@ describe("Kilpi.query", async () => {
     });
     await TestUtils.runAs({ id: "user2" }, async () => {
       await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-        KilpiError.PermissionDenied,
+        KilpiError.AuthorizationDenied,
       );
     });
   });

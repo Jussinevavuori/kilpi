@@ -1,14 +1,17 @@
 import type {
-  GetRuleByKey,
-  InferRuleInputs,
+  GetPolicyByKey,
+  InferPolicyInputs,
   KilpiCore,
-  RulesetKeysWithoutResource,
-  RulesetKeysWithResource,
+  PolicySetKeysWithoutResource,
+  PolicysetKeysWithResource,
 } from "@kilpi/core";
 import React, { Suspense } from "react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * Options for creating React server components.
+ */
 export type CreateReactServerComponentOptions = {
   DefaultUnauthorizedComponent?: React.ReactNode;
   DefaultLoadingComponent?: React.ReactNode;
@@ -25,51 +28,58 @@ type AccessBaseProps = {
 
   /**
    * Rendered while suspended. If undefined, defaults to global default if exists.
-   * If null, no loading component is rendered.
+   * If null, no loading component is rendered (opts out of global default as well).
    */
   Loading?: React.ReactNode;
 
   /**
    * Rendered if access is denied. If undefined, defaults to global default if exists.
-   * If null, no denied component is rendered.
+   * If null, no denied component is rendered (opts out of global default as well).
    */
   Unauthorized?: React.ReactNode;
 
   /**
-   * onUnauthorized callback, e.g. for redirecting
+   * onUnauthorized callback, e.g. for redirecting.
    */
   onUnauthorized?: () => void;
 };
 
+/**
+ * Custom access props for each key to ensure correct types (e.g. for resource) are provided
+ * based on the provided policy key (`to`).
+ */
 type AccessPropsByKey<TCore extends KilpiCore<any, any>> = {
-  // No inputs, no on={...} provided
-  [K in RulesetKeysWithoutResource<TCore["rules"]>]: {
+  // Policies that do not take in a resource:
+  // Type as { to: "policy:key" }, no resource required
+  [K in PolicySetKeysWithoutResource<TCore["policies"]>]: {
     to: K;
     on?: never;
   };
 } & {
-  // One input: on={arg}
-  [K in RulesetKeysWithResource<TCore["rules"]>]: {
+  // Policies that do take in a resource:
+  // Type as { to: "policy:key", on: resource }, resource required
+  [K in PolicysetKeysWithResource<TCore["policies"]>]: {
     to: K;
-    on: InferRuleInputs<GetRuleByKey<TCore["rules"], K>>[0];
+    on: InferPolicyInputs<GetPolicyByKey<TCore["policies"], K>>[0];
   };
 };
 
 /**
- * Access props
+ * Access props, with correct types based on the provided policy key (`to`).
  */
 type AccessProps<
   TCore extends KilpiCore<any, any>,
-  TKey extends RulesetKeysWithoutResource<TCore["rules"]> | RulesetKeysWithResource<TCore["rules"]>,
+  TKey extends
+    | PolicySetKeysWithoutResource<TCore["policies"]>
+    | PolicysetKeysWithResource<TCore["policies"]>,
 > = AccessBaseProps & AccessPropsByKey<TCore>[TKey];
 
 /**
- * Create all React server components for Kilpi usage on React Server.
+ * Create all React server components for Kilpi usage in RSCs.
  */
-export function createKilpiReactServerComponents<TCore extends KilpiCore<any, any>>(
-  KilpiCore: TCore,
-  options: CreateReactServerComponentOptions,
-) {
+export function createKilpiReactServerComponents<
+  TCore extends KilpiCore<any, any>,
+>(KilpiCore: TCore, options: CreateReactServerComponentOptions) {
   /**
    * Render children only if access to={key} (and optionally on={resource}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
@@ -77,23 +87,26 @@ export function createKilpiReactServerComponents<TCore extends KilpiCore<any, an
    */
   function Access<
     TKey extends
-      | RulesetKeysWithoutResource<TCore["rules"]>
-      | RulesetKeysWithResource<TCore["rules"]>,
+      | PolicySetKeysWithoutResource<TCore["policies"]>
+      | PolicysetKeysWithResource<TCore["policies"]>,
   >(props: AccessProps<TCore, TKey>) {
     // Async component for suspending by parnent
     async function Access_InnerSuspendable() {
-      // Get permission
-      const permission = await KilpiCore.getPermission(props.to, props.on);
+      // Get authorization
+      const authorization = await KilpiCore.getAuthorization(
+        props.to,
+        props.on,
+      );
 
-      // No permission, render Unauthorized component and run callback
-      if (!permission.granted) {
+      // No authorization, render Unauthorized component and run callback
+      if (!authorization.granted) {
         await props.onUnauthorized?.();
         return props.Unauthorized === null
           ? null
           : (props.Unauthorized ?? options.DefaultUnauthorizedComponent);
       }
 
-      // Permission granted
+      // Authorization passed
       return props.children;
     }
 
@@ -102,7 +115,9 @@ export function createKilpiReactServerComponents<TCore extends KilpiCore<any, an
     return (
       <Suspense
         fallback={
-          props.Loading === null ? null : (props.Loading ?? options.DefaultLoadingComponent)
+          props.Loading === null
+            ? null
+            : (props.Loading ?? options.DefaultLoadingComponent)
         }
       >
         <Access_InnerSuspendable />

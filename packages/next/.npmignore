@@ -1,0 +1,63 @@
+# Dependency directories
+node_modules/
+.pnpm/
+.bun/
+
+# Logs and debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lockb
+
+# Build artifacts
+dist/
+build/
+out/
+coverage/
+
+# Source control
+.git/
+.gitignore
+*.tgz
+
+# Config files not needed in package
+*.env
+*.env.*
+.envrc
+*.local
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests and examples
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+__mocks__/
+examples/
+example/
+
+# Documentation
+*.md
+!README.md
+docs/
+doc/
+
+# TypeScript
+tsconfig.json
+tsconfig.*.json
+*.ts
+*.tsx
+*.d.ts
+
+# Misc
+.DS_Store
+Thumbs.db

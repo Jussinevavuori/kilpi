@@ -1,60 +1,27 @@
 /**
- * Kilpi internal error.
+ * Error thrown when the Kilpi library encounters an internal error.
  */
 class KilpiInternalError extends Error {
   constructor(message: string, options: { cause?: unknown } = {}) {
     super(message, options);
-    this.name = "KilpiInternalError";
+    this.name = "Kilpi_InternalError";
   }
 }
 
 /**
- * Permission denied error.
+ * Error thrown when an authorization check fails.
  */
-class KilpiPermissionDeniedError extends Error {
+class KilpiAuthorizationDeniedError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "KilpiPermissionDeniedError";
+    this.name = "Kilpi_AuthorizationDeniedError";
   }
 }
 
 /**
- * Setup error
- */
-class KilpiInvalidSetupError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "KilpiInvalidSetupError";
-  }
-}
-
-/**
- * Client fetch permission failed error
- */
-class KilpiFetchPermissionFailedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "KilpiFetchPermissionFailedError";
-  }
-}
-
-/**
- * Client fetch subject failed error
- */
-class KilpiFetchSubjectFailedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "KilpiFetchSubjectFailedError";
-  }
-}
-
-/**
- * All Kilpi errors.
+ * Export all Kilpi error classes under the KilpiError namespace.
  */
 export const KilpiError = {
   Internal: KilpiInternalError,
-  InvalidSetup: KilpiInvalidSetupError,
-  PermissionDenied: KilpiPermissionDeniedError,
-  FetchSubjectFailed: KilpiFetchSubjectFailedError,
-  FetchPermissionFailed: KilpiFetchPermissionFailedError,
+  AuthorizationDenied: KilpiAuthorizationDeniedError,
 };
