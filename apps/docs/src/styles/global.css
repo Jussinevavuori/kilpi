@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 /* Plugins */
-@plugin "@astrojs/starlight-tailwind";
 @plugin "tailwindcss-animate";
 
 /* Starlight uses [data-theme="dark"] on <html /> */

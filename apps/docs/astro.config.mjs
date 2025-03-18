@@ -19,7 +19,6 @@ export default defineConfig({
       social: {
         github: "https://github.com/jussinevavuori/kilpi",
       },
-      customCss: ["./src/styles/global.css"], // Tailwind
 
       // Configure sidebar
       sidebar: [
