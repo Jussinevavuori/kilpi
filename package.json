@@ -6,9 +6,9 @@
   "private": false,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm -r run build",
-    "lint": "pnpm -r run lint",
-    "test": "pnpm -r run test",
+    "build": "pnpm -r --filter \"./packages/**\" run build",
+    "lint": "pnpm -r --filter \"./packages/**\" run lint",
+    "test": "pnpm -r --filter \"./packages/**\" run test",
     "release": "pnpm run build && changeset publish",
     "ci": "pnpm run build && pnpm run lint && pnpm run test"
   },
