@@ -9,11 +9,12 @@ export function IntroductionSection() {
         </h2>
       </div>
 
-      <CodeBlock
-        lineNumbers
-        language="tsx"
-        className="max-w-[800px] !mx-auto"
-        content={`
+      <div className="overflow-x-scroll">
+        <CodeBlock
+          lineNumbers
+          language="tsx"
+          className="max-w-[800px] !mx-auto"
+          content={`
 					// Setup subject
 					async function getSubject(): Promise<Subject | null> {
 						return myAuthProvider.getCurrentUser();
@@ -81,14 +82,20 @@ export function IntroductionSection() {
 								<p>Signed in as {user.name}</p>
 							
 								{/* Protect your UI */}
-								<Access to="documents:update" on={document}>
+								<Access
+									to="documents:update"
+									on={document}
+									Unauthorized={<p>Not allowed to edit this document</p>}
+									Loading={<p>Loading...</p>}
+								>
 									<button>Edit document</button>
 								</Access>
 							</main>
 						)
 					}
 				`}
-      />
+        />
+      </div>
     </section>
   );
 }

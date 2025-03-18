@@ -16,6 +16,7 @@ import {
   ToyBrickIcon,
   UnplugIcon,
 } from "lucide-react";
+import { FullWidthSection } from "./FullWidthSection";
 
 const FEATURES = [
   {
@@ -120,73 +121,68 @@ const ROADMAP = [
 
 export function FeaturesSection() {
   return (
-    <section
-      id="features"
-      className="py-32 bg-muted/50 relative w-screen left-1/2 -translate-x-1/2"
-    >
-      <div className="max-w-[var(--sl-content-width)] !mx-auto flex flex-col gap-16">
-        <div className="flex flex-col gap-4">
-          <h2 className="text-3xl text-center font-bold tracking-tight sm:text-4xl">
-            Your authorization layer with everything your need.
-          </h2>
-
-          <p className="max-w-xl text-center !mx-auto text-muted-foreground">
-            Designed to solve real problems for real applications, Kilpi was
-            born after solving the same problem time after time, for client
-            after client.
-          </p>
-        </div>
-
-        <div
-          className="grid grid-cols-1 gap-8"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          }}
-        >
-          {FEATURES.map((feature, index) => (
-            <div key={index} className="flex flex-col gap-2">
-              <feature.Icon className="size-5 text-accent-500" />
-              <h3 className="text-2xl font-bold tracking-tight">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <hr />
-
-        <h2 className="text-xl font-semibold text-center tracking-tight">
-          With much more on the roadmap...
+    <FullWidthSection id="features">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-3xl text-center font-bold tracking-tight sm:text-4xl">
+          Your authorization layer with everything your need.
         </h2>
 
-        <div
-          className="grid grid-cols-1 gap-8"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          }}
-        >
-          {ROADMAP.map((feature, index) => (
-            <div key={index} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <feature.Icon className="size-5 text-accent-500" />
-                <p className="w-fit px-2 text-sm font-medium rounded-full bg-amber-500/20">
-                  Upcoming
-                </p>
-              </div>
+        <p className="max-w-xl text-center !mx-auto text-muted-foreground">
+          Designed to solve real problems for real applications, Kilpi was born
+          after solving the same problem time after time, for client after
+          client.
+        </p>
+      </div>
 
-              <h3 className="text-2xl font-bold tracking-tight">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {feature.description}
+      <div
+        className="grid grid-cols-1 gap-8"
+        style={{
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+        }}
+      >
+        {FEATURES.map((feature, index) => (
+          <div key={index} className="flex flex-col gap-2">
+            <feature.Icon className="size-5 text-accent-500" />
+            <h3 className="text-2xl font-bold tracking-tight">
+              {feature.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {feature.description}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <hr />
+
+      <h2 className="text-xl font-semibold text-center tracking-tight">
+        With much more on the roadmap...
+      </h2>
+
+      <div
+        className="grid grid-cols-1 gap-8"
+        style={{
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+        }}
+      >
+        {ROADMAP.map((feature, index) => (
+          <div key={index} className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <feature.Icon className="size-5 text-accent-500" />
+              <p className="w-fit px-2 text-sm font-medium rounded-full bg-amber-500/20">
+                Upcoming
               </p>
             </div>
-          ))}
-        </div>
+
+            <h3 className="text-2xl font-bold tracking-tight">
+              {feature.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {feature.description}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </FullWidthSection>
   );
 }
