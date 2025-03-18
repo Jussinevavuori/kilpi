@@ -1,3 +1,4 @@
+import { DefaultSection } from "./DefaultSection";
 import { SvgLogos } from "./SvgLogos";
 
 export const COMPONENTS = [
@@ -18,7 +19,7 @@ export const ADAPTERS = [
 
 export function IntegrationsSection() {
   return (
-    <section id="integrations" className="py-40 flex flex-col gap-16">
+    <DefaultSection id="integrations" className="py-40 flex flex-col gap-16">
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
         Ready-made integrations
       </h2>
@@ -110,6 +111,6 @@ export function IntegrationsSection() {
           to request support.
         </p>
       </div>
-    </section>
+    </DefaultSection>
   );
 }

@@ -1,5 +1,5 @@
 ---
-title: Reference
+title: "@kilpi/next"
 description: Reference
 ---
 

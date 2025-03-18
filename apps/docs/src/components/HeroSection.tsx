@@ -1,13 +1,14 @@
 import { ArrowRightIcon, GithubIcon } from "lucide-react";
 import { Button } from "./Button";
+import { DefaultSection } from "./DefaultSection";
 
 export function HeroSection() {
   return (
-    <section id="hero" className="py-20">
+    <DefaultSection id="hero" className="py-20">
       <div className="flex flex-col items-center gap-8 text-center">
         <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-            Authorization made Simple
+            Authorization made simple
           </h1>
           <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
             Kilpi is the open-source TypeScript authorization library designed
@@ -46,6 +47,6 @@ export function HeroSection() {
           </a>
         </p>
       </div>
-    </section>
+    </DefaultSection>
   );
 }

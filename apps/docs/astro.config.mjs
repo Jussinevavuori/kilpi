@@ -3,6 +3,7 @@ import react from "@astrojs/react";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
+import starlightThemeBlack from "starlight-theme-black";
 
 // https://astro.build/config
 export default defineConfig({
@@ -59,6 +60,25 @@ export default defineConfig({
             },
           ],
         },
+      ],
+
+      /**
+       * Custom theme
+       */
+      plugins: [
+        starlightThemeBlack({
+          navLinks: [
+            {
+              label: "Docs",
+              link: "/getting-started/introduction",
+            },
+          ],
+          footerText: [
+            "Designed & created by [Jussi Nevavuori](https://www.jussinevavuori.com). ",
+            "Source code available on [GitHub](https://www.github.com/jussinevavuori/kilpi).",
+            "All code is licensed under the [MIT License](https://opensource.org/licenses/MIT).",
+          ].join(" "),
+        }),
       ],
     }),
 
