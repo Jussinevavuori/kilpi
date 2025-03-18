@@ -1,10 +1,13 @@
 // @ts-check
+import react from "@astrojs/react";
 import starlight from "@astrojs/starlight";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://kilpi.vercel.app",
+
   integrations: [
     /**
      * Starlight integration for documentation
@@ -12,19 +15,33 @@ export default defineConfig({
     starlight({
       // Customize site
       title: "Kilpi",
+      tagline: "The modern authorization framework for TypeScript",
       social: {
         github: "https://github.com/jussinevavuori/kilpi",
       },
+      customCss: ["./src/styles/global.css"], // Tailwind
 
       // Configure sidebar
       sidebar: [
         {
-          label: "Guides",
-          autogenerate: { directory: "guides" },
+          label: "Home",
+          link: "/",
+        },
+        {
+          label: "Getting started",
+          autogenerate: { directory: "getting-started" },
+        },
+        {
+          label: "Integrations",
+          autogenerate: { directory: "integrations" },
         },
         {
           label: "Concepts",
           autogenerate: { directory: "concepts" },
+        },
+        {
+          label: "Guides",
+          autogenerate: { directory: "guides" },
         },
         {
           label: "Reference",
@@ -38,10 +55,6 @@ export default defineConfig({
               autogenerate: { directory: "reference/react-server" },
             },
             {
-              label: "@kilpi/react-client",
-              autogenerate: { directory: "reference/react-client" },
-            },
-            {
               label: "@kilpi/next",
               autogenerate: { directory: "reference/next" },
             },
@@ -49,5 +62,17 @@ export default defineConfig({
         },
       ],
     }),
+
+    /**
+     * Enable React
+     */
+    react(),
   ],
+
+  /**
+   * Add Tailwind CSS
+   */
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

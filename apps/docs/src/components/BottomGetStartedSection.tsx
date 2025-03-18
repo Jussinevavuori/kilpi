@@ -1,0 +1,31 @@
+import { ArrowRightIcon } from "lucide-react";
+import { Button } from "./Button";
+
+export function BottomGetStartedSection() {
+  return (
+    <section
+      id="bottom-get-started"
+      className="py-32 bg-muted/50 relative w-screen left-1/2 -translate-x-1/2"
+    >
+      <div className="max-w-[var(--sl-content-width)] !mx-auto flex flex-col gap-16">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-3xl text-center font-bold tracking-tight sm:text-4xl">
+            Ready to Get Started?
+          </h2>
+
+          <p className="max-w-xl text-center !mx-auto text-muted-foreground">
+            Dive into our comprehensive documentation and start implementing
+            Kilpi in your project today.
+          </p>
+        </div>
+
+        <Button asChild size="lg" className="gap-2 w-fit !mx-auto">
+          <a href="/getting-started/introduction">
+            Read the Docs
+            <ArrowRightIcon className="h-4 w-4" />
+          </a>
+        </Button>
+      </div>
+    </section>
+  );
+}

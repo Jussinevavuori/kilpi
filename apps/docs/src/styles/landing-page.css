@@ -1,0 +1,4 @@
+/* Hide hero on landing page with CSS */
+.hero {
+  display: none !important;
+}
