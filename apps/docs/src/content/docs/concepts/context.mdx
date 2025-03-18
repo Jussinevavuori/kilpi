@@ -1,6 +1,152 @@
 ---
 title: Context
-description: Context
 ---
 
-No content.
+**Context** or more specifically the **request context** is the way Kilpi handles **"global" values**. It is a **request-scoped mutable object**.
+
+```ts
+type KilpiRequestContext = {
+  onUnauthorized?: KilpiOnUnauthorizedHandler;
+};
+```
+
+> Currently, the request context only holds the **onUnauthorized** function, set via `Kilpi.onUnauthorized(myHandler)`. [Read more](/guides/handling-unauthorizations) about handling unauthorizations.
+
+## Working with context
+
+Working with context is the most difficult part of Kilpi as it is an implicit API, but it allows for a simple API when you get context right.
+
+You never directly interact with the context object. You only indirectly set values in the context via specific functions, e.g. `Kilpi.onUnauthorized(myHandler)` and provide it with `Kilpi.runWithContext(...)`.
+
+### Default values
+
+When initializing Kilpi, you can set global default values for the context in the `defaults` argument. When there is no context provided or the context does not have a value defined, Kilpi will fallback to the default values.
+
+```ts
+export const Kilpi = createKilpi({
+  // ...
+  defaults: {
+    onUnauthorized: () => redirect("/"),
+  }
+});
+```
+
+---
+
+### Explicit context
+
+When you are not using an adapter, or the [adapter has no way to provide a context](#incomplete-adapters), you must use [alternatives](#alternatives-for-context) or **provide an explicit context**.
+
+```ts
+// No context
+Kilpi.onUnauthorized(() => redirect("/")); // Not saved, there is no context
+Kilpi.authorize("authed"); // Will fallback to the default onUnauthorized
+
+// With explicit context
+Kilpi.runWithContext(async () => {
+  Kilpi.onUnauthorized(() => redirect("/")); // Saved in the context
+  Kilpi.authorize("authed"); // Will use the provided onUnauthorized
+})
+```
+
+When attempting to save a value in the context without a context, Kilpi will log a warning reminding you to provide a context.
+
+This approach uses `AsyncLocalStorage` under the hood. It is primarily meant to be used in **middleware**, for example as follows.
+
+```ts
+app.use(async (_, next) => {
+  return await Kilpi.runWithContext(async () => {
+    // Run handlers with Kilpi context
+    return await next();
+  });
+})
+```
+
+---
+
+### Adapter context
+
+The primary job of adapters is to automatically provide a request context for Kilpi, without having to use an explicit context via `Kilpi.runWithContext`.
+
+```ts
+const Kilpi = createKilpi({
+  // ...
+  adapter: KilpiNextAdapter(),
+})
+
+export async function Page() {
+  // This works, as the adapter automatically provides a context
+  Kilpi.onUnauthorized(() => redirect("/")); 
+  Kilpi.authorize("authed"); 
+}
+```
+
+> For example, the Next.js adapter uses the `React.cache` API under the hood to provide a mutable, request-scoped context object. This however has [limitations](#incomplete-adapters).
+
+Note that adapters are not a complete solution and [may not always be able to provide a context](#incomplete-adapters).
+
+---
+
+### Order of precedence
+
+Values are always resolved from context in the following order. The first defined value is used.
+
+1. **Explicit context** set via `Kilpi.runWithContext` if available.
+2. **Adapter context** set via the adapter if available.
+3. **Default values** set via `defaults` in `createKilpi` if available.
+
+---
+
+### Alternatives to context
+
+If you are unable to use a context for any reason, you can use alternatives.
+
+#### 1. Only use default values
+
+You do not set any global values with e.g. `onUnauthorized`. You only use the default values provided to `createKilpi`.
+
+#### 2. Do not use APIs that throw
+
+Instead of calling `Kilpi.authorize(...)`, you use the manual APIs, e.g. `Kilpi.isAuthorized(...)` (to receive a boolean) or `Kilpi.getAuthorization(...)` (to receive a full [authorization object](/concepts/authorization)).
+
+---
+
+## Background
+
+### Motivation
+
+The request context API was designed to reduce boilerplate.
+
+```tsx
+// Instead of this example API
+export default async function Page() {
+  const onUnauthorized = () => redirect("/");
+
+  const user = await Kilpi.authorize("authed", onUnauthorized);
+  const document = await getDocument.protect("1", onUnauthorized); 
+  const comments = await getComments.protect("1", onUnauthorized); 
+
+  return <MoreComponentsThatDoAuthChecks onUnauthorized={onUnauthorized} />;
+}
+
+// We can simply do this
+export default async function Page() {
+  Kilpi.onUnauthorized(() => redirect("/"));
+
+  const user = await Kilpi.authorize("authed");
+  const document = await getDocument.protect("1");
+  const comments = await getComments.protect("1");
+
+  return <MoreComponentsThatDoAuthChecks />;
+}
+```
+
+### Trade-offs
+
+#### Complexity
+
+This design causes the most complexity in configuring Kilpi. You have to be able to provide a context to Kilpi. Alternatives to a request-scoped context object are currently being researched.
+
+#### Incomplete adapters
+
+Sometimes it is impossible to automatically hook into a request-scoped context, e.g. in Next.js server actions. In these cases, you must either use an [explicit context](#explicit-context) or fallback to [alternatives](#alternatives-for-context).

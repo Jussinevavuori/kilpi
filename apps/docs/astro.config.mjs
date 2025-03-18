@@ -50,20 +50,7 @@ export default defineConfig({
         },
         {
           label: "Reference",
-          items: [
-            {
-              label: "@kilpi/core",
-              autogenerate: { directory: "reference/core" },
-            },
-            {
-              label: "@kilpi/react-server",
-              autogenerate: { directory: "reference/react-server" },
-            },
-            {
-              label: "@kilpi/next",
-              autogenerate: { directory: "reference/next" },
-            },
-          ],
+          autogenerate: { directory: "reference" },
         },
       ],
 
