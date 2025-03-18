@@ -1,7 +1,6 @@
 {
   "name": "@kilpi/docs",
   "description": "Kilpi documentation site build with Starlight",
-  "packageManager": "pnpm@9.0.1",
   "private": true,
   "scripts": {
     "dev": "astro dev",
