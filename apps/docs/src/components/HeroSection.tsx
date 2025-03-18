@@ -1,11 +1,13 @@
 import { ArrowRightIcon, GithubIcon } from "lucide-react";
 import { Button } from "./Button";
+import { CodeBlock } from "./CodeBlock";
 import { DefaultSection } from "./DefaultSection";
 
 export function HeroSection() {
   return (
     <DefaultSection id="hero" className="py-20">
       <div className="flex flex-col items-center gap-8 text-center">
+        {/* Header text */}
         <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
             Authorization made simple
@@ -16,6 +18,8 @@ export function HeroSection() {
             authorization.
           </p>
         </div>
+
+        {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-6">
           <Button asChild size="lg" variant="default">
             <a href="/getting-started/introduction">
@@ -35,6 +39,30 @@ export function HeroSection() {
           </Button>
         </div>
 
+        {/* Code examples */}
+        <div className="flex flex-col gap-4">
+          <p className="text-muted-foreground">
+            Make your authorization a one-liner.
+          </p>
+          <CodeBlock
+            language="tsx"
+            content={`await Kilpi.authorize("documents:update", document);`}
+          />
+          <CodeBlock
+            language="tsx"
+            content={`
+							<Access to="documents:update" on={document}>)>
+								<button>Edit</button>
+							</Access>
+							`}
+          />
+          <CodeBlock
+            language="tsx"
+            content={`const document = await getDocument.protect();`}
+          />
+        </div>
+
+        {/* Credits */}
         <p className="text-sm text-muted-foreground">
           Designed and created by{" "}
           <a
@@ -44,7 +72,8 @@ export function HeroSection() {
             className="underline"
           >
             Jussi Nevavuori
-          </a>
+          </a>{" "}
+          with ❤️ in Brisbane & Helsinki
         </p>
       </div>
     </DefaultSection>
