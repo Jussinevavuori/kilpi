@@ -1,9 +1,7 @@
 {
   "name": "@kilpi/docs",
   "description": "Kilpi documentation site build with Starlight",
-  "version": "0.1.0",
-  "license": "MIT",
-  "type": "module",
+  "packageManager": "pnpm@9.0.1",
   "private": true,
   "scripts": {
     "dev": "astro dev",
