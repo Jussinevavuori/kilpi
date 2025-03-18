@@ -1,0 +1,81 @@
+---
+title: Project structure
+sidebar:
+  order: 3
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+The recommended project structure is to start with a `kilpi` directory in your project's source directory, containing the Kilpi instance and the policies and subject definitions.
+
+<FileTree>
+
+- src
+  - kilpi
+    - policies.ts // Define your policies here
+    - subject.ts // Define your subject here
+    - kilpi.ts // Create and export your Kilpi instance here
+
+</FileTree>
+
+## Larger projects
+
+As your project grows, you may start extracing policies into their own files, e.g. with a `policies` directory or with a feature-based architecture.
+
+You would then import these policies in a `policies.ts` file or directly in your `kilpi.ts` file.
+
+```ts
+// kilpi.ts
+import { createKilpi } from '@kilpi/core';
+import { organizationPolicies } from './policies/organizations.policies';
+import { documentPolicies } from './policies/documents.policies';
+import { mediaPolicies } from './policies/media.policies';
+
+export const Kilpi = createKilpi({
+  policies: {
+    organizations: organizationPolicies,
+    documents: documentPolicies,
+    media: mediaPolicies,
+  },
+    // ...
+})
+```
+
+### `policies` directory
+
+<FileTree>
+
+- src
+  - kilpi
+    - policies
+      - organizations.policies.ts
+      - documents.policies.ts
+      - media.policies.ts
+      - policies.ts // optional
+    - subject.ts
+    - kilpi.ts
+
+</FileTree>
+
+### Feature-based architecture
+
+<FileTree>
+
+- src
+  - features
+    - kilpi
+      - subject.ts
+      - kilpi.ts
+      - policies.ts // optional
+    - organizations
+      - ...
+      - organizations.policies.ts
+    - media
+      - ...
+      - media.policies.ts
+    - documents
+      - ...
+      - documents.policies.ts
+
+
+</FileTree>

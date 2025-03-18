@@ -1,0 +1,186 @@
+---
+title: Quickstart
+sidebar:
+  order: 2
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+Get started quickly with Kilpi using this guide.
+
+<Steps>
+
+1.  ### Install Kilpi
+
+    <Tabs syncKey="package-manager">
+      <TabItem label="npm">
+        ```bash
+        npm install @kilpi/core
+        ```
+      </TabItem>
+
+      <TabItem label="yarn">
+        ```bash
+        yarn add @kilpi/core
+        ```
+      </TabItem>
+
+      <TabItem label="pnpm">
+        ```bash
+        pnpm add @kilpi/core
+        ```
+      </TabItem>
+
+      
+      <TabItem label="bun">
+        ```bash
+        bun add @kilpi/core
+        ```
+      </TabItem>
+    </Tabs>
+
+
+2.  ### Create a `kilpi` directory
+
+    In your `src` folder (or equivalent), create a `kilpi` directory with the following file structure.
+
+    <FileTree>
+
+    - src
+      - kilpi
+        - policies.ts // Define your policies here
+        - subject.ts // Define your subject here
+        - kilpi.ts // Create and export your Kilpi instance here
+
+    </FileTree>
+
+    See [project structure](/getting-started/project-structure) for more information on the recommended project structure.
+
+
+
+3.  ### Create your subject
+
+    Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider.
+
+    ```ts
+    // src/kilpi/subject.ts
+    export type Subject = {
+      name: string;
+      id: string;
+      role: "admin" | "user";
+    }
+
+    // Caching the function with e.g. `React.cache` is highly recommended,
+    // as each authorization check will call this function.
+    export const getSubject = React.cache(
+      async function (): Promise<Subject | null> {
+        const session = await myAuthProvider.getSession();
+
+        if (!session) return null;
+
+        return {
+          name: session.name,
+          id: session.id,
+          role: session.role
+        };
+      }
+    )
+    ```
+
+    [Read more about subjects](/concepts/subject).
+
+4.  ### Create your policies
+
+    Create `policies.ts` where you define all policies. This will be the main place to define your authorization logic.
+
+    ```ts
+    // src/kilpi/policies.ts
+    import { Policy } from "@kilpi/core";
+    import { Subject } from "./subject";
+
+    // Optional tip: Create policies with narrowed subjects for
+    // easier use and better type-safety
+    const AuthedPolicy = Policy.as((subject: Subject | null) => {
+      if (!subject) return null;
+      return { subject }
+    })
+
+    // Tip: Create common utility functions
+    function isAdmin(subject: Subject) {
+      return subject?.role === "admin";
+    }
+
+    // You can nest as much as you like
+    const policies = {
+      documents: {
+        // Create a policy that does not take in a resource:
+        // All authed users can create documents
+        create: AuthedPolicy.new((user) => {
+          return true; 
+        }),
+
+        // Create a policy that takes in a resource:
+        // All authed users can read documents they own or public documents
+        read: AuthedPolicy.new((user, document: Document) => {
+          return user.id === document.ownerId || document.isPublic;
+        }),
+
+        // Auther users can delete only their own documents, admins can delete all documents
+        delete: AuthedPolicy.new((user, document: Document) => {
+          return isAdmin(user) || user.id === document.ownerId;
+        }),
+      },
+    }
+    ```
+
+    [Read more about policies](/concepts/policy) and [how to create them](/guides/creating-policies).
+
+5.  ### Create your Kilpi instance
+
+    Create `kilpi.ts` where you create your Kilpi instance.
+
+    ```ts
+    // src/kilpi/kilpi.ts
+    import { createKilpi } from "@kilpi/core";
+    import { getSubject } from "./subject";
+    import { policies } from "./policies";
+
+    export const Kilpi = createKilpi({ getSubject, policies });
+    ```
+
+    > Here you would also add framework adapters and default behaviours.
+
+6.  ### Protect your first function
+
+    Create a function that you want to protect with Kilpi.
+
+    ```ts
+    // myFunction.ts
+    import { Kilpi } from "./kilpi";
+
+    export async function myFunction() {
+      const subject = await Kilpi.getSubject();
+      if (!Kilpi.can(subject).documents.create()) {
+        throw new Error("Unauthorized");
+      }
+
+      // Your logic here
+    }
+    ```
+
+    To continue protecting your application, read more about
+
+    - [Protecting actions](/guides/protecting-actions)
+    - [Protecting pages](/guides/protecting-pages)
+    - [Protecting queries](/guides/protecting-queries)
+    - [Protecting components](/guides/protecting-components)
+
+    Also get to know the [Throwing and Manual APIs](/guides/throwing-and-manual-api).
+</Steps>
+
+## Next steps
+
+- Integrate your framework of choice
+-	Read up on [Kilpi concepts and guides](/concepts/adapter)

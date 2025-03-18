@@ -20,6 +20,7 @@ export default defineConfig({
       social: {
         github: "https://github.com/jussinevavuori/kilpi",
       },
+      customCss: ["./src/styles/docs.css"],
 
       // Configure sidebar
       sidebar: [
@@ -42,6 +43,10 @@ export default defineConfig({
         {
           label: "Guides",
           autogenerate: { directory: "guides" },
+        },
+        {
+          label: "Advanced",
+          autogenerate: { directory: "advanced" },
         },
         {
           label: "Reference",

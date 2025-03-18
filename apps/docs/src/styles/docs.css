@@ -1,0 +1,11 @@
+.sl-markdown-content ul:not(:where(.not-content *)) {
+  margin-left: 0 !important;
+}
+
+.sl-markdown-content p:first-child:not(:where(.not-content *)):not(li p) {
+  margin-top: 0 !important;
+}
+
+.sl-steps > li:not(:last-of-type) {
+  padding-bottom: 64px;
+}

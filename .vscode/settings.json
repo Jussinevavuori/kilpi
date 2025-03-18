@@ -5,5 +5,15 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit",
     "source.fixAll": "always"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[mdx]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
   }
 }

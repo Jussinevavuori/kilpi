@@ -1,6 +1,6 @@
 ---
-title: Rule
-description: Rule
+title: Subject
+description: Subject
 ---
 
 No content.
