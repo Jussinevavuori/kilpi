@@ -66,27 +66,13 @@ Get started quickly with Kilpi using this guide.
 
     ```ts
     // src/kilpi/subject.ts
-    export type Subject = {
-      name: string;
-      id: string;
-      role: "admin" | "user";
+    export type Subject = { id: string };
+
+    export async function getSubject(): Promise<Subject | null> {
+      const session = await getSession(); // From your auth provider
+      if (!session) return null;
+      return { id: session.id };
     }
-
-    // Caching the function with e.g. `React.cache` is highly recommended,
-    // as each authorization check will call this function.
-    export const getSubject = React.cache(
-      async function (): Promise<Subject | null> {
-        const session = await myAuthProvider.getSession();
-
-        if (!session) return null;
-
-        return {
-          name: session.name,
-          id: session.id,
-          role: session.role
-        };
-      }
-    )
     ```
 
     [Read more about subjects](/concepts/subject).
@@ -150,7 +136,7 @@ Get started quickly with Kilpi using this guide.
     export const Kilpi = createKilpi({ getSubject, policies });
     ```
 
-    > Here you would also add framework adapters and default behaviours.
+    > Also list any plugins, default behaviours and other configuration here.
 
 6.  ### Protect your first function
 
@@ -158,29 +144,14 @@ Get started quickly with Kilpi using this guide.
 
     ```ts
     // myFunction.ts
-    import { Kilpi } from "./kilpi";
-
     export async function myFunction() {
-      const subject = await Kilpi.getSubject();
-      if (!Kilpi.can(subject).documents.create()) {
-        throw new Error("Unauthorized");
-      }
-
+      await Kilpi.authorize("documents:create");
       // Your logic here
     }
     ```
-
-    To continue protecting your application, read more about
-
-    - [Protecting actions](/guides/protecting-actions)
-    - [Protecting pages](/guides/protecting-pages)
-    - [Protecting queries](/guides/protecting-queries)
-    - [Protecting components](/guides/protecting-components)
-
-    Also get to know the [Throwing and Manual APIs](/guides/throwing-and-manual-api).
 </Steps>
 
 ## Next steps
 
-- Integrate your framework of choice
--	Read up on [Kilpi concepts and guides](/concepts/adapter)
+- Add any plugins you might need.
+-	Read up on [Kilpi concepts and guides](/concepts/authorization)

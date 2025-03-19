@@ -33,8 +33,8 @@ export default defineConfig({
           autogenerate: { directory: "getting-started" },
         },
         {
-          label: "Integrations",
-          autogenerate: { directory: "integrations" },
+          label: "Plugins",
+          autogenerate: { directory: "plugins" },
         },
         {
           label: "Concepts",
@@ -66,7 +66,7 @@ export default defineConfig({
             },
           ],
           footerText: [
-            "Designed & created with ❤️ by [Jussi Nevavuori](https://www.jussinevavuori.com) in Brisbane & Helsinki. ",
+            "Designed & created with ❤️ by [Jussi Nevavuori](https://www.jussinevavuori.com) in Brisbane & Helsinknte. ",
             "Source code available on [GitHub](https://www.github.com/jussinevavuori/kilpi).",
             "All code is licensed under the [MIT License](https://opensource.org/licenses/MIT).",
           ].join(" "),

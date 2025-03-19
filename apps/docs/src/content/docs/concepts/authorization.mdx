@@ -6,7 +6,7 @@ When a policy is evaluated, it returns an **authorization object**. An authoriza
 
 If granted, the authorization object contains the narrowed down `subject`. If not, it contains a `message` explaining why the authorization was denied.
 
-Using authorization objects allows for more a more feature-rich authorization system instead of simply returning a `boolean`.
+This design allows for e.g. subject narrowing.
 
 ```ts
 type AuthorizationGranted<T> = { granted: true; subject: T; };
@@ -16,7 +16,7 @@ type Authorization<T> = AuthorizationGranted<T> | AuthorizationDenied;
 
 ## Receiving the authorization object
 
-To receive the authorization object, you can use the `Kilpi.getAuthorization` method.
+To receive the raw authorization object, you can use the `Kilpi.getAuthorization` method.
 
 ```ts
 const authorization = Kilpi.getAuthorization("example:policy", resource);

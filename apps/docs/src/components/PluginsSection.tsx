@@ -10,7 +10,7 @@ export const CATEGORIES = [
         title: "React Server Components",
         description: "Automatic RSC scope and <Access /> component.",
         Icon: SvgLogos.React,
-        link: "/integrations/react-server-components",
+        link: "/plugins/react-server-components",
       },
     ],
   },
@@ -18,7 +18,7 @@ export const CATEGORIES = [
 
 export function PluginsSection() {
   return (
-    <DefaultSection id="integrations" className="py-40 flex flex-col gap-16">
+    <DefaultSection id="plugins" className="py-40 flex flex-col gap-16">
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
         Plugins to fit your use case
       </h2>
@@ -61,8 +61,8 @@ export function PluginsSection() {
       <div className="flex flex-col gap-1">
         <h3 className="text-xl font-semibold">Couldn't find yours?</h3>
         <p className="text-muted-foreground max-w-xl">
-          Kilpi is framework agnostic and can always be used without an adapter
-          or a component library. You may also{" "}
+          Kilpi is framework agnostic and can always be used without any plugins
+          or component libraries. You may also{" "}
           <a
             href="https://github.com/Jussinevavuor/kilpi/issues/new"
             className="underline"

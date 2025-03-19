@@ -1,9 +1,22 @@
 ---
 title: Policy
-description: Policy
-sidebar:
-  badge:
-    text: Pending
 ---
 
-No content.
+**A policy** (or a rule) defines an **action** that can be taken in your application, optionally **on a resource**, such as `documents:read`, `users:update`, `comments:delete`.
+
+:::note
+Internally, policies are asynchronous functions that take in a subject and optionally a resource, and return an authorization object.
+:::
+
+A policy in **Kilpi** is defined in two parts, a **subject guard** and the **implementation**.
+
+```ts
+
+// 1. Subject guard
+const AuthedPolicy = Policy.as((subject: Subject | null) => subject ? { subject } : null);
+
+// 2. Implementation
+AuthedPolicy.new((subject, res: Resource) => subject.id === res.userId);
+```
+
+Read more about [creating policies](/advanced/creating-policies) to learn how to create, design and structure policies for your application.

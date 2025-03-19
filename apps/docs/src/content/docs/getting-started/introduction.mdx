@@ -44,7 +44,7 @@ Policies are defined as code instead of via a no-code interface or a domain-spec
 
 ### Framework agnostic
 
-Kilpi is designed to be framework agnostic. Using a pre-made adapter or component library is completely optional.
+Kilpi is designed to be framework agnostic. Using plugins or component libraries is completely optional.
 
 ### Auth-provider agnostic wrapper
 
@@ -101,16 +101,14 @@ Ok, here are simple examples of how you would use Kilpi in a Next.js application
 
 ```ts
 // Kilpi.ts
-// Setup Kilpi and policies
-const policies = {
-  documents: {
-		update: AuthedPolicy.new((user, doc: Document) => {
-			return doc.ownerId === user.id;
-		}),
-	}
-}
-
-export const Kilpi = createKilpi({ getSubject, policies })
+export const Kilpi = createKilpi({ 
+  getSubject, 
+  policies: {
+    documents: {
+      update: AuthedPolicy.new((user, doc: Document) => user.id === doc.userId)
+    }
+  }
+})
 ```
 
 ### Protecting actions, mutations and functions
@@ -139,9 +137,9 @@ const getDocument = Kilpi.query(
 	}
 )
 
-// Query has two explicit methods: protect and unsafe, not callable directly
 const authorizedDocument = await getDocument.protect("1");
-const unauthorizedDocument = await getDocument.unsafe("2");
+const unauthorizedDocument = await getDocument.unsafe("2"); // Skips protector
+getDocument("1") // Error -- must use protect or unsafe
 ```
 
 ### Protecing pages and UI
@@ -151,7 +149,9 @@ export default async function Page(props) {
 	// Handle what happens when any auth check fails and throws
 	Kilpi.onUnauthorized(() => redirect("/")); 
 
-	const doc = await getDocument.protect((await props.params).id);
+  // Ensure user is authed AND has access to the document
+  await Kilpi.authorize("authed");
+	const doc = await getDocument.protect(props.id);
 
 	return (
 		<main>
