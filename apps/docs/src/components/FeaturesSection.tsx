@@ -56,6 +56,18 @@ const FEATURES = [
     Icon: BicepsFlexedIcon,
   },
   {
+    title: "Protected queries",
+    description:
+      "Wrap your queries in a protective layer to ensure no-one can ever access data without authorization (optional).",
+    Icon: PuzzleIcon,
+  },
+  {
+    title: "Plugin API & Library",
+    description:
+      "Extend Kilpi with ready-made & custom plugins to fit your use case. See below for list of plugins.",
+    Icon: UnplugIcon,
+  },
+  {
     title: "Developer-friendly API",
     description:
       "Clean, simple, and intuitive API designed with developer experience in mind. We aim to make authorization a one-liner.",
@@ -73,20 +85,9 @@ const FEATURES = [
       "Battle-tested in production environments to ensure reliability and validate the design.",
     Icon: ShieldCheckIcon,
   },
-  {
-    title: "Protected queries",
-    description:
-      "Wrap your queries in a protective layer to ensure no-one can ever access data without authorization (optional).",
-    Icon: PuzzleIcon,
-  },
 ];
 
 const ROADMAP = [
-  {
-    title: "Plugin API",
-    description: "Extend Kilpi with custom plugins to fit your use case.",
-    Icon: UnplugIcon,
-  },
   {
     title: "Audit plugin",
     description:
@@ -98,6 +99,12 @@ const ROADMAP = [
     description:
       "A secure server endpoint for requesting authorization decisions.",
     Icon: GlobeLockIcon,
+  },
+  {
+    title: "Specialized RBAC API",
+    description:
+      "An improved way to define your policies for Role-Based Access Control systems.",
+    Icon: LaptopIcon,
   },
   {
     title: "Client-side authorization",
@@ -112,9 +119,9 @@ const ROADMAP = [
     Icon: MonitorSmartphoneIcon,
   },
   {
-    title: "More pre-made integrations",
+    title: "More pre-made plugins",
     description:
-      "Support for more frameworks (Nuxt.js, SvelteKit, Express, Hono, ...).",
+      "More features and support for even more frameworks, libraries and services.",
     Icon: ToyBrickIcon,
   },
 ];
