@@ -46,19 +46,23 @@ export function HeroSection() {
           </p>
           <CodeBlock
             language="tsx"
-            content={`await Kilpi.authorize("documents:update", document);`}
+            content={`await Kilpi.authorize("docs:update", doc);`}
           />
           <CodeBlock
             language="tsx"
             content={`
-							<Access to="documents:update" on={document}>)>
-								<button>Edit</button>
+							<Access to="docs:update" on={doc}>
+								<EditDocumentButton doc={doc} />
 							</Access>
 							`}
           />
           <CodeBlock
             language="tsx"
-            content={`const document = await getDocument.protect();`}
+            content={`if (await Kilpi.isAuthorized("docs:create"))`}
+          />
+          <CodeBlock
+            language="tsx"
+            content={`const doc = await getDocument.protect();`}
           />
         </div>
 
