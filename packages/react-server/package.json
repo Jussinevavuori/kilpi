@@ -8,7 +8,7 @@
   "type": "module",
   "private": false,
   "scripts": {
-    "build": "tsup src/index.tsx --format cjs,esm --dts",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
     "lint": "eslint && tsc",
     "test": "vitest run",
     "test:watch": "vitest watch"

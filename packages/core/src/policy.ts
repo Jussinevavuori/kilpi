@@ -1,4 +1,10 @@
 import { Authorization } from "./authorization";
+import { KilpiError } from "./error";
+import type {
+  DeepObject,
+  RecursiveKeysTo,
+  RecursiveValueByKey,
+} from "./utils/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -16,8 +22,8 @@ export type AnyPolicyInput = [] | [any];
  */
 export type Policy<
   TInputs extends AnyPolicyInput,
-  TSubjectInput extends object | null | undefined,
-  TSubjectOutput extends object | null | undefined = TSubjectInput,
+  TSubjectInput,
+  TSubjectOutput = TSubjectInput,
 > = (
   subject: TSubjectInput,
   ...inputs: TInputs
@@ -40,18 +46,10 @@ export type InferPolicySubject<T> =
  *
  * @example
  * ```ts
- *
- * // Without `as`
- *
- * Policy.new((subject: Subject | null, id: string, count: number) => {
- *   if (!subject) return false;
- *   return subject.id === id && count > 0;
- * });
- *
- *
- * // With `as` wrapper to narrow down subject
- *
+ * // 1. Create a policy guard
  * const AuthedPolicy = Policy.as((subject: Subject | null) => (subject ? { subject } : null))
+ *
+ * // 2. Create a new policy from guard
  * AuthedPolicy.new((subject, id: string, count: number) => {
  *   return subject.id === id && count > 0;
  * });
@@ -59,32 +57,9 @@ export type InferPolicySubject<T> =
  */
 export const Policy = {
   /**
-   * Create a new policy using a boolean-style constructor (true = granted, false = denied).
-   */
-  new<
-    TSubjectInput extends object | null | undefined,
-    TInputs extends AnyPolicyInput,
-  >(
-    evaluate: (
-      subject: TSubjectInput,
-      ...inputs: TInputs
-    ) => boolean | Promise<boolean>,
-  ): Policy<TInputs, TSubjectInput> {
-    return async (subject, ...inputs) => {
-      // Evaluate the policy function and return the authorization result.
-      return (await evaluate(subject, ...inputs))
-        ? Authorization.Grant(subject)
-        : Authorization.Deny();
-    };
-  },
-
-  /**
    * Create a new policy constructor by first passing a subject narrowing function.
    */
-  as<
-    TSubjectInput extends object | null | undefined,
-    TSubjectOutput extends object | null | undefined,
-  >(
+  as<TSubjectInput, TSubjectOutput>(
     getNarrowedSubject: (
       subject: TSubjectInput,
     ) => { subject: TSubjectOutput } | null | undefined,
@@ -114,3 +89,81 @@ export const Policy = {
     };
   },
 };
+
+/**
+ * Separator for policy keys.
+ */
+export const POLICY_KEY_SEPARATOR = ":" as const;
+
+/**
+ * Policyset is a deep-object of policies which all share a common base subject type.
+ */
+export type Policyset<TSubject> = DeepObject<Policy<any, TSubject, any>>;
+
+/**
+ * List of all keys in policyset.
+ */
+export type PolicysetKeys<TPolicyset extends Policyset<any>> = RecursiveKeysTo<
+  TPolicyset,
+  TPolicyset extends Policyset<infer TSubject>
+    ? Policy<any, TSubject, any>
+    : never,
+  typeof POLICY_KEY_SEPARATOR
+>;
+
+/**
+ * Get list of policy keys that do not take in a resource.
+ */
+export type PolicySetKeysWithoutResource<TPolicyset extends Policyset<any>> = {
+  [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<
+    GetPolicyByKey<TPolicyset, K>
+  > extends []
+    ? K
+    : never;
+}[PolicysetKeys<TPolicyset>];
+
+/**
+ * Get list of policy keys that do take in a resource.
+ */
+export type PolicysetKeysWithResource<TPolicyset extends Policyset<any>> = {
+  [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<
+    GetPolicyByKey<TPolicyset, K>
+  > extends [any]
+    ? K
+    : never;
+}[PolicysetKeys<TPolicyset>];
+
+/**
+ * Ensure a value is a policy.
+ */
+export type EnsureTypeIsPolicy<T> = T extends Policy<any, any, any> ? T : never;
+
+/**
+ * Type of a policy from a policyset given a key.
+ */
+export type GetPolicyByKey<
+  TPolicyset extends Policyset<any>,
+  TKey extends PolicysetKeys<TPolicyset>,
+> = EnsureTypeIsPolicy<
+  RecursiveValueByKey<TPolicyset, TKey, typeof POLICY_KEY_SEPARATOR>
+>;
+
+/**
+ * Typesafe function to extract a policy from a policyset by key.
+ */
+export function getPolicyByKey<
+  const TPolicyset extends Policyset<any>,
+  TKey extends PolicysetKeys<TPolicyset>,
+>(policyset: TPolicyset, key: TKey): GetPolicyByKey<TPolicyset, TKey> {
+  // Access policy by key
+  const keys = key.split(POLICY_KEY_SEPARATOR);
+  const policy = keys.reduce<any>((index, k) => index[k], policyset);
+
+  // Ensure policy found
+  if (typeof policy !== "function") {
+    throw new KilpiError.Internal(`Policy not found: "${key}"`);
+  }
+
+  // Typecast as this can not be done type-safely without
+  return policy as GetPolicyByKey<TPolicyset, TKey>;
+}

@@ -5,17 +5,10 @@ import type {
   PolicySetKeysWithoutResource,
   PolicysetKeysWithResource,
 } from "@kilpi/core";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
+import type { CreateReactServerComponentOptions } from "src/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-/**
- * Options for creating React server components.
- */
-export type CreateReactServerComponentOptions = {
-  DefaultUnauthorizedComponent?: React.ReactNode;
-  DefaultLoadingComponent?: React.ReactNode;
-};
 
 /**
  * Base access props, always present, not-depending on key
@@ -75,11 +68,12 @@ type AccessProps<
 > = AccessBaseProps & AccessPropsByKey<TCore>[TKey];
 
 /**
- * Create all React server components for Kilpi usage in RSCs.
+ * Create the <Access /> react server component.
  */
-export function createKilpiReactServerComponents<
-  TCore extends KilpiCore<any, any>,
->(KilpiCore: TCore, options: CreateReactServerComponentOptions) {
+export function createAccess<TCore extends KilpiCore<any, any>>(
+  KilpiCore: TCore,
+  options: CreateReactServerComponentOptions,
+) {
   /**
    * Render children only if access to={key} (and optionally on={resource}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { KilpiCore, KilpiError } from "../src";
+import { createKilpi, KilpiError } from "../src";
 import { TestUtils } from "./testUtils";
 
 // Test Kilpi instance
-const Kilpi = new KilpiCore({
+const Kilpi = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
+  advanced: {
+    disableSubjectCaching: true,
+  },
 });
 
 describe("Kilpi.query", async () => {
@@ -94,10 +97,9 @@ describe("Kilpi.query", async () => {
   });
 
   await it("protect call respects onDeny", async () => {
-    await Kilpi.runWithContext(async () => {
+    await Kilpi.runInScope(async () => {
       Kilpi.onUnauthorized(({ message }) => {
-        console.log(`🔵 I was called!!`);
-        throw new TestUtils.TestErrorClass(message ?? "Unauthorized");
+        throw new TestUtils.TestErrorClass(message);
       });
       await TestUtils.runAs(null, async () => {
         await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(

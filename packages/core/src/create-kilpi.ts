@@ -1,15 +1,31 @@
-import type { KilpiConstructorArgs } from "./kilpi-core";
+import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
 import { KilpiCore } from "./kilpi-core";
-import type { Policyset } from "./policy-set";
+import type { KilpiPluginFactory } from "./kilpi-plugin";
+import type { Policyset } from "./policy";
 
 /**
- * Utility for creating a new KilpiCore instance. Primary endpoint on the Kilpi library.
+ * Initialize the Kilpi library.
  *
- * Currently, an alias for the KilpiCore constructor.
+ * Instantiates a new KilpiCore object and applies all provided plugins.
  */
 export function createKilpi<
-  TSubject extends object | null | undefined,
+  TSubject,
   TPolicyset extends Policyset<TSubject>,
->(args: KilpiConstructorArgs<TSubject, TPolicyset>) {
-  return new KilpiCore(args);
+  TPluginInterface extends object,
+>(
+  // Require strongly typed plugins factories with defined interfaces
+  args: Omit<KilpiConstructorArgs<TSubject, TPolicyset>, "plugins"> & {
+    plugins?: KilpiPluginFactory<TSubject, TPolicyset, TPluginInterface>[];
+  },
+) {
+  // Construct base KilpiCore class
+  let kilpiInstance = new KilpiCore(args);
+
+  // Attach interfaces to kilpiInstance
+  for (const plugin of kilpiInstance.plugins) {
+    kilpiInstance = Object.assign(kilpiInstance, plugin.interface);
+  }
+
+  // Return with interfaces properly typed
+  return kilpiInstance as KilpiCore<TSubject, TPolicyset> & TPluginInterface;
 }

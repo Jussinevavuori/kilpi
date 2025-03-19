@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { KilpiCore, KilpiError } from "../src";
+import { createKilpi, KilpiError } from "../src";
 import type { TestDocument } from "./testUtils";
 import { TestUtils } from "./testUtils";
 
 // Test Kilpi instance
-const Kilpi = new KilpiCore({
+const Kilpi = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
+  advanced: { disableSubjectCaching: true },
 });
 
 describe("Kilpi.authorize", () => {
@@ -15,49 +16,49 @@ describe("Kilpi.authorize", () => {
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(Kilpi.authorize("public")).resolves.toBe(null);
+      await expect(Kilpi.authorize("public")).resolves.toBe(null);
     });
   });
 
   it("should grant public when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(Kilpi.authorize("public")).resolves.toMatchObject(subject);
+      await expect(Kilpi.authorize("public")).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny and throw authed when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(Kilpi.authorize("authed")).rejects.toBeInstanceOf(Denied);
+      await expect(Kilpi.authorize("authed")).rejects.toBeInstanceOf(Denied);
     });
   });
 
   it("should grant authed when authed", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(Kilpi.authorize("authed")).resolves.toMatchObject(subject);
+      await expect(Kilpi.authorize("authed")).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny resource when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      expect(Kilpi.authorize("docs:ownDocument", doc)).rejects.toBeInstanceOf(
-        Denied,
-      );
+      await expect(
+        Kilpi.authorize("docs:ownDocument", doc),
+      ).rejects.toBeInstanceOf(Denied);
     });
   });
 
   it("should grant if owner of resource", async () => {
     await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      expect(Kilpi.authorize("docs:ownDocument", doc)).resolves.toMatchObject(
-        subject,
-      );
+      await expect(
+        Kilpi.authorize("docs:ownDocument", doc),
+      ).resolves.toMatchObject(subject);
     });
   });
 
   it("should deny if not owner of resource", async () => {
     await TestUtils.runAs({ id: "user2" }, async () => {
-      expect(Kilpi.authorize("docs:ownDocument", doc)).rejects.toBeInstanceOf(
-        Denied,
-      );
+      await expect(
+        Kilpi.authorize("docs:ownDocument", doc),
+      ).rejects.toBeInstanceOf(Denied);
     });
   });
 

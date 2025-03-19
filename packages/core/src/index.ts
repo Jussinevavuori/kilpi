@@ -6,28 +6,29 @@ export {
 } from "./authorization";
 export { createKilpi } from "./create-kilpi";
 export { KilpiError } from "./error";
+export { type KilpiConstructorArgs } from "./kilpi-constructor-args";
+export { KilpiCore } from "./kilpi-core";
 export {
-  type KilpiAdapter,
-  type KilpiAdapterInitializer,
-} from "./kilpi-adapter";
-export { KilpiCore, type KilpiConstructorArgs } from "./kilpi-core";
+  KilpiPlugin,
+  type EmptyInterface,
+  type KilpiPluginArgs,
+  type KilpiPluginFactory,
+} from "./kilpi-plugin";
 export {
   type KilpiOnUnauthorizedHandler,
-  type KilpiRequestContext,
-} from "./kilpi-request-context";
-export {
-  Policy,
-  type AnyPolicyInput,
-  type InferPolicyInputs,
-  type InferPolicySubject,
-} from "./policy";
+  type KilpiScope,
+} from "./kilpi-scope";
 export {
   getPolicyByKey,
+  Policy,
   POLICY_KEY_SEPARATOR,
+  type AnyPolicyInput,
   type EnsureTypeIsPolicy,
   type GetPolicyByKey,
+  type InferPolicyInputs,
+  type InferPolicySubject,
   type Policyset,
   type PolicysetKeys,
   type PolicySetKeysWithoutResource,
   type PolicysetKeysWithResource,
-} from "./policy-set";
+} from "./policy";

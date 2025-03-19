@@ -1,11 +1,12 @@
-import { KilpiCore } from "src";
+import { createKilpi } from "src";
 import { describe, expect, it } from "vitest";
 import { TestUtils } from "./testUtils";
 
 // Test Kilpi instance
-const Kilpi = new KilpiCore({
+const Kilpi = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
+  advanced: { disableSubjectCaching: true },
 });
 
 describe("Kilpi.filter", async () => {

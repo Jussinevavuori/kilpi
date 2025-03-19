@@ -54,7 +54,7 @@ const AuthedPolicy = Policy.as((subject: TestSubject | null) =>
 // All test policies
 const policies = {
   // Always fail
-  never: Policy.new(() => false),
+  never: PublicPolicy.new(() => false),
 
   // Pass always
   public: PublicPolicy.new(() => true),

@@ -1,75 +1,53 @@
 import { AsyncLocalStorage } from "async_hooks";
-import type { Authorization } from "./authorization";
 import { KilpiError } from "./error";
-import type { KilpiAdapter, KilpiAdapterInitializer } from "./kilpi-adapter";
+import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
+import type { KilpiPlugin } from "./kilpi-plugin";
 import type { KilpiQueryProtector } from "./kilpi-query";
 import { KilpiQuery } from "./kilpi-query";
-import { type KilpiRequestContext } from "./kilpi-request-context";
-import type { InferPolicyInputs, InferPolicySubject } from "./policy";
-import type { GetPolicyByKey, Policyset, PolicysetKeys } from "./policy-set";
-import { getPolicyByKey } from "./policy-set";
+import {
+  type KilpiOnUnauthorizedHandler,
+  type KilpiScope,
+} from "./kilpi-scope";
+import type {
+  GetPolicyByKey,
+  InferPolicyInputs,
+  InferPolicySubject,
+  Policyset,
+  PolicysetKeys,
+} from "./policy";
+import { getPolicyByKey } from "./policy";
 import { createCallStackSizeProtector } from "./utils/call-stack-size-protector";
 import type { ArrayHead } from "./utils/types";
 
-/**
- * Arguments passed to construct a KilpiCore instance.
- */
-export type KilpiConstructorArgs<
-  TSubject extends object | null | undefined,
-  TPolicyset extends Policyset<TSubject>,
-> = {
-  /**
-   * Connect your own authentication provider (and other subject data / metadata) via a
-   * custom `getSubject` function.
-   *
-   * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
-   * during each authorization check.
-   */
-  getSubject: () => TSubject | Promise<TSubject>;
-
-  /**
-   * Connect your framework of choice with an adapter. Primarily responsible for automatically
-   * prodiving a request context.
-   */
-  adapter?: KilpiAdapterInitializer;
-
-  /**
-   * Default behaviour when no context is provided (either explicitly or via adapter).
-   */
-  defaults?: KilpiRequestContext;
-
-  /**
-   * The policies which define the authorization logic of the application.
-   */
-  policies: TPolicyset;
-};
+// Utility for logging a warning when no scope is available.
+const noScopeWarning = (msg: string) =>
+  console.warn(
+    [
+      msg,
+      "No scope available.",
+      "\n",
+      `(Attempting to access current Kilpi scope, but no scope is available.`,
+      `Provide a Kilpi scope either with a plugin or manually via Kilpi.runInScope().`,
+      `Read mode: https://kilpi.vercel.app/concepts/scope)`,
+    ].join(" "),
+  );
 
 /**
  * The KilpiCore class is the primary interface for interacting with the Kilpi library.
  */
-export class KilpiCore<
-  TSubject extends object | null | undefined,
-  TPolicyset extends Policyset<TSubject>,
-> {
+export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   /**
    * Connect your own authentication provider (and other subject data / metadata) via a
    * custom `getSubject` function.
    *
-   * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
-   * during each authorization check.
+   * This will be automatically cached within each scope unless `advanced.disableSubjectCaching`.
    */
-  getSubject: () => TSubject | Promise<TSubject>;
+  uncached_getSubject: () => TSubject | Promise<TSubject>;
 
   /**
-   * Connect your framework of choice with an adapter. Primarily responsible for automatically
-   * prodiving a request context.
+   * Default behaviour when no value is available from a scope.
    */
-  adapter?: KilpiAdapter;
-
-  /**
-   * Default behaviour when no context is provided (either explicitly or via adapter).
-   */
-  defaults?: KilpiRequestContext;
+  defaults?: KilpiScope<TSubject, TPolicyset>;
 
   /**
    * The policies which define the authorization logic of the application.
@@ -77,10 +55,21 @@ export class KilpiCore<
   policies: TPolicyset;
 
   /**
-   * AsyncLocalStorage for running values with an explicit context. Used via
-   * `KilpiCore.runWithContext()` which is used to wrap a function with a mutable context.
+   * All plugins
    */
-  private contextAsyncLocalStorage: AsyncLocalStorage<KilpiRequestContext>;
+  plugins: KilpiPlugin<TSubject, TPolicyset, Record<never, never>>[];
+
+  /**
+   * AsyncLocalStorage for running values in an explicit scope.
+   *
+   * Applied via `KilpiCore.runInScope()`.
+   */
+  private scopeStorage: AsyncLocalStorage<KilpiScope<TSubject, TPolicyset>>;
+
+  /**
+   * Advanced settings
+   */
+  advanced: KilpiConstructorArgs<TSubject, TPolicyset>["advanced"];
 
   /**
    * Inferring utilities. Do not use at runtime.
@@ -94,107 +83,127 @@ export class KilpiCore<
    * New instance
    */
   constructor(args: KilpiConstructorArgs<TSubject, TPolicyset>) {
-    // Run construct function with constructor
-    // Assign properties to instance
-    this.getSubject = args.getSubject;
+    this.uncached_getSubject = args.getSubject;
     this.policies = args.policies;
     this.defaults = args.defaults;
+    this.scopeStorage = new AsyncLocalStorage();
+    this.advanced = args.advanced;
 
-    // Initialize adapter
-    this.adapter = args.adapter?.({
-      defaults: args.defaults,
-    });
-
-    // Setup async local storage
-    this.contextAsyncLocalStorage = new AsyncLocalStorage();
+    // Instantiate all plugins
+    this.plugins = args.plugins?.map((instantiate) => instantiate(this)) ?? [];
   }
 
   /**
-   * Internal utility function to access a property from the context. This function attempts to
-   * resolve the property as follows:
-   *
-   * 1. Get property from explicit context (via AsyncLocalStorage) if possible. Else...
-   * 2. Get property from adapter context if possible. Else...
-   * 3. Get property from defaults if possible. Else...
-   * 4. Return undefined.
+   * Utility to get the subject, with a cache in the current scope.
    */
-  private getPropertyFromContext<TProperty extends keyof KilpiRequestContext>(
-    property: TProperty,
-  ): KilpiRequestContext[TProperty] {
-    // Attempt to resolve value from explicit async local storage context
-    const valueFromExplicitCtx =
-      this.contextAsyncLocalStorage.getStore()?.[property];
-    if (valueFromExplicitCtx) return valueFromExplicitCtx;
+  public async getSubject(): Promise<TSubject> {
+    // Respect advanced.disableSubjectCaching
+    if (this.advanced?.disableSubjectCaching) {
+      return await this.uncached_getSubject();
+    }
 
-    // Attempt to resolve value from adapter context
-    const valueFromAdapterCtx = this.adapter?.getContext()?.[property];
-    if (valueFromAdapterCtx) return valueFromAdapterCtx;
+    // Cache hit in current scope
+    const subjectCache = this.resolveScope()?.subjectCache;
+    if (subjectCache) return subjectCache.subject;
 
-    // Finally, resolve value from defaults
-    return this.defaults?.[property];
+    // Cache miss, fetch the subject
+    const subject = await this.uncached_getSubject();
+
+    // Cache to current scope or warn
+    const scope = this.resolveScope();
+    if (scope) {
+      scope.subjectCache = { subject };
+    } else {
+      noScopeWarning("Kilpi: getSubject() could not be cached.");
+    }
+
+    // Return the subject
+    return subject;
   }
 
   /**
-   * Utility to access the current context for mutation purposes. Returns the explicit context
-   * via async local storage if available, else the adapter context if available. If neither,
-   * returns null as the default values for the context are immutable.
+   * Internal utility to resolve the current scope. Prioritizes the current explicit scope from
+   * `scopeStorage` if available, then the plugin scopes.
    */
-  private getMutableContext() {
-    // Resolve to explicit async local storage context if available
-    const asyncLocalStorageContext = this.contextAsyncLocalStorage.getStore();
-    if (asyncLocalStorageContext) return asyncLocalStorageContext;
+  private resolveScope(): KilpiScope<TSubject, TPolicyset> | null {
+    const explicitScope = this.scopeStorage.getStore();
+    if (explicitScope) return explicitScope;
 
-    // Resolve to adapter context if available
-    const adapterContext = this.adapter?.getContext();
-    if (adapterContext) return adapterContext;
+    // Fallback to any plugin scope if available
+    for (const plugin of this.plugins) {
+      const pluginScope = plugin.getScope?.();
+      if (pluginScope) return pluginScope;
+    }
 
-    // No context found: we cannot mutate defaults
+    // No scope available
     return null;
   }
 
   /**
-   * Run a function with an explicit mutable context. Use in e.g. server middlewares.
+   * Run a function with an explicit scope. Use in e.g. server middlewares to scope Kilpi
+   * to a single request.
+   *
+   * ## Example
    *
    * @example
    * ```ts
-   * const middleware = async (ctx) => {
-   *   const response = Kilpi.runWithContext(async () => {
-   *     // Value is saved in the explicit context
-   *     Kilpi.onUnauthorized(() => throw new HttpUnauthorizedError());
+   * const middleware = async (ctx, next) => {
+   *   const response = Kilpi.runInScope(async () => {
+   *     // This value is saved to the current scope
+   *     Kilpi.onUnauthorized(() => { throw new HttpUnauthorizedError(); });
    *     return await next();
    *   })
    * }
    * ```
-   *
-   * Uses AsyncLocalStorage.run to run a function with an explicit context.
    */
-  public async runWithContext<T>(fn: () => Promise<T>): Promise<T> {
-    return await this.contextAsyncLocalStorage.run({ ...this.defaults }, fn);
+  public async runInScope<T>(fn: () => Promise<T>): Promise<T> {
+    return await this.scopeStorage.run({}, fn);
   }
 
   /**
-   * Utility to set the new on unauthorized handler for the context
+   * Utility to set the new on unauthorized handler in the current scope
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * Kilpi.runInScope(() => {
+   *   Kilpi.onUnauthorized(() => redirect("/"));
+   *   Kilpi.authorize(...); // Redirects to "/" on failure
+   * })
+   * ```
    */
-  public onUnauthorized(handler: KilpiRequestContext["onUnauthorized"]) {
-    const mutableContext = this.getMutableContext();
-
-    /**
-     * Mutable context was not available. Attempting mutation will have no effect.
-     */
-    if (!mutableContext) {
-      console.warn(
-        [
-          "Attempting to set onUnauthorized handler without a mutable context.",
-          "This will have no effect and the default handler will be used instead.",
-          "Ensure that you are either:",
-          "(a) using Kilpi.runWithContext to provide a mutable context, or",
-          "(b) running in an environment automatically supported by your adapter if you have provided one.",
-        ].join(" "),
-      );
-      return;
+  public onUnauthorized(handler: KilpiOnUnauthorizedHandler) {
+    const scope = this.resolveScope();
+    if (scope) {
+      scope.onUnauthorized = handler;
+    } else {
+      noScopeWarning(`Kilpi: onUnauthorized handler not set.`);
     }
+  }
 
-    mutableContext.onUnauthorized = handler;
+  /**
+   * Internal utility called by all authorization functions. Gets the subject, resolves
+   * the policy by key and evaluates the policy. Returns all authorization information.
+   */
+  async evaluateAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
+    key: TKey,
+    ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
+  ) {
+    // Evaluate policy within infinite loop protection
+    return await KilpiCore.CallStackSizeProtector.run(async () => {
+      // Get the current subject (cached)
+      const subject = await this.getSubject();
+
+      // Resolve the policy function by key
+      const policy = getPolicyByKey(this.policies, key);
+
+      // Evaluate the policy
+      const authorization = await policy(subject, ...[...inputs]);
+
+      // Return all relevant data
+      return { authorization, policy, subject };
+    });
   }
 
   /**
@@ -203,24 +212,25 @@ export class KilpiCore<
    * @param key The key of the policy to evaluate
    * @param inputs The resource (if any) to provide to the policy.
    * @returns The full authorization object as a promise.
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * const authorization = await Kilpi.getAuthorization("resource:read", resource);
+   * if (authorization.granted) {
+   *   console.log(`User ${authorization.subject.id} can read resource ${resource.id}`);
+   * } else {
+   *   console.log(`Can not read resource: ${authorization.message}`);
+   * }
+   * ```
    */
   async getAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
-  ): Promise<
-    Authorization<InferPolicySubject<GetPolicyByKey<TPolicyset, TKey>>>
-  > {
-    // Evaluate policy within infinite loop protection
-    const { authorization } = await KilpiCore.CallStackSizeProtector.run(
-      async () => {
-        const subject = await this.getSubject();
-        const policy = getPolicyByKey(this.policies, key);
-        const authorization = await policy(subject, ...[...inputs]);
-        return { authorization };
-      },
-    );
-
-    // Return the authorization object
+  ) {
+    // Evaluate policy and return the authorization object
+    const { authorization } = await this.evaluateAuthorization(key, ...inputs);
     return authorization;
   }
 
@@ -230,22 +240,23 @@ export class KilpiCore<
    * @param key The key of the policy to evaluate
    * @param inputs The resource (if any) to provide to the policy.
    * @returns A boolean indicating whether the user passes the policy.
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * const isAuthorized = await Kilpi.isAuthorized("resource:update", resource);
+   * if (isAuthorized) {
+   *   await updateResource();
+   * }
+   * ```
    */
   async isAuthorized<TKey extends PolicysetKeys<TPolicyset>>(
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<boolean> {
-    // Evaluate policy within infinite loop protection
-    const { authorization } = await KilpiCore.CallStackSizeProtector.run(
-      async () => {
-        const subject = await this.getSubject();
-        const policy = getPolicyByKey(this.policies, key);
-        const authorization = await policy(subject, ...[...inputs]);
-        return { authorization };
-      },
-    );
-
-    // Return the granted status
+    // Evaluate policy and return the granted boolean
+    const { authorization } = await this.evaluateAuthorization(key, ...inputs);
     return authorization.granted;
   }
 
@@ -258,47 +269,75 @@ export class KilpiCore<
    * @returns The narrowed down subject if the user passes the policy.
    * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * const user = await Kilpi.authorize("resource:update", resource);
+   *
+   * // User is authorized to update the resource. If not, `Kilpi.authorize` will have thrown
+   * // or the custom `.onUnauthorized(...)` handler will have been called.
+   * await updateResource(resource, user);
+   * ```
    */
   async authorize<TKey extends PolicysetKeys<TPolicyset>>(
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<InferPolicySubject<GetPolicyByKey<TPolicyset, TKey>>> {
-    // Evaluate policy within infinite loop protection
-    const { subject, policy, authorization } =
-      await KilpiCore.CallStackSizeProtector.run(async () => {
-        const subject = await this.getSubject();
-        const policy = getPolicyByKey(this.policies, key);
-        const authorization = await policy(subject, ...[...inputs]);
-        return { subject, policy, authorization };
-      });
+    // Evaluate policy and get the authorization object
+    const authorization = await this.getAuthorization(key, ...inputs);
 
-    // Granted, return the narrowed down subject
-    if (authorization.granted) return authorization.subject;
+    // Granted, return the narrowed down subject and escape early
+    if (authorization.granted) {
+      return authorization.subject;
+    }
 
-    // Denied: run onUnauthorized handler if provided to throw custom error (e.g. redirection,
-    // HTTP error).
-    const handleUnauthorized = this.getPropertyFromContext("onUnauthorized");
-    await handleUnauthorized?.({
-      message: authorization.message,
-      policy,
-      subject,
-    });
+    // Denied message
+    const message = authorization.message ?? "Unauthorized";
 
-    // Denied: Default behaviour is to throw a KilpiError.AuthorizationDenied when no other
-    // handler is provided (in defaults, in explicit context, in adapter).
-    throw new KilpiError.AuthorizationDenied(
-      authorization.message ?? "Unauthorized",
-    );
+    // Run onUnauthorized handler in current scope if available
+    await this.resolveScope()?.onUnauthorized?.({ message });
+
+    // Run default onUnauthorized handler if available
+    await this.defaults?.onUnauthorized?.({ message });
+
+    // Throw by default
+    throw new KilpiError.AuthorizationDenied(message);
   }
 
   /**
-   * Utility to filter resources to only those resources that pass the policy.
+   * Utility to filter resources to only those resources that pass the policy. Requires a rule
+   * that takes in a resource.
    *
-   * @usage
+   * ## Example
+   *
+   * @example
    * ```ts
+   * // Policy must take in a resource
+   * const Kilpi = createKilpi({
+   *   ...,
+   *   policies: {
+   *     resources: {
+   *       read: SomePolicy.new((user, resource) => ...),
+   *     }
+   *   }
+   * })
+   *
    * // Return only resources which the user is authorized to read
    * const unauthorizedResources = await listResources();
-   * return await Kilpi.filter("resource:read", unauthorizedResources);
+   * const authorizedResources = await Kilpi.filter("resource:read", unauthorizedResources);
+   *
+   * // Or apply already in protected query and call vai `.protect()`
+   * const listResources = Kilpi.query(
+   *   async () => await db.listResources(),
+   *   {
+   *     async protector({ output: resources }) {
+   *       return await Kilpi.filter("resource:read", resources);
+   *     }
+   *   }
+   * )
+   * const authorizedResources = listResources.protect();
    * ```
    */
   async filter<
