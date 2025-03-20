@@ -1,8 +1,167 @@
 ---
 title: Creating policies
-sidebar:
-  badge:
-    text: Pending
 ---
 
-No content
+Policies are created in two steps by first creating a **subject guard** which is used to define the concrete **policy**.
+
+### Creating subject guards
+
+Subject guards are designed to narrow down the subject type to reduce boilerplate and increase type-safety.
+
+The most common use case is to create a `PublicPolicy` and an `AuthedPolicy`.
+
+Ensure the subject type provided to the subject guard matches the return type of `getSubject`.
+
+```ts
+import { Policy } from '@kilpi/core'
+
+const PublicPolicy = Policy.as((subject: Subject | null) => {
+  return { subject } // Always pass
+})
+
+const AuthedPolicy = Policy.as((subject: Subject | null) => {
+  return subject ? { subject } : null // Only pass if authed
+})
+
+PublicPolicy((subject) => {
+  subject?.id // <- may be null
+})
+
+AuthedPolicy((subject) => {
+  subject.id // <- inferred to be non-null
+})
+```
+
+### Defining policies
+
+Policies are defined from the subject guards.
+
+```ts
+const policies = {
+  comments: {
+    create: PublicPolicy((user) => true), // Anyone can comment
+    delete: AuthedPolicy((user) => user.role === "admin"), // Authed admins only
+  },
+}
+```
+
+### Structuring policies
+
+Policies are defined in an object with a hierarchical structure, from which the policy keys are automatically inferred.
+
+```ts
+const policies = {
+  authed: AuthedPolicy(...), // "authed"
+
+  documents: {
+    create: AuthedPolicy(...), // "documents:create"
+    read: AuthedPolicy(...), // "documents:read"
+
+    comments: {
+      create: AuthedPolicy(...), // "documents:comments:create"
+    }
+  },
+}
+```
+
+You can break your policies into multiple files and merge them together.
+
+```ts
+// In kilpi/policies/userPolicies.ts
+export const userPolicies = {
+  read: AuthedPolicy(...),
+  update: AuthedPolicy(...),
+};
+
+// In kilpi/kilpi.ts
+import { createKilpi } from '@kilpi/core'
+import { usersPolicies } from './policies/userPolicies.ts'
+import { documentsPolicies } from './policies/documentPolicies.ts'
+
+export const Kilpi = createKilpi({
+  getSubject,
+  policies: {
+    users: usersPolicies, // users:read, users:update
+    documents: documentsPolicies,
+    ...
+  }
+})
+```
+
+### Policies with resources
+
+For implementing ABAC, policies can also take in a resource. When constructing a policy, you can pass it in as the second argument after the subject. It must be typed in the function constructor as follows.
+
+```ts
+const policies = {
+  comments: {
+    delete: AuthedPolicy((user, comment: Comment) => {
+      return user.id === comment.authorId
+    }),
+  }
+};
+```
+
+When calling them, passing a resource is required.
+
+```tsx
+// With .authorize(), .isAuthorized() or .getAuthorization()
+await Kilpi.authorize("comments:delete", comment)
+
+// With <Access />
+<Access to="comments:delete" on={comment}>
+  <button>Delete</button>
+</Access>
+```
+
+### Async policies and data fetching
+
+All policies are asynchronous. This allows you to e.g. fetch data inside the policy.
+
+```ts
+// Allow if member of organization
+AuthedPolicy(async (user, organization) => {
+  const memberships = await db.getMembershipsForUser(user.id);
+  return memberships.some(m => m.orgId === organization.id);
+}) 
+```
+
+:::caution
+Do not call a [protected query](/concepts/protected-query) via `.protect()` or you will cause an infinite loop. Use `.unsafe()` instead.
+:::
+
+### Tip: Utility functions
+
+In most cases, your policies will start to grow and maintaining them becomes more difficult. It is recommended to create utility functions to help you make more readable and maintainable policies.
+
+```diff lang="ts"
++ function isAdmin(subject: Subject) {
++   return subject.role === "admin"
++ }
++ async function isMember(subject: Subject, orgId: string, role: string) {
++   const memberships = await db.getMembershipsForUser(subject.id);
++   return memberships.some(m => m.orgId === orgId && m.role === role);
++ }
++ function isOwner<T extends { userId: string }>(subject: Subject, resource: T) {
++   return subject.id === resource.userId;
++ }
++ function isBanned(subject: Subject) {
++   return subject.banned;
++ }
+
++ AuthedPolicy((user, document) => {
++   if (isBanned(user)) return false;
++   return isAdmin(user)
++     || isOwner(user, document)
++     || await isMember(user, document.orgId, "manager");
++ })
+- AuthedPolicy((user, document) => {
+-   if (user.banned) return false;
+-   const memberships = await db.getMembershipsForUser(user.id);
+-   return user.role === "admin"
+-     || memberships.some(m => m.orgId === document.orgId && m.role === "manager")
+-     || user.id === document.userId;
+- })
+```
+
+
