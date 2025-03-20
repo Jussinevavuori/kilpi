@@ -13,9 +13,10 @@ export type EmptyInterface = Record<never, never>;
 export type KilpiPluginArgs<
   TSubject,
   TPolicyset extends Policyset<TSubject>,
-  TInterface extends object = EmptyInterface,
+  TPluginInterface extends object = EmptyInterface,
+  TScopeExtension extends object = EmptyInterface,
 > = Pick<
-  KilpiPlugin<TSubject, TPolicyset, TInterface>,
+  KilpiPlugin<TSubject, TPolicyset, TPluginInterface, TScopeExtension>,
   "name" | "interface" | "getScope"
 >;
 
@@ -25,7 +26,8 @@ export type KilpiPluginArgs<
 export class KilpiPlugin<
   TSubject,
   TPolicyset extends Policyset<TSubject>,
-  TInterface extends object = EmptyInterface,
+  TPluginInterface extends object = EmptyInterface,
+  TScopeExtension extends object = EmptyInterface,
 > {
   /**
    * Plugin name
@@ -33,9 +35,11 @@ export class KilpiPlugin<
   name: string;
 
   /**
-   * A plugin may automatically attempt to provide a scope for Kilpi.
+   * A plugin may automatically attempt to provide a scopen for Kilpi.
    */
-  getScope?: () => KilpiScope<TSubject, TPolicyset> | undefined;
+  getScope?: () =>
+    | (KilpiScope<TSubject, TPolicyset> & Partial<TScopeExtension>)
+    | undefined;
 
   /**
    * A plugin may define a public interface. For example, a reset plugin may define an interface
@@ -48,9 +52,16 @@ export class KilpiPlugin<
    * Namespacing all interface methods under the plugin name is recommended to avoid conflicts.
    * (Not `Kilpi.resetAll()`, instead `Kilpi.reset.resetAll()` if the plugin is named `reset`.)
    */
-  interface: TInterface;
+  interface: TPluginInterface;
 
-  constructor(args: KilpiPluginArgs<TSubject, TPolicyset, TInterface>) {
+  constructor(
+    args: KilpiPluginArgs<
+      TSubject,
+      TPolicyset,
+      TPluginInterface,
+      TScopeExtension
+    >,
+  ) {
     this.name = args.name;
     this.interface = args.interface;
     this.getScope = args.getScope;
@@ -63,7 +74,8 @@ export class KilpiPlugin<
 export type KilpiPluginFactory<
   TSubject,
   TPolicyset extends Policyset<TSubject>,
-  TInterface extends object = Record<never, never>,
+  TPluginInterface extends object = EmptyInterface,
+  TScopeExtension extends object = EmptyInterface,
 > = (
   Kilpi: KilpiCore<TSubject, TPolicyset>,
-) => KilpiPlugin<TSubject, TPolicyset, TInterface>;
+) => KilpiPlugin<TSubject, TPolicyset, TPluginInterface, TScopeExtension>;

@@ -1,3 +1,4 @@
+import type { EmptyInterface } from "./kilpi-plugin";
 import type { Policyset } from "./policy";
 
 /**
@@ -30,3 +31,12 @@ export type KilpiScope<
    */
   subjectCache?: { subject: TSubject };
 };
+
+/**
+ * For plugins
+ */
+export type ExtendedKilpiScope<
+  TSubject,
+  TPolicyset extends Policyset<TSubject>,
+  TScopeExtension extends object = EmptyInterface,
+> = KilpiScope<TSubject, TPolicyset> & Partial<TScopeExtension>;
