@@ -1,5 +1,11 @@
 # @kilpi/react
 
+## 0.7.2
+
+### Patch Changes
+
+- 0e4a465: fix export of access
+
 ## 0.7.1
 
 ### Patch Changes
