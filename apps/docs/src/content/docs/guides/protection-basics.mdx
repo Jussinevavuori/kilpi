@@ -4,4 +4,44 @@ sidebar:
   order: 1
 ---
 
-No content.
+With Kilpi, there are essentially **two strategies** for protecting and authorizing your application.
+
+### 1. Throw on unauthorized
+
+With APIs such as `Kilpi.authorize()` or `Kilpi.unauthorized()` you can throw when a user is not authorized.
+
+When you have proper handlers setup via `Kilpi.onUnauthorized` to e.g. redirect the user, show a forbidden page or return a 401 forbidden response, this is the simplest and most powerful way to protect your application.
+
+```ts {1,5}
+const user = await Kilpi.authorize("my:policy");
+doSomething(user);
+
+const user = await Kilpi.getSubject();
+if (!user) Kilpi.unauthorized();
+doSomething(user);
+```
+
+### 2. Manual authorization checks
+
+Sometimes, you have to resort to the non-throwing APIs in use cases where...
+
+- You require more control
+- You do not have proper `onUnauthorized` handlers setup
+- You do not have access to a scope for setting `onUnauthorized` handlers
+
+In these cases, APIs that do not throw such as `Kilpi.isAuthorized()` or `Kilpi.getAuthorization()` are available.
+
+```ts {1,7,8}
+if (!(await Kilpi.isAuthorized("my:policy"))) {
+  return null;
+} else {
+  doSomething();
+}
+
+const authorization = await Kilpi.getAuthorization("my:policy");
+if (!authorization.granted) {
+  return null; 
+} else {
+  doSomething(authorization.subject);
+}
+```
