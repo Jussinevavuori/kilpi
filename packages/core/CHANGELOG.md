@@ -1,5 +1,12 @@
 # @kilpi/core
 
+## 0.7.0
+
+### Minor Changes
+
+- 89c2162: introduced new plugin API, removed adapter API, introduced subject caching, renamed request context to 'scope'
+- 2831373: plugins can now extend the "scope" type internally with ExtendedKilpiScope
+
 ## 0.6.3
 
 ### Patch Changes
