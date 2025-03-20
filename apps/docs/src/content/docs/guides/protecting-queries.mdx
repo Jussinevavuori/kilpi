@@ -1,9 +1,162 @@
 ---
 title: Protecting queries
 description: Protecting queries
-sidebar:
-  badge:
-    text: Pending
 ---
 
-No content.
+In Kilpi, queries are primarily protected with [protected queries](/concepts/protected-query) created using `Kilpi.query`. [Read more](/concepts/protected-query) to understand why Kilpi uses protected queries.
+
+### Create a protected query
+
+Let's take an example query to protect.
+
+> In most cases, you want to ensure the query being wrapped is **pure**, has no side-effects or does not perform any authentication or authorization logic. This ensures the query could be cached (for example with `"use cache"` in Next.js).
+
+
+```ts
+async function getDocument(id: string) {
+  return await db.documents.get(id);
+}
+```
+
+Create a protected query by wrapping the query with `Kilpi.query`.
+
+```diff lang="ts"
++ const getDocument = Kilpi.query(
+    async (id: string) => {
+      return await db.documents.get(id);
+    }
++ )
+```
+
+### Add a protector
+
+Next add a a protector. This protector ensures that if a document was found, the user is authorized to read it according to the `documents:read` policy. Otherwise, the protector throws.
+
+A protector is an asynchronous function that **receives the input, output and the subject** as arguments and **returns the authorized output**. If unauthorized to the data, the protector may throw, return `null` (or other), or partial data.
+
+```diff lang="ts"
+const getDocument = Kilpi.query(
+  async (id: string) => {
+    return await db.documents.get(id);
+  },
++ {
++   async protector({ input, output, subject }) {
++     if (output) await Kilpi.authorize("documents:read", output);
++     return output;
++   }
++ }
+)
+```
+> If you are using [throw -based APIs](/concepts/protection-basics), query protectors should throw when unauthorized as above. Otherwise, you can use e.g. `Kilpi.isAuthorized` or `Kilpi.getAuthorization` and return `null` or similar to signal unauthorized.
+
+### Call protected queries
+
+A protected query can not be called directly, but has to be called either via `.protect()` or `.unsafe()`. This ensures that the developer intent is clear, and signals clearly to other developers whether the query is being protected or not.
+
+```ts
+// Gets the document and runs it through the protector
+const document = await getDocument.protect("123");
+
+// Gets the document, but skips the protector
+const document = await getDocument.unsafe("123");
+
+// Error
+const document = await getDocument("123");
+```
+
+### Redacting data
+
+On top of throwing when unauthorized, you can also use protectors to redact or filter data.
+
+```ts
+export const getUser = Kilpi.query(
+  async (id: string) => {
+    return await db.users.get(id);
+  },
+  {
+    async protector({ input, output: user, subject }) {
+      if (!user) return null;
+      
+      // Return full user when authorized
+      if (await Kilpi.isAuthorized("users:read", user)) {
+        return user;
+      }
+
+      // Else return only public properties
+      return { id: user.id, name: user.name };
+    }
+  }
+)
+```
+
+### Using `Kilpi.filter`
+
+A common use case for queries that return arrays is to return only the entries to which the user is authorized to.
+
+Kilpi provides the `Kilpi.filter` utility for this purpose.
+
+:::note
+`Kilpi.filter` must be used with a policy that takes in a resource.
+:::
+
+```ts {2,11}
+// "documents:read" must take in a document as the resource
+AuthedPolicy((user, doc: Document) => user.id === doc.ownerId)
+
+export const listDocuments = Kilpi.query(
+  async () => {
+    return await db.documents.list();
+  },
+  {
+    async protector({ output: documents }) {
+      // Returns only the documents the user is authorized to read
+      return await Kilpi.filter("documents:read", documents);
+    }
+  }
+)
+```
+
+### Without Kilpi.query
+
+If you prefer not to use `Kilpi.query` for protected queries, you have to protect your data manually either
+
+1. **In the query function**
+
+    While a simple approach, it has the following downsides:
+
+    - Can't call `getDocument` without authorization.
+    - Function is not pure, and can't e.g. be cached.
+
+    ```ts
+    export async function getDocument(id: string) {
+      const doc = await db.documents.get(id);
+
+      if (!(await Kilpi.isAuthorized("documents:read", doc))) {
+        return null;
+      } 
+
+      return doc;
+    }
+    ```
+
+2. **After calling**
+
+    This approach fixes the previous issues, but again, has the following downsides:
+
+    - Authorization logic is duplicated at every place where query is called
+    - You may forget to authorize data
+    - You may forget to update authorization logic at every place
+
+    ```ts
+    export async function getDocument(id: string) {
+      return await db.documents.get(id);
+    }
+
+    async function Component({ id }) {
+      const doc = await getDocument(id);
+      if (!(await Kilpi.isAuthorized("documents:read", doc))) {
+        return <Unauthorized />;
+      }
+      return <Document doc={doc} />;
+    }
+    ```

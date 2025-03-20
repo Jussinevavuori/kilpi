@@ -16,39 +16,37 @@ Kilpi is an authorization framework for implementing a robust authorization laye
 
 ## Philosophy and design principles
 
-Kilpi is an opinionated library. Read through these decisions to see, whether Kilpi suits your authorization requirements.
+Kilpi is an opinionated library designed based on certain principles. Read through these decisions to see, whether Kilpi suits your authorization requirements.
 
-### Server-first authorization
+- **Server-first authorization**
 
-All authorization checks are evaluated on the server. This is done so, as the client can not securely be trusted to perform authorization checks.
+  All authorization checks are evaluated on the server.
 
-This means Kilpi is very well suited for modern server-first approaches, such as server-rendered applications (e.g. Next.js and other RSC frameworks) or server-side applications (e.g. Express, Koa, Fastify).
+  This means Kilpi is very well suited for modern server-first approaches, such as server-rendered applications (e.g. Next.js and other RSC frameworks) or server-side applications (e.g. Express, Koa, Hono).
 
-Kilpi does not priot
+- **Centralized authorization layer**
 
-### Centralized authorization layer
+  Kilpi is designed around a centralized authorization layer, which defines all policies for all authorizable actions in your application. They are always referred to via their auto-generated keys, e.g. `documents:update`. This approach makes maintaining authorization trivial.
 
-Kilpi is designed around a centralized authorization layer. Rules can be defined in a number of ways, but are always evaluated via the `Kilpi` instance and referred to via their keys, e.g. `document:read`.
+- **Declarative**
 
-This ensures that authorization logic is not duplicated throughout your application and makes maintaining the authorization layer easy.
+  In most cases, declarative APIs are easier to understand and maintain. All Kilpi APIs are designed to be declarative, from [Policies](/concepts/policy) to [Protected Queries](/concepts/protected-query).
 
-However it also means that you have to be careful in designing your policies to not introduce complexity from badly designed or too specific policies.
+- **Policies as code**
 
-### Asynchronous policies
+  Policies are defined as code instead of using a no-code interface or a domain-specific language. This ensures an easy learning curve, full typesafety and enables you to version control your policies.
 
-As a consequence of the design principle of _server-first authorization_, all policies have been made asynchronous. This allows for more possibilities in creating complex policies, such as fetching data from a database or an external service during policy evaluation. Making all policies asynchronous also makes for a simpler API.
+- **Asynchronous policies**
 
-### Policies as code
+  As a consequence of the design principle of _server-first authorization_, all policies have been made asynchronous. This allows for more possibilities in creating complex policies, such as fetching data from a database or an external service during policy evaluation. Making all policies asynchronous also makes for a simpler API.
 
-Policies are defined as code instead of via a no-code interface or a domain-specific language. You write your policies in familiar TypeScript with full type-safety, without any additional tooling. Your policies are kept in your version control system and are easily changed.
+- **Framework agnostic**
 
-### Framework agnostic
+  Kilpi is designed to be framework agnostic and can be applied to any technology, even without plugins. See the installation guides for how to make Kilpi work with your framework of choice.
 
-Kilpi is designed to be framework agnostic. Using plugins or component libraries is completely optional.
+- **Auth-provider agnostic wrapper**
 
-### Auth-provider agnostic wrapper
-
-Kilpi is designed around the concept of a **subject**. The subject can be provided by any auth provider, or even from a combination of data sources. Kilpi wraps the authentication provider with a custom `getSubject` function which is automatically called.
+  Kilpi is designed around the concept of a **subject**. The subject can be provided by any auth provider, or even from a combination of data sources. Kilpi wraps the authentication provider with a custom `getSubject` function.
 
 ---
 
