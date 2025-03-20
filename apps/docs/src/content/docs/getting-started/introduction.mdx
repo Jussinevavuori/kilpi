@@ -48,6 +48,10 @@ Kilpi is an opinionated library designed based on certain principles. Read throu
 
   Kilpi is designed around the concept of a **subject**. The subject can be provided by any auth provider, or even from a combination of data sources. Kilpi wraps the authentication provider with a custom `getSubject` function.
 
+- **Authorization model agnostic**
+
+  Kilpi does **not** implement any advanced authorization concepts (roles, permissions, organizations, memberships, ...). Nor does it enforce any single implementation. Instead, Kilpi is designed to be flexible enough to facilitate any authorization model. We do however offer best practices on implementing [custom permissions](/advanced/implement-permissions), [ABAC](/advanced/implement-abac), [RBAC](/advanced/implement-rbac) and [ReBAC](/advanced/implement-rebac) using Kilpi.
+
 ---
 
 ## Who is Kilpi not designed for?

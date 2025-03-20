@@ -15,7 +15,8 @@ export default defineConfig({
      */
     starlight({
       // Customize site
-      title: "Kilpi",
+      favicon: "favicon.ico",
+      title: "🛡️ Kilpi",
       tagline: "The modern authorization framework for TypeScript",
       social: {
         github: "https://github.com/jussinevavuori/kilpi",

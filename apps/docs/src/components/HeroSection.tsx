@@ -13,9 +13,8 @@ export function HeroSection() {
             Authorization made simple
           </h1>
           <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-            Kilpi is the open-source TypeScript authorization library designed
-            for developers who need flexible, powerful, and intuitive
-            authorization.
+            Kilpi is the open-source TypeScript authorization library designed for developers who
+            need flexible, powerful, and intuitive authorization.
           </p>
         </div>
 
@@ -41,13 +40,8 @@ export function HeroSection() {
 
         {/* Code examples */}
         <div className="flex flex-col gap-4">
-          <p className="text-muted-foreground">
-            Make your authorization a one-liner.
-          </p>
-          <CodeBlock
-            language="tsx"
-            content={`await Kilpi.authorize("docs:update", doc);`}
-          />
+          <p className="text-muted-foreground">Make your authorization a one-liner.</p>
+          <CodeBlock language="tsx" content={`await Kilpi.authorize("docs:update", doc);`} />
           <CodeBlock
             language="tsx"
             content={`
@@ -56,14 +50,8 @@ export function HeroSection() {
 							</Access>
 							`}
           />
-          <CodeBlock
-            language="tsx"
-            content={`if (await Kilpi.isAuthorized("docs:create"))`}
-          />
-          <CodeBlock
-            language="tsx"
-            content={`const doc = await getDocument.protect();`}
-          />
+          <CodeBlock language="tsx" content={`if (await Kilpi.isAuthorized("docs:create"))`} />
+          <CodeBlock language="tsx" content={`const doc = await getDocument.protect();`} />
         </div>
 
         {/* Credits */}
