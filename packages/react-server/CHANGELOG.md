@@ -1,5 +1,17 @@
 # @kilpi/react
 
+## 0.7.0
+
+### Minor Changes
+
+- 89c2162: introduced new plugin API, removed adapter API, introduced subject caching, renamed request context to 'scope'
+
+### Patch Changes
+
+- Updated dependencies [89c2162]
+- Updated dependencies [2831373]
+  - @kilpi/core@0.7.0
+
 ## 0.6.3
 
 ### Patch Changes
