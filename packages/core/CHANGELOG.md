@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.7.1
+
+### Patch Changes
+
+- 4c6eec1: improved documentation
+
 ## 0.7.0
 
 ### Minor Changes

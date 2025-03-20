@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.7.1
+
+### Patch Changes
+
+- 4c6eec1: improved documentation
+- Updated dependencies [4c6eec1]
+  - @kilpi/core@0.7.1
+
 ## 0.7.0
 
 ### Minor Changes
