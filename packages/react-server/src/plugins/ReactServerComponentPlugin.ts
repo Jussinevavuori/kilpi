@@ -25,10 +25,7 @@ const isRscContext = () => rscProbe() === rscProbe();
  * React server component plugin for automatically providing a Kilpi scope
  * in React Server Components.
  */
-export function ReactServerComponentPlugin<
-  TSubject,
-  TPolicyset extends Policyset<TSubject>,
->() {
+export function ReactServerComponentPlugin<TSubject, TPolicyset extends Policyset<TSubject>>() {
   return function pluginFactory(_Kilpi: KilpiCore<TSubject, TPolicyset>) {
     return new KilpiPlugin<TSubject, TPolicyset, Interface>({
       name: "ReactServerComponentPlugin",

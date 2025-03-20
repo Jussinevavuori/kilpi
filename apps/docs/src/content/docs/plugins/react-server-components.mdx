@@ -5,7 +5,6 @@ sidebar:
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { LinkCard } from '@astrojs/starlight/components';
 
 ## Installation
 
@@ -45,7 +44,7 @@ Apply the plugin in your Kilpi configuration as follows.
 export const Kilpi = createKilpi({
   getSubject,
   policies,
-+ plugins: [ReactServerComponentPlugin()]
++  plugins: [ReactServerComponentPlugin()]
 })
 ```
 
@@ -67,16 +66,29 @@ export default async function ProtectedPage() {
 
 The package also provides the `createKilpiReactServerComponents` function to create React server component bindings for working with Kilpi.
 
-You may optionally provide default `Unauthorized` and `Loading` fallback components as the second argument.
-
 ```ts
+// kilpi.components.ts
 export const { Access } = createKilpiReactServerComponents(Kilpi);
 ```
 
-### Read more
+### `<Access />`
 
-<LinkCard
-  title="Read more"
-  description="Learn more about React Server Components in the RSC installation guide."
-  href="/installation/react-server-components"
-/>
+Access is used to show or hide components based on the user's authorizations.
+
+Access is an asynchronous component which implement `<Suspense />` internally, allowing you to stream in UI and use a loading fallback.
+
+```tsx
+async function Component({ comment }) {
+  return <div>
+    <p>{comment.content}</p>
+    <Access
+      to="comments:delete" // Required
+      on={comment} // Required only if policy takes in a resource
+      Loading={<p>Loading...</p>} // Optional fallback
+      Unauthorized={<p>Unauthorized</p>} // Optional fallback
+    >
+      <button>Delete</button>
+    </Access>
+  </div>
+}
+```

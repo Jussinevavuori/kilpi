@@ -6,7 +6,6 @@ import type {
   PolicysetKeysWithResource,
 } from "@kilpi/core";
 import { Suspense } from "react";
-import type { CreateReactServerComponentOptions } from "src/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -30,11 +29,6 @@ type AccessBaseProps = {
    * If null, no denied component is rendered (opts out of global default as well).
    */
   Unauthorized?: React.ReactNode;
-
-  /**
-   * onUnauthorized callback, e.g. for redirecting.
-   */
-  onUnauthorized?: () => void;
 };
 
 /**
@@ -70,10 +64,7 @@ type AccessProps<
 /**
  * Create the <Access /> react server component.
  */
-export function createAccess<TCore extends KilpiCore<any, any>>(
-  KilpiCore: TCore,
-  options: CreateReactServerComponentOptions,
-) {
+export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore) {
   /**
    * Render children only if access to={key} (and optionally on={resource}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
@@ -84,36 +75,22 @@ export function createAccess<TCore extends KilpiCore<any, any>>(
       | PolicySetKeysWithoutResource<TCore["policies"]>
       | PolicysetKeysWithResource<TCore["policies"]>,
   >(props: AccessProps<TCore, TKey>) {
-    // Async component for suspending by parnent
+    // Inner async component to be suspended by parent
     async function Access_InnerSuspendable() {
       // Get authorization
-      const authorization = await KilpiCore.getAuthorization(
-        props.to,
-        props.on,
-      );
+      const authorization = await KilpiCore.getAuthorization(props.to, props.on);
 
-      // No authorization, render Unauthorized component and run callback
-      if (!authorization.granted) {
-        await props.onUnauthorized?.();
-        return props.Unauthorized === null
-          ? null
-          : (props.Unauthorized ?? options.DefaultUnauthorizedComponent);
-      }
+      // No authorization, render Unauthorized component
+      if (!authorization.granted) return props.Unauthorized;
 
-      // Authorization passed
+      // Authorization passed, render children
       return props.children;
     }
 
     // Implementation is in suspendable component, the parent facade component only handles
     // type overloads and the loading fallback for the suspense.
     return (
-      <Suspense
-        fallback={
-          props.Loading === null
-            ? null
-            : (props.Loading ?? options.DefaultLoadingComponent)
-        }
-      >
+      <Suspense fallback={props.Loading}>
         <Access_InnerSuspendable />
       </Suspense>
     );
