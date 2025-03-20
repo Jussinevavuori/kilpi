@@ -14,6 +14,49 @@ export const CATEGORIES = [
       },
     ],
   },
+  {
+    title: "Installation guides",
+    description:
+      "With or without plugins, see how to start using Kilpi with your favorite framework.",
+    items: [
+      {
+        title: "Next",
+        Icon: SvgLogos.Next,
+        link: "/installation/next",
+        description: "",
+      },
+      {
+        title: "Hono",
+        Icon: SvgLogos.Hono,
+        link: "/installation/hono",
+        description: "",
+      },
+      {
+        title: "Express",
+        Icon: SvgLogos.Express,
+        link: "/installation/express",
+        description: "",
+      },
+      {
+        title: "Nest.js",
+        Icon: SvgLogos.NestJs,
+        link: "/installation/nest-js",
+        description: "",
+      },
+      {
+        title: "Koa",
+        Icon: "https://images.seeklogo.com/logo-png/36/2/koa-logo-png_seeklogo-362249.png",
+        link: "/installation/koa",
+        description: "",
+      },
+      {
+        title: "Oak",
+        Icon: "https://oakserver.org/oak_logo_head.svg?__frsh_c=6ccb8f389a5d8534f54e00d00f731f6c6dc69c61",
+        link: "/installation/oak",
+        description: "",
+      },
+    ],
+  },
 ];
 
 export function PluginsSection() {
@@ -43,12 +86,18 @@ export function PluginsSection() {
                 href={item.link}
               >
                 <div className="flex items-center gap-2">
-                  <item.Icon className="size-4" />
+                  {!item.Icon ? null : typeof item.Icon === "string" ? (
+                    <img src={item.Icon} className="size-4" alt={item.title} />
+                  ) : (
+                    <item.Icon className="size-4" />
+                  )}
                   <p className="font-semibold">{item.title}</p>
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  {item.description}
-                </p>
+                {item.description && (
+                  <p className="text-muted-foreground text-sm">
+                    {item.description}
+                  </p>
+                )}
               </a>
             ))}
             <div className="flex flex-col bg-muted/50 justify-center items-center gap-2 rounded-lg p-4 text-muted-foreground">

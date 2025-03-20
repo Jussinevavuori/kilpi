@@ -15,6 +15,7 @@ export {
   type KilpiPluginFactory,
 } from "./kilpi-plugin";
 export {
+  type ExtendedKilpiScope,
   type KilpiOnUnauthorizedHandler,
   type KilpiScope,
 } from "./kilpi-scope";
