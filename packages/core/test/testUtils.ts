@@ -54,25 +54,25 @@ const AuthedPolicy = Policy.as((subject: TestSubject | null) =>
 // All test policies
 const policies = {
   // Always fail
-  never: PublicPolicy.new(() => false),
+  never: PublicPolicy(() => false),
 
   // Pass always
-  public: PublicPolicy.new(() => true),
+  public: PublicPolicy(() => true),
 
   // Authed only
-  authed: AuthedPolicy.new(() => true),
+  authed: AuthedPolicy(() => true),
 
   // Nested keys
   docs: {
     // Authed only if ID matches
-    ownDocument: AuthedPolicy.new(
+    ownDocument: AuthedPolicy(
       (user, doc: TestDocument) => user.id === doc.userId,
     ),
 
     // Deeply nested policy
     deeply: {
       nested: {
-        policy: AuthedPolicy.new(
+        policy: AuthedPolicy(
           (user, doc: TestDocument) => user.id === doc.userId,
         ),
       },

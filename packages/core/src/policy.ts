@@ -50,7 +50,7 @@ export type InferPolicySubject<T> =
  * const AuthedPolicy = Policy.as((subject: Subject | null) => (subject ? { subject } : null))
  *
  * // 2. Create a new policy from guard
- * AuthedPolicy.new((subject, id: string, count: number) => {
+ * AuthedPolicy((subject, id: string, count: number) => {
  *   return subject.id === id && count > 0;
  * });
  * ```
@@ -64,28 +64,26 @@ export const Policy = {
       subject: TSubjectInput,
     ) => { subject: TSubjectOutput } | null | undefined,
   ) {
-    return {
-      /**
-       * Create a new policy using a boolean-style constructor (true = granted, false = denied),
-       * after narrowing down the subject.
-       */
-      new<TInputs extends AnyPolicyInput>(
-        evaluate: (
-          subject: TSubjectOutput,
-          ...inputs: TInputs
-        ) => boolean | Promise<boolean>,
-      ): Policy<TInputs, TSubjectInput, TSubjectOutput> {
-        return async (subject, ...inputs) => {
-          // Narrow down the subject. If the narrowing fails, deny the authorization.
-          const narrowed = getNarrowedSubject(subject);
-          if (!narrowed) return Authorization.Deny();
+    /**
+     * Create a new policy using a boolean-style constructor (true = granted, false = denied),
+     * after narrowing down the subject.
+     */
+    return function createPolicy<TInputs extends AnyPolicyInput>(
+      evaluate: (
+        subject: TSubjectOutput,
+        ...inputs: TInputs
+      ) => boolean | Promise<boolean>,
+    ): Policy<TInputs, TSubjectInput, TSubjectOutput> {
+      return async (subject, ...inputs) => {
+        // Narrow down the subject. If the narrowing fails, deny the authorization.
+        const narrowed = getNarrowedSubject(subject);
+        if (!narrowed) return Authorization.Deny();
 
-          // Evaluate the policy function and return the authorization result.
-          return (await evaluate(narrowed.subject, ...inputs))
-            ? Authorization.Grant(narrowed.subject)
-            : Authorization.Deny();
-        };
-      },
+        // Evaluate the policy function and return the authorization result.
+        return (await evaluate(narrowed.subject, ...inputs))
+          ? Authorization.Grant(narrowed.subject)
+          : Authorization.Deny();
+      };
     };
   },
 };

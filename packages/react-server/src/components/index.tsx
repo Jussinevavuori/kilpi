@@ -9,7 +9,7 @@ import { createAccess } from "./Access";
  */
 export function createKilpiReactServerComponents<T extends KilpiCore<any, any>>(
   Kilpi: T,
-  options: CreateReactServerComponentOptions,
+  options: CreateReactServerComponentOptions = {},
 ) {
   return {
     Access: createAccess(Kilpi, options),

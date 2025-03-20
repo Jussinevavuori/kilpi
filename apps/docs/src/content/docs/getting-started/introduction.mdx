@@ -105,7 +105,7 @@ export const Kilpi = createKilpi({
   getSubject, 
   policies: {
     documents: {
-      update: AuthedPolicy.new((user, doc: Document) => user.id === doc.userId)
+      update: AuthedPolicy((user, doc: Document) => user.id === doc.userId)
     }
   }
 })

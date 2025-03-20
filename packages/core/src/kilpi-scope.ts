@@ -7,7 +7,7 @@ import type { Policyset } from "./policy";
  */
 export type KilpiOnUnauthorizedHandler = (options: {
   message: string;
-}) => void | never | Promise<void> | Promise<never>;
+}) => void | never;
 
 /**
  * Kilpi should be scoped to a single request. A KilpiScope object holds scoped values for

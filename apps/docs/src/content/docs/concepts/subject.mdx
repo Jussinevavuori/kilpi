@@ -2,28 +2,19 @@
 title: Subject
 ---
 
-:::caution
-You should cache your `getSubject` function, as it will be called for each policy evaluation. Wrap your `getSubject` with e.g. `React.cache` to achieve this.
-:::
-
-The subject pattern is designed to encapsulate the current user, actor, or caller for passing them to Kilpi while evaluating policies.
-
-In most use cases, the subject is equivalent to your user object (or an extended version of it with additional data). The terms "user" and "subject" may therefore be used interchangeably in this documentation.
+**The subject** represents your **user** or other actor and their permissions, memberships or similar. The subject allows you to wrap any authentication provider and pass it to Kilpi for evaluating policies. The term "user" can be used interchangeably with the "subject".
 
 ### Example subject
 
 ```ts
-type Subject = UserTypeFromMyAuthProvider & {
-  permissions: string[];
-}
+// src/kilpi/subject.ts
+export type Subject = { id: string };
 
-// An example of a `getSubject` with an user object with permissions
-const getSubject = cache((): Promise<Subject | null> => {
-  const user = await getUserFromMyAuthProvider();
-  if (!user) return null;
-  const permissions = await getPermissionsFromMyDb(user.id);
-  return Object.assign(user, { permissions })
-});
+export async function getSubject(): Promise<Subject | null> {
+  const session = await getSession(); // From your auth provider
+  if (!session) return null;
+  return { id: session.id };
+}
 
 export const Kilpi = createKilpi({ getSubject, ... })
 ```
@@ -38,45 +29,15 @@ const getSubject = cache(() => {
   const user = await getUserFromMyAuthProvider();
   if (!user) return null;
 
-  // Fetch additional data
-  const permissions = await db.getPermissions(user.id);
-  const memberships = await db.getMemberships(user.id);
-  const subscription = await db.getSubscription(user.id);
-
-  return Object.assign(user, { permissions, permissions, subscription })
+  return Object.assign(user, { 
+    permissions: await db.getPermissions(user.id),
+    memberships: await db.getMemberships(user.id),
+    subscription: await db.getSubscription(user.id),
+  });
 });
 ```
 
 If you have data that is only used in a few policies, it should either be **fetched in the policy function** (preferred) or be passed down as the resource.
-
-### Narrowing down the subject
-
-Kilpi supports narrowing down the subject while evaluating policies. The most common use case for this is to ensure that a user is authenticated.
-
-```ts
-// Create subject-narrowing Policy constructor
-const AuthedPolicy = Kilpi.as((subject: Subject | null) => {
-  if (!subject) return null;
-  return { subject };
-});
-
-// Create policy using the AuthedPolicy constructor
-const policies = {
-  example: AuthedPolicy.new((user) => {
-    return isAdmin(user); // example
-  })
-}
-
-// Apply policy to get narrowed down subject
-const user: Subject = await Kilpi.authorize("example");
-
-// Alternatively with `getAuthorization`
-const user: Subject | null = await Kilpi.getSubject();
-const authorization = await Kilpi.getAuthorization("example");
-if (authorization.granted) {
-  console.log(user.name); // User is defined
-}
-```
 
 ---
 

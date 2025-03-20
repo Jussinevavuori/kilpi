@@ -293,14 +293,35 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
       return authorization.subject;
     }
 
-    // Denied message
-    const message = authorization.message ?? "Unauthorized";
+    // Unauthorized
+    this.unauthorized(authorization.message ?? "Unauthorized");
+  }
 
+  /**
+   * When a manually defined authorization check fails, trigger the `onUnauthorized` procedure
+   * similarly as with `.authorize()` with this function.
+   *
+   * @param message The optional message to pass to the onUnauthorized handler.
+   * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
+   * value defined in `.onUnauthorized(...)`.
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * const user = await Kilpi.getSubject();
+   * if (!user) await Kilpi.unauthorized();
+   *
+   * // User is authed.
+   * await updateResource(resource, user);
+   * ```
+   */
+  unauthorized(message = "Unauthorized"): never {
     // Run onUnauthorized handler in current scope if available
-    await this.resolveScope()?.onUnauthorized?.({ message });
+    this.resolveScope()?.onUnauthorized?.({ message });
 
     // Run default onUnauthorized handler if available
-    await this.defaults?.onUnauthorized?.({ message });
+    this.defaults?.onUnauthorized?.({ message });
 
     // Throw by default
     throw new KilpiError.AuthorizationDenied(message);
@@ -319,7 +340,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    *   ...,
    *   policies: {
    *     resources: {
-   *       read: SomePolicy.new((user, resource) => ...),
+   *       read: SomePolicy((user, resource) => ...),
    *     }
    *   }
    * })

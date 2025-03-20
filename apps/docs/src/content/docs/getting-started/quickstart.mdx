@@ -103,18 +103,18 @@ Get started quickly with Kilpi using this guide.
       documents: {
         // Create a policy that does not take in a resource:
         // All authed users can create documents
-        create: AuthedPolicy.new((user) => {
+        create: AuthedPolicy((user) => {
           return true; 
         }),
 
         // Create a policy that takes in a resource:
         // All authed users can read documents they own or public documents
-        read: AuthedPolicy.new((user, document: Document) => {
+        read: AuthedPolicy((user, document: Document) => {
           return user.id === document.ownerId || document.isPublic;
         }),
 
         // Auther users can delete only their own documents, admins can delete all documents
-        delete: AuthedPolicy.new((user, document: Document) => {
+        delete: AuthedPolicy((user, document: Document) => {
           return isAdmin(user) || user.id === document.ownerId;
         }),
       },

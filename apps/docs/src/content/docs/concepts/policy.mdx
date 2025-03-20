@@ -16,7 +16,7 @@ A policy in **Kilpi** is defined in two parts, a **subject guard** and the **imp
 const AuthedPolicy = Policy.as((subject: Subject | null) => subject ? { subject } : null);
 
 // 2. Implementation
-AuthedPolicy.new((subject, res: Resource) => subject.id === res.userId);
+AuthedPolicy((subject, res: Resource) => subject.id === res.userId);
 ```
 
 Read more about [creating policies](/advanced/creating-policies) to learn how to create, design and structure policies for your application.

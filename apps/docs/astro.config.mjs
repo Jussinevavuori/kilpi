@@ -33,8 +33,8 @@ export default defineConfig({
           autogenerate: { directory: "getting-started" },
         },
         {
-          label: "Plugins",
-          autogenerate: { directory: "plugins" },
+          label: "Installation",
+          autogenerate: { directory: "installation" },
         },
         {
           label: "Concepts",
@@ -45,12 +45,12 @@ export default defineConfig({
           autogenerate: { directory: "guides" },
         },
         {
-          label: "Advanced",
-          autogenerate: { directory: "advanced" },
+          label: "Plugins",
+          autogenerate: { directory: "plugins" },
         },
         {
-          label: "Reference",
-          autogenerate: { directory: "reference" },
+          label: "Advanced",
+          autogenerate: { directory: "advanced" },
         },
       ],
 
