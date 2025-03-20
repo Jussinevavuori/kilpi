@@ -97,5 +97,5 @@ export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore
   }
 
   // Return all components
-  return { Access };
+  return Access;
 }
