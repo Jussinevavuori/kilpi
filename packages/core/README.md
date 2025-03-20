@@ -8,9 +8,9 @@ Designed and created by [Jussi Nevavuori](https://jussinevavuori.com/) with ‚ù§Ô
 
 [Read the docs to get started](https://kilpi.vercel.app)
 
-[![npm](https://img.shields.io/npm/dm/better-auth)](https://npm.chart.dev/@kilpi/core?primary=neutral&gray=neutral&theme=dark)
-[![npm version](https://img.shields.io/npm/v/better-auth.svg)](https://www.npmjs.com/package/@kilpi/core)
-[![GitHub stars](https://img.shields.io/github/stars/better-auth/better-auth)](https://github.com/jussinevavuori/kilpi/stargazers)
+![NPM Downloads](https://img.shields.io/npm/dw/%40kilpi%2Fcore)
+![NPM Version](https://img.shields.io/npm/v/%40kilpi%2Fcore)
+![GitHub Repo stars](https://img.shields.io/github/stars/Jussinevavuori/kilpi)
 
 ## Fine-grained authorization
 
