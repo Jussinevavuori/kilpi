@@ -16,7 +16,7 @@ export function CodeBlock(props: CodeBlockProps) {
   return (
     <div
       className={cn(
-        "relative rounded-lg overflow-hidden shadow-lg border border-gray-700 my-4 bg-gray-800",
+        "relative rounded-lg overflow-x-scroll shadow-lg border max-w-[calc(100vw_-_2rem)] border-gray-700 my-4 bg-gray-800",
         props.className,
       )}
       style={{ backgroundColor: ONE_DARK_BG_COLOR }}

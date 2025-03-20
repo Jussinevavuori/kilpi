@@ -52,7 +52,7 @@ export function HeroSection() {
             language="tsx"
             content={`
 							<Access to="docs:update" on={doc}>
-								<EditDocumentButton doc={doc} />
+							<EditDocumentButton doc={doc} />
 							</Access>
 							`}
           />

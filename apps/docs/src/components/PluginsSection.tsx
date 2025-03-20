@@ -74,7 +74,7 @@ export function PluginsSection() {
           </div>
 
           <div
-            className="grid grid-cols-1 gap-4"
+            className="flex flex-col sm:grid grid-cols-1 gap-4"
             style={{
               gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
             }}
