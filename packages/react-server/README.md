@@ -1,7 +1,7 @@
-**WARNING: THIS LIBRARY IS IN ALPHA -- A WORK IN PROGRESS -- USAGE AT YOUR OWN RISK**
+**Unstable API until 1.0.0 released**
 
-Until version 1.0.0, the API is subject to breaking changes without a major version bump. This is not meant for production use by external users yet. Rather it is an internal project that is being developed in the open.
+# 🛡️ Kilpi — React Server Plugin
 
-# Fine-grained authorization
+[Read more about Kilpi](https://kilpi.vercel.app)
 
-React server component bindings for Kilpi. Initialized with the created clients from each package.
+This is the Kilpi React Server Components plugin, which provides components and an automatic RSC scope for Kilpi.
