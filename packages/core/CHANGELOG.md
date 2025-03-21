@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.7.2
+
+### Patch Changes
+
+- f9cd1b2: pass resolveScope() to plugin factories as second argument
+
 ## 0.7.1
 
 ### Patch Changes
