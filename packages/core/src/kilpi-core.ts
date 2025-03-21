@@ -87,7 +87,14 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     this.advanced = args.advanced;
 
     // Instantiate all plugins
-    this.plugins = args.plugins?.map((instantiate) => instantiate(this)) ?? [];
+    this.plugins =
+      args.plugins?.map((instantiatePlugin) =>
+        instantiatePlugin(
+          this,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          () => this.resolveScope() as any,
+        ),
+      ) ?? [];
   }
 
   /**
