@@ -20,6 +20,7 @@ export default defineConfig({
       tagline: "The modern authorization framework for TypeScript",
       social: {
         github: "https://github.com/jussinevavuori/kilpi",
+        blueSky: "https://bsky.app/profile/jussinevavuori.com",
       },
       customCss: ["./src/styles/docs.css"],
 
