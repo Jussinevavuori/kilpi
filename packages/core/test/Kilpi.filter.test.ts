@@ -19,7 +19,7 @@ describe("Kilpi.filter", async () => {
       expect(filtered).toMatchObject(expected);
     });
 
-    await TestUtils.runAs({ id: "user1" }, async () => {
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       const filtered = await Kilpi.filter("docs:ownDocument", docs);
       const expected = docs.filter((_) => _.userId === "user1");
       expect(filtered).toMatchObject(expected);

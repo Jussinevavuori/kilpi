@@ -18,62 +18,54 @@ describe("Kilpi.getAuthorization", () => {
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(Kilpi.getAuthorization("public")).resolves.toMatchObject(
-        Granted(null),
-      );
+      await expect(Kilpi.getAuthorization("public")).resolves.toMatchObject(Granted(null));
     });
   });
 
   it("should grant public when authed", async () => {
-    await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      await expect(Kilpi.getAuthorization("public")).resolves.toMatchObject(
-        Granted(subject),
-      );
+    await TestUtils.runAs({ id: "user1", roles: [] }, async (subject) => {
+      await expect(Kilpi.getAuthorization("public")).resolves.toMatchObject(Granted(subject));
     });
   });
 
   it("should deny authed when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(Kilpi.getAuthorization("authed")).resolves.toMatchObject(
-        Denied,
-      );
+      await expect(Kilpi.getAuthorization("authed")).resolves.toMatchObject(Denied);
     });
   });
 
   it("should grant authed when authed", async () => {
-    await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      await expect(Kilpi.getAuthorization("authed")).resolves.toMatchObject(
-        Granted(subject),
-      );
+    await TestUtils.runAs({ id: "user1", roles: [] }, async (subject) => {
+      await expect(Kilpi.getAuthorization("authed")).resolves.toMatchObject(Granted(subject));
     });
   });
 
   it("should deny authed resource check when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(
-        Kilpi.getAuthorization("docs:ownDocument", resource),
-      ).resolves.toMatchObject(Denied);
+      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+        Denied,
+      );
     });
   });
 
   it("should grant authed resource check when authed as correct user", async () => {
-    await TestUtils.runAs({ id: "user1" }, async (subject) => {
-      await expect(
-        Kilpi.getAuthorization("docs:ownDocument", resource),
-      ).resolves.toMatchObject(Granted(subject));
+    await TestUtils.runAs({ id: "user1", roles: [] }, async (subject) => {
+      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+        Granted(subject),
+      );
     });
   });
 
   it("should deny authed resource check when authed as incorrect user", async () => {
-    await TestUtils.runAs({ id: "user2" }, async () => {
-      await expect(
-        Kilpi.getAuthorization("docs:ownDocument", resource),
-      ).resolves.toMatchObject(Denied);
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
+      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+        Denied,
+      );
     });
   });
 
   it("should work on deeply nested keys", async () => {
-    await TestUtils.runAs({ id: "user2" }, async () => {
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       await expect(
         Kilpi.getAuthorization("docs:deeply:nested:policy", resource),
       ).resolves.toMatchObject(Denied);

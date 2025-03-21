@@ -19,20 +19,11 @@ type TestPluginScopeExtension = {
 export function TestPlugin<TSubject, TPolicyset extends Policyset<TSubject>>() {
   return function TestPluginFactory(_Kilpi: KilpiCore<TSubject, TPolicyset>) {
     // Internal scope with extension
-    const _scope: ExtendedKilpiScope<
-      TSubject,
-      TPolicyset,
-      TestPluginScopeExtension
-    > = {
+    const _scope: ExtendedKilpiScope<TSubject, TPolicyset, TestPluginScopeExtension> = {
       test_value: 0,
     };
 
-    return new KilpiPlugin<
-      TSubject,
-      TPolicyset,
-      TestPluginInterface,
-      TestPluginScopeExtension
-    >({
+    return new KilpiPlugin<TSubject, TPolicyset, TestPluginInterface, TestPluginScopeExtension>({
       name: "TestPlugin",
 
       // Automatically provide a global scope

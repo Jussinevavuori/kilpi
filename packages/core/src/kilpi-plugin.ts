@@ -1,5 +1,5 @@
 import type { KilpiCore } from "./kilpi-core";
-import type { KilpiScope } from "./kilpi-scope";
+import type { ExtendedKilpiScope, KilpiScope } from "./kilpi-scope";
 import type { Policyset } from "./policy";
 
 /**
@@ -37,9 +37,7 @@ export class KilpiPlugin<
   /**
    * A plugin may automatically attempt to provide a scopen for Kilpi.
    */
-  getScope?: () =>
-    | (KilpiScope<TSubject, TPolicyset> & Partial<TScopeExtension>)
-    | undefined;
+  getScope?: () => (KilpiScope<TSubject, TPolicyset> & Partial<TScopeExtension>) | undefined;
 
   /**
    * A plugin may define a public interface. For example, a reset plugin may define an interface
@@ -54,14 +52,7 @@ export class KilpiPlugin<
    */
   interface: TPluginInterface;
 
-  constructor(
-    args: KilpiPluginArgs<
-      TSubject,
-      TPolicyset,
-      TPluginInterface,
-      TScopeExtension
-    >,
-  ) {
+  constructor(args: KilpiPluginArgs<TSubject, TPolicyset, TPluginInterface, TScopeExtension>) {
     this.name = args.name;
     this.interface = args.interface;
     this.getScope = args.getScope;
@@ -78,4 +69,5 @@ export type KilpiPluginFactory<
   TScopeExtension extends object = EmptyInterface,
 > = (
   Kilpi: KilpiCore<TSubject, TPolicyset>,
+  scope: () => ExtendedKilpiScope<TSubject, TPolicyset, TScopeExtension>,
 ) => KilpiPlugin<TSubject, TPolicyset, TPluginInterface, TScopeExtension>;

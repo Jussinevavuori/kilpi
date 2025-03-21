@@ -1,0 +1,96 @@
+---
+title: Creating plugins
+description: Learn to create your own plugins.
+---
+
+:::caution
+**Future plans**
+
+The plugin API will be improved in future releases. The current API for declaring plugins is too verbose, and they are missing many features. For example an upcoming planned "hooks" API would allow for much more functinality for plugins.
+:::
+
+Plugins can be used for multiple use-cases.
+
+1. Extending the functionality of the `KilpiCore` instance with new methods or properties.
+2. Automatically providing a scope for Kilpi in certain contexts.
+
+Use the `KilpiPlugin` class to create a new plugin. For best usability, plugins should be functions, that return a factory, which returns the plugin instance. This is done for maximum type inferrence.
+
+```ts
+// Define the public interface of your plugin here. You should
+// always namespace your methods as done here under the
+// `myPlugin` namespace.
+type MyPluginInterface = {
+  myPlugin: {
+    sayHello(): void;
+  },
+  setName(name: string): void;
+}
+
+// If you need to save custom values to the scope, you can
+// extend it with your own type. Prefer prefixing your
+// properties with the name of your plugin.
+type MyPluginScope = {
+  myPlugin_name?: string;
+}
+
+
+// This is the public API for applying the plugin to your
+// KilpiCore instance. You may optionally take in options
+// for customizing the plugin's behaviour here.
+export function MyPlugin<
+  TSubject,
+  TPolicyset extends Policyset<TSubject>
+>(options: {
+  defaultName?: string
+}) {
+
+  // The plugin factory. Do not change the function signature.
+  return function pluginFactory(
+    // Access the KilpiCore instance
+    Kilpi: KilpiCore<TSubject, TPolicyset>,
+    
+    // Use this function to access the current scope, if any.
+    scope: () => ExtendedScope<TSubject, TPolicyset, MyPluginScope> | undefined,
+  ) {
+
+    // This is the concrete implementation of your plugin.
+    return new KilpiPlugin<TSubject, TPolicyset, MyPluginInterface>({
+      
+      // All plugins should have a name.
+      name: "ReactServerComponentPlugin",
+
+      // Implement the public interface.
+      interface: {
+        myPlugin: {
+          sayHello() {
+            console.log("Hello, I am");
+          }
+        }
+      },
+
+      // Optional: If you are attempting to automatically provide a scope
+      // in a certain context, implement this function.
+      getScope() {
+        if (canProvideScopeInCurrentContext()) {
+          return getScopeForCurrentRequest();
+        }
+        return undefined;
+      }
+    });
+  };
+}
+```
+
+The plugin is installed as follows. The above API ensures that the types are correctly inferred.
+
+```ts {6}
+// kilpi.ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  plugins: [
+    MyPlugin({ defaultName: "Jussi" }),
+  ]
+})
+```

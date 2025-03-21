@@ -4,10 +4,7 @@ import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
 import type { KilpiPlugin } from "./kilpi-plugin";
 import type { KilpiQueryProtector } from "./kilpi-query";
 import { KilpiQuery } from "./kilpi-query";
-import {
-  type KilpiOnUnauthorizedHandler,
-  type KilpiScope,
-} from "./kilpi-scope";
+import { type KilpiOnUnauthorizedHandler, type KilpiScope } from "./kilpi-scope";
 import type {
   GetPolicyByKey,
   InferPolicyInputs,
@@ -363,9 +360,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    */
   async filter<
     TKey extends PolicysetKeys<TPolicyset>,
-    TResource extends ArrayHead<
-      InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
-    >,
+    TResource extends ArrayHead<InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>>,
   >(key: TKey, resources: TResource[]) {
     const subject = await this.getSubject();
     const policy = getPolicyByKey(this.policies, key);
@@ -409,20 +404,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   >(
     query: (...args: TInput) => TRawOutput,
     options: {
-      protector?: KilpiQueryProtector<
-        TInput,
-        TRawOutput,
-        TRedactedOutput,
-        TSubject
-      >;
+      protector?: KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject>;
     } = {},
   ) {
     // Implemented in a KilpiQuery class.
-    return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(
-      this,
-      query,
-      options,
-    );
+    return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
   }
 
   /**

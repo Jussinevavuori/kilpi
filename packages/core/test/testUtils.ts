@@ -1,8 +1,11 @@
 import { Policy } from "src/policy";
 
+export type TestRole = "admin" | "user" | "guest";
+
 // Test subject
 export type TestSubject = {
   id: string;
+  roles: TestRole[];
 };
 
 // Test document
@@ -47,9 +50,7 @@ async function listAllDocuments() {
 
 // Policy creation utilities for creating test kilpi instance
 const PublicPolicy = Policy.as((subject: TestSubject | null) => ({ subject }));
-const AuthedPolicy = Policy.as((subject: TestSubject | null) =>
-  subject ? { subject } : null,
-);
+const AuthedPolicy = Policy.as((subject: TestSubject | null) => (subject ? { subject } : null));
 
 // All test policies
 const policies = {
@@ -65,16 +66,12 @@ const policies = {
   // Nested keys
   docs: {
     // Authed only if ID matches
-    ownDocument: AuthedPolicy(
-      (user, doc: TestDocument) => user.id === doc.userId,
-    ),
+    ownDocument: AuthedPolicy((user, doc: TestDocument) => user.id === doc.userId),
 
     // Deeply nested policy
     deeply: {
       nested: {
-        policy: AuthedPolicy(
-          (user, doc: TestDocument) => user.id === doc.userId,
-        ),
+        policy: AuthedPolicy((user, doc: TestDocument) => user.id === doc.userId),
       },
     },
   },

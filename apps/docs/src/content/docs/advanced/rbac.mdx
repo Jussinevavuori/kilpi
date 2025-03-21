@@ -3,8 +3,65 @@ title: RBAC
 description: Role-based access control
 sidebar:
   order: 1
-  badge:
-    text: Pending
 ---
 
-Not yet written.
+:::note
+With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
+
+This guide is a tutorial on how to implement authorization policies that would fall under the term of RBAC.
+:::
+
+:::tip
+Before implementing RBAC, carefully consider whether [ABAC](/advanced/abac) or a [Permissions Based System](/advanced/permissions) would be more suitable for your use case as RBAC is often a simplistic approach.
+
+Furthermore, [implementing permissions](/advanced/permissions) instead of roles may allow for a more flexible authorization system, if needed. Roles can be seen as a user-facing abstraction of permissions, instead of an attribute of the user.
+:::
+
+Implementing a role-based access control with Kilpi is simple with the `Policy.rbac` utility, which is an alternative policy constructor to the default `Policy.as` constructor.
+
+```ts
+export const RbacPolicy = Policy.rbac(
+  (subject: Subject | null) => {
+    if (!subject) return null; // Subject narrowing
+    return { 
+      subject, 
+      roles: subject.roles, // Return user's roles as string[]
+    }
+  }
+)
+```
+
+The `RbacPolicy` constructor can now be used to easily create RBAC policies with strong typesafety.
+
+```ts
+export const policies = {
+  documents: {
+    read: RbacPolicy("user", "admin", "guest"),
+    create: RbacPolicy("user", "admin"),
+    delete: RbacPolicy("admin"),
+  },
+}
+```
+
+Due to how the Policy API was designed, the RBAC configuration has to be declared as "Action-to-Roles" instead of "Roles-to-Actions".
+
+We believe this is justified, as most authorization systems quickly run into limitations with RBAC. Let's imagine a new requirement, where documents can be deleted by admins, but also by users if the user created the document. With this API, breaking out of the RBAC model to [ABAC](/advanced/abac) is trivial:
+
+```diff lang="ts"
+export const policies = {
+  documents: {
+    read: RbacPolicy("user", "admin", "guest"),
+    create: RbacPolicy("user", "admin"),
+-    delete: RbacPolicy("admin"),
++    delete: AuthedPolicy((user, document: Document) => {
++      return hasRole(user, "admin") || user.id === document.ownerId;
++    })
+  },
+}
+
++ function hasRole(subject: Subject, ...roles: Role[]) {
++   return roles.some(role => subject.roles.includes(role));
++ }
+```
+
+With an "Roles-to-Actions" API, migrating to `ABAC` would require a more complex refactoring.

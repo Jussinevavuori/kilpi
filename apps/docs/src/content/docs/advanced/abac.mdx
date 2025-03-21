@@ -3,8 +3,40 @@ title: ABAC
 description: Attribute-based access control
 sidebar:
   order: 1
-  badge:
-    text: Pending
 ---
 
-Not yet written.
+:::note
+With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
+
+This guide is a tutorial on how to implement authorization policies that would fall under the term of ABAC.
+:::
+
+Implementing attribute-based access control (ABAC) with Kilpi is trivial as the Policy API is built to support it.
+
+## What is ABAC?
+
+Unlike [Role-based Access Control or RBAC](/advanced/rbac), which simply defines that a subject is allowed to perform an action based on their role, ABAC alows to customize policies based on **attributes**. These attributes may be related to the user (role, age, subscription, ...) or the resource being accessed (status, owner, ...).
+
+An example of an ABAC policy with several attributes.
+
+> Allow a **user** (subject) to delete (action) a document (resource) if the user is the **owner of the document** (attribute) and the **document is not expired** (attribute) or the **user is an admin** (attribute).
+
+## Implementing ABAC
+
+Implementing the above policy is trivial with the Kilpi Policy API.
+
+```ts
+const policies = {
+  documents: {
+    delete: AuthedPolicy((user, document: Document) => {
+      if (user.isAdmin) return true;
+      return user.id === document.ownerId && !document.expired;
+    })
+  }
+};
+
+async function deleteDocument(document: Document) {
+  await Kilpi.authorize('documents:delete', document);
+  await db.deleteDocument(document.id);
+}
+```

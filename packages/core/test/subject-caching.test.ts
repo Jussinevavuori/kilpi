@@ -20,25 +20,25 @@ describe("Kilpi.subjectCaching", () => {
     const Kilpi = KilpiWithCaching;
 
     // Should not be cached, not in scope
-    await TestUtils.runAs({ id: "1" }, async () => {
+    await TestUtils.runAs({ id: "1", roles: [] }, async () => {
       expect(await Kilpi.getSubject()).toMatchObject({ id: "1" });
     });
 
     // Provide scope
     await Kilpi.runInScope(async () => {
       // Should be cached, in scope
-      await TestUtils.runAs({ id: "2" }, async () => {
+      await TestUtils.runAs({ id: "2", roles: [] }, async () => {
         expect(await Kilpi.getSubject()).toMatchObject({ id: "2" });
       });
 
       // Should not override previous cache
-      await TestUtils.runAs({ id: "3" }, async () => {
+      await TestUtils.runAs({ id: "3", roles: [] }, async () => {
         expect(await Kilpi.getSubject()).toMatchObject({ id: "2" });
       });
     });
 
     // Should not use cached value when exiting scope
-    await TestUtils.runAs({ id: "4" }, async () => {
+    await TestUtils.runAs({ id: "4", roles: [] }, async () => {
       expect(await Kilpi.getSubject()).toMatchObject({ id: "4" });
     });
   });
@@ -53,7 +53,7 @@ describe("Kilpi.subjectCaching", () => {
       });
 
       // Should not override previous cache
-      await TestUtils.runAs({ id: "3" }, async () => {
+      await TestUtils.runAs({ id: "3", roles: [] }, async () => {
         expect(await Kilpi.getSubject()).toBeNull();
       });
     });
@@ -64,10 +64,10 @@ describe("Kilpi.subjectCaching", () => {
 
     // Provide scope
     await Kilpi.runInScope(async () => {
-      await TestUtils.runAs({ id: "a" }, async () => {
+      await TestUtils.runAs({ id: "a", roles: [] }, async () => {
         expect(await Kilpi.getSubject()).toMatchObject({ id: "a" });
       });
-      await TestUtils.runAs({ id: "b" }, async () => {
+      await TestUtils.runAs({ id: "b", roles: [] }, async () => {
         expect(await Kilpi.getSubject()).toMatchObject({ id: "b" });
       });
     });

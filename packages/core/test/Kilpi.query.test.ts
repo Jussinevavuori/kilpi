@@ -15,28 +15,22 @@ describe("Kilpi.query", async () => {
   /**
    * Get a document by ID, protected by the "docs:ownDocument" policy
    */
-  const getDoc = Kilpi.query(
-    async (id: string) => await TestUtils.getDocument(id),
-    {
-      async protector({ output }) {
-        await Kilpi.authorize("docs:ownDocument", output);
-        return output;
-      },
+  const getDoc = Kilpi.query(async (id: string) => await TestUtils.getDocument(id), {
+    async protector({ output }) {
+      await Kilpi.authorize("docs:ownDocument", output);
+      return output;
     },
-  );
+  });
 
   /**
    * Get a document by ID, only returns userId if own document.
    */
-  const getPublicRedactedDoc = Kilpi.query(
-    async (id: string) => await TestUtils.getDocument(id),
-    {
-      async protector({ output, subject }) {
-        if (output.userId === subject?.id) return output;
-        return { id: output.id };
-      },
+  const getPublicRedactedDoc = Kilpi.query(async (id: string) => await TestUtils.getDocument(id), {
+    async protector({ output, subject }) {
+      if (output.userId === subject?.id) return output;
+      return { id: output.id };
     },
-  );
+  });
 
   /**
    * Get a document by ID, only returns userId if own document.
@@ -53,46 +47,36 @@ describe("Kilpi.query", async () => {
     await TestUtils.runAs(null, async () => {
       await expect(getDoc.unsafe("doc1")).resolves.toMatchObject(doc1);
     });
-    await TestUtils.runAs({ id: "user1" }, async () => {
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       await expect(getDoc.unsafe("doc1")).resolves.toMatchObject(doc1);
     });
-    await TestUtils.runAs({ id: "user2" }, async () => {
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       await expect(getDoc.unsafe("doc1")).resolves.toMatchObject(doc1);
     });
   });
 
   await it("safe call resolves or returns null with custom catch", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(
-        null,
-      );
+      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(null);
     });
-    await TestUtils.runAs({ id: "user1" }, async () => {
-      await expect(
-        getDoc.protect("doc1").catch(() => null),
-      ).resolves.toMatchObject(doc1);
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
+      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toMatchObject(doc1);
     });
-    await TestUtils.runAs({ id: "user2" }, async () => {
-      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(
-        null,
-      );
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
+      await expect(getDoc.protect("doc1").catch(() => null)).resolves.toBe(null);
     });
   });
 
   await it("protect call resolves or throws", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-        KilpiError.AuthorizationDenied,
-      );
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.AuthorizationDenied);
     });
 
-    await TestUtils.runAs({ id: "user1" }, async () => {
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       await expect(getDoc.protect("doc1")).resolves.toMatchObject(doc1);
     });
-    await TestUtils.runAs({ id: "user2" }, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-        KilpiError.AuthorizationDenied,
-      );
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.AuthorizationDenied);
     });
   });
 
@@ -102,17 +86,13 @@ describe("Kilpi.query", async () => {
         throw new TestUtils.TestErrorClass(message);
       });
       await TestUtils.runAs(null, async () => {
-        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-          TestUtils.TestErrorClass,
-        );
+        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(TestUtils.TestErrorClass);
       });
-      await TestUtils.runAs({ id: "user1" }, async () => {
+      await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
         await expect(getDoc.protect("doc1")).resolves.toMatchObject(doc1);
       });
-      await TestUtils.runAs({ id: "user2" }, async () => {
-        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(
-          TestUtils.TestErrorClass,
-        );
+      await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
+        await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(TestUtils.TestErrorClass);
       });
     });
   });
@@ -123,12 +103,12 @@ describe("Kilpi.query", async () => {
       expect(doc).toMatchObject({ id: doc1.id });
       expect(doc).not.toHaveProperty("userId");
     });
-    await TestUtils.runAs({ id: "user1" }, async () => {
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       const doc = await getPublicRedactedDoc.protect("doc1");
       expect(doc).toMatchObject(doc1);
       expect(doc).toHaveProperty("userId");
     });
-    await TestUtils.runAs({ id: "user2" }, async () => {
+    await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       const doc = await getPublicRedactedDoc.protect("doc1");
       expect(doc).toMatchObject({ id: doc1.id });
       expect(doc).not.toHaveProperty("userId");
@@ -137,7 +117,7 @@ describe("Kilpi.query", async () => {
       const docs = await getDocs.protect();
       expect(docs).toHaveLength(0);
     });
-    await TestUtils.runAs({ id: "user1" }, async () => {
+    await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       const docs = await getDocs.protect();
       expect(docs).toHaveLength(3);
       for (const doc of docs) expect(doc).toMatchObject({ userId: "user1" });
