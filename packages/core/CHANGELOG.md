@@ -1,5 +1,15 @@
 # @kilpi/core
 
+## 0.8.0
+
+### Minor Changes
+
+- 8082814: new plugin api, new "hooks" api for implementing plugins (and other custom behaviour)
+
+### Patch Changes
+
+- f9cd1b2: pass resolveScope() to plugin factories as second argument
+
 ## 0.7.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @kilpi/react
 
+## 0.8.0
+
+### Minor Changes
+
+- 8082814: new plugin api, new "hooks" api for implementing plugins (and other custom behaviour)
+
+### Patch Changes
+
+- Updated dependencies [f9cd1b2]
+- Updated dependencies [8082814]
+  - @kilpi/core@0.8.0
+
 ## 0.7.2
 
 ### Patch Changes
