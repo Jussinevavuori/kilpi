@@ -7,7 +7,7 @@ import { TestUtils } from "./testUtils";
 const KilpiWithoutCaching = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
-  advanced: { disableSubjectCaching: true },
+  settings: { disableSubjectCaching: true },
 });
 
 const KilpiWithCaching = createKilpi({
@@ -59,7 +59,7 @@ describe("Kilpi.subjectCaching", () => {
     });
   });
 
-  it("should not cache the current subject in the current scope when advanced.disableSubjectCaching", async () => {
+  it("should not cache the current subject in the current scope when settings.disableSubjectCaching", async () => {
     const Kilpi = KilpiWithoutCaching;
 
     // Provide scope

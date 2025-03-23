@@ -1,49 +1,29 @@
 import { describe } from "node:test";
-import type { KilpiCore } from "src";
-import { createKilpi, KilpiPlugin, type Policyset } from "src";
-import type { ExtendedKilpiScope } from "src/kilpi-scope";
+import { createKilpi, type AnyKilpiCore } from "src";
+import { createKilpiPlugin } from "src/kilpi-plugin";
+import type { KilpiScope } from "src/kilpi-scope";
 import { expect, it, vi } from "vitest";
 import { TestUtils } from "./testUtils";
 
-type TestPluginInterface = {
-  test: {
-    set: (value: number) => void;
-    get: () => number;
-  };
-};
+export function TestPlugin<T extends AnyKilpiCore>() {
+  let value = 0;
 
-type TestPluginScopeExtension = {
-  test_value: number;
-};
+  const scope: KilpiScope<T> = {};
 
-export function TestPlugin<TSubject, TPolicyset extends Policyset<TSubject>>() {
-  return function TestPluginFactory(_Kilpi: KilpiCore<TSubject, TPolicyset>) {
-    // Internal scope with extension
-    const _scope: ExtendedKilpiScope<TSubject, TPolicyset, TestPluginScopeExtension> = {
-      test_value: 0,
-    };
+  return createKilpiPlugin((Kilpi: T) => {
+    Kilpi.hooks.onRequestScope(() => scope);
 
-    return new KilpiPlugin<TSubject, TPolicyset, TestPluginInterface, TestPluginScopeExtension>({
-      name: "TestPlugin",
-
-      // Automatically provide a global scope
-      getScope() {
-        return _scope;
-      },
-
-      // Custom interface for interacting with the plugin
-      interface: {
-        test: {
-          set(value: number) {
-            _scope.test_value = value;
-          },
-          get() {
-            return _scope.test_value ?? 0;
-          },
+    return Object.assign(Kilpi, {
+      test: {
+        get() {
+          return value;
+        },
+        set(v: number) {
+          value = v;
         },
       },
     });
-  };
+  });
 }
 
 const defaultFn = vi.fn(() => {
