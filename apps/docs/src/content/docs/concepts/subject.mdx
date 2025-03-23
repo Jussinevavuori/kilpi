@@ -4,6 +4,17 @@ title: Subject
 
 **The subject** represents your **user** or other actor and their permissions, memberships or similar. The subject allows you to wrap any authentication provider and pass it to Kilpi for evaluating policies. The term "user" can be used interchangeably with the "subject".
 
+:::note
+The subject is automatically cached inside the scope, when available. To disable this behavior, you can pass `settings.disableSubjectCaching: true` to `createKilpi`. (We heavily recommend caching the subject for performance reasons, either yourself or by using the default caching behavior).
+
+```ts
+// kilpi.ts
+export const Kilpi = createKilpi({ ..., 
+  settings: { disableSubjectCaching: true, },
+})
+```
+:::
+
 ### Example subject
 
 ```ts

@@ -439,6 +439,13 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   }
 
   /**
+   * Utility for extending the current instance (uses `Object.assign(this, ...)` under the hood.)
+   */
+  public extend<T extends object>(extension: T) {
+    return Object.assign(this, extension);
+  }
+
+  /**
    * Call stack size protector to provide helpful error messages to user if they accidentally call
    * protect() (or a protected query) within a protect() call, which causes an infinite loop. This
    * may happen e.g. due to calling protect() or a protected query within the `getSubject` function
