@@ -1,0 +1,45 @@
+---
+title: Hooks
+---
+
+**Advanced: Hooks are not required for basic usage of Kilpi.**
+
+Hooks are a flexible API that allows hooking into the functionality of the core library. They are used to customize and extend the behavior of Kilpi.
+
+In essence, hooks are callback functions registered via `Kilpi.hooks.onSomeHook` and called by the core library at specific times. Registering a hook returns an `unregister` function which can be used to remove the hook.
+
+## Types of hooks
+
+This list contains the types of different hooks you can use to use with Kilpi or in your custom plugins.
+
+### `onRequestScope`
+
+When there is no explicit scope available via `Kilpi.runInScope`, Kilpi attempts to resolve the scope from plugins using the `onRequestScope` hook. It must return a scope object if possible.
+
+```ts
+const unregister = Kilpi.hooks.onRequestScope(() => {
+  if (isCustomScopeAvailable) {
+    return customScope;
+  }
+});
+```
+
+### `onBeforeAuthorization`
+
+Called before a policy is evaluated (from `.authorize()`, `.isAuthorized()` or any other function). Only used as a callback.
+
+```ts
+const unregister = Kilpi.hooks.onBeforeAuthorization((event) => {
+  console.log(`Before authorization`, event.policy, `from`, event.source)
+});
+```
+
+### `onBeforeAuthorization`
+
+Called after a policy is evaluated with the authorization result (from `.authorize()`, `.isAuthorized()` or any other function). Only used as a callback.
+
+```ts
+const unregister = Kilpi.hooks.onBeforeAuthorization((event) => {
+  console.log(`Authorization ${event.authorization.granted ? "passed" : "denied"} on ${event.policy} from ${event.source} for ${event.subject.name}`)
+});
+```

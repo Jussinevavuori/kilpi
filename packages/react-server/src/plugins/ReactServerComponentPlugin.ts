@@ -14,15 +14,15 @@ const rscCache = React.cache(() => ({ current: {} as AnyKilpiScope }));
 
 /**
  * React server component plugin for automatically providing a Kilpi scope
- * in React Server Components.
+ * in React Server Components and for creating the React Server Component bindings
+ * to work with Kilpi.
  */
 export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
   return createKilpiPlugin((Kilpi: T) => {
     // Provide automatic scope when in RSC context
     Kilpi.hooks.onRequestScope(() => (isRscContext() ? rscCache().current : undefined));
 
-    return Object.assign(Kilpi, {
-      // Provide `ReactServer.createComponents`
+    return Kilpi.extend({
       ReactServer: {
         createComponents() {
           return {

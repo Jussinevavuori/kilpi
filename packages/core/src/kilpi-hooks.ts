@@ -8,7 +8,7 @@ import type { InferPolicySubject } from "./policy";
  * `onRequestScope` hooks will be called when this happens and the first one to return a scope
  * will be used as the scope.
  */
-export type KilpionRequestScopeHook<T extends AnyKilpiCore> = () => KilpiScope<T> | undefined;
+export type KilpiOnRequestScopeHook<T extends AnyKilpiCore> = () => KilpiScope<T> | undefined;
 
 /**
  * Type of hook which is called before authorization is performed.
@@ -60,7 +60,7 @@ export class KilpiHooks<T extends AnyKilpiCore> {
    * All registered hooks.
    */
   public registeredHooks: {
-    onRequestScope: Set<KilpionRequestScopeHook<T>>;
+    onRequestScope: Set<KilpiOnRequestScopeHook<T>>;
     onBeforeAuthorization: Set<KilpiOnBeforeAuthorizationHook<T>>;
     onAfterAuthorization: Set<KilpiOnAfterAuthorizationHook<T>>;
   };
@@ -77,7 +77,7 @@ export class KilpiHooks<T extends AnyKilpiCore> {
   /**
    * Register a new `onRequestScope` hook. Returns an unsubscribe function.
    */
-  public onRequestScope(hook: KilpionRequestScopeHook<T>) {
+  public onRequestScope(hook: KilpiOnRequestScopeHook<T>) {
     this.registeredHooks.onRequestScope.add(hook);
     return () => this.registeredHooks.onRequestScope.delete(hook);
   }

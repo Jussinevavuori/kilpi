@@ -13,7 +13,7 @@ export function TestPlugin<T extends AnyKilpiCore>() {
   return createKilpiPlugin((Kilpi: T) => {
     Kilpi.hooks.onRequestScope(() => scope);
 
-    return Object.assign(Kilpi, {
+    return Kilpi.extend({
       test: {
         get() {
           return value;

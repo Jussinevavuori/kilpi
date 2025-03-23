@@ -4,36 +4,64 @@ title: Plugin
 
 import { LinkCard } from '@astrojs/starlight/components';
 
-Plugins are used to extend the functionality of Kilpi. Plugins can have multiple functionalities.
+Plugins are used to extend the functionality of Kilpi. They are implemented using the same public [hooks APIs](/docs/concepts/hooks) as available to you.
 
-## Providing scope
-
-Plugins (such as the [React Server Components Plugin](/plugins/react-server-components)) automatically provides Kilpi a scope when rendering React Server Components. This means you can call all Kilpi APIs without having to worry about providing a scope manually.
-
-```tsx {2,3}
-export default async function Page() {
-  // This just works without `Kilpi.runInScope` with a plugin.
-  Kilpi.onUnauthorized(() => redirect("/")); 
-  Kilpi.authorize(...);
-}
-```
+In addition, plugins can extend the `KilpiCore` instance by providing custom functions.
 
 ## Extending the Kilpi instance
 
-:::tip
-No official plugins yet extend the Kilpi instance.
-:::
-
-Imagine a `LogRecorderPlugin` which automatically collects logs and allow you to flush them all at once. It's API might look like the following.
+Take for example the `ReactServerComponentsPlugin`, which not only automatically provides a scope for RSCs, but also provides components via `Kilpi.ReactServer.createComponents`.
 
 ```ts
-await Kilpi.logRecorder.flushLogs();
+const Kilpi = await createKilpi({
+  ...,
+  plugins: [ReactServerComponentsPlugin()],
+});
+
+const { Access } = Kilpi.ReactServer.createComponents();
 ```
 
+## Creating custom plugins
+
+Creating custom plugins is easy with the `createKilpiPlugin` method. For improved typesafety and customizability, you should wrap your plugin in a generic function. The `createKilpiPlugin` method will take in the `Kilpi` instance and return the same instance, optionally with added methods using `Kilpi.extend`.
+
+Let's create an utility plugin for counting the total number of authorizations.
+
+```ts
+export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
+  options?: MyCustomOptions // Any optional options for customizing your plugin's behaviour
+) {
+  return createKilpiPlugin<T>(async (Kilpi: T) => {
+    let count = 0;
+
+    // Your plugin logic here: Call hooks, etc.
+    Kilpi.hooks.onAfterAuthorization(() => {
+      count += 1;
+    });
+
+    // Return the instance (optionally add your custom methods)
+    return Kilpi.extend({
+      authorizationCounter: {
+        get() {
+          return value;
+        },
+      }
+    })
+  });
+}
+
+// Apply and use
+const Kilpi = createKilpi({
+  ...,
+  plugins: [AuthorizationCounterPlugin()],
+});
+
+Kilpi.authorizationCounter.get();
+```
 ---
 
 <LinkCard 
-  title="Create a custom plugin" 
-  description="Learn how to create a custom plugin for your own use case or to publish as a library."
-  href="/advanced/creating-plugins"
+  title="Learn more about hooks" 
+  description="Learn how to use hooks to extend Kilpi and create custom, advanced functionality."
+  href="/concepts/hooks"
 />
