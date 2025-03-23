@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.8.1
+
+### Patch Changes
+
+- b2b77ad: introduce Kilpi.extend() as syntatic sugar for Object.assign(Kilpi, {...})
+- Updated dependencies [b2b77ad]
+  - @kilpi/core@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes
