@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.8.2
+
+### Patch Changes
+
+- ea30d78: fix type support for 4+ plugins
+
 ## 0.8.1
 
 ### Patch Changes
