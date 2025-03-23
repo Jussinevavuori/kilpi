@@ -64,11 +64,11 @@ export default async function ProtectedPage() {
 
 ### Components
 
-The package also provides the `createKilpiReactServerComponents` function to create React server component bindings for working with Kilpi.
+Use the `Kilpi.ReactServer.createComponents` function (provided by the plugin) to create React server component bindings for working with Kilpi.
 
 ```ts
 // kilpi.components.ts
-export const { Access } = createKilpiReactServerComponents(Kilpi);
+export const { Access } = Kilpi.ReactServer.createComponents(Kilpi);
 ```
 
 ### `<Access />`
