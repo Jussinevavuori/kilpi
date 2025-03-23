@@ -10,9 +10,10 @@
   "private": false,
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint && tsc",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "dev": "vitest watch"
   },
   "dependencies": {
     "zod": "^3.24.1"

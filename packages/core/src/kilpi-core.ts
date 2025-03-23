@@ -1,10 +1,14 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { KilpiError } from "./error";
 import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
-import type { KilpiPlugin } from "./kilpi-plugin";
+import { KilpiHooks } from "./kilpi-hooks";
 import type { KilpiQueryProtector } from "./kilpi-query";
 import { KilpiQuery } from "./kilpi-query";
-import { type KilpiOnUnauthorizedHandler, type KilpiScope } from "./kilpi-scope";
+import {
+  warnOnScopeUnavailable,
+  type KilpiOnUnauthorizedHandler,
+  type KilpiScope,
+} from "./kilpi-scope";
 import type {
   GetPolicyByKey,
   InferPolicyInputs,
@@ -16,19 +20,6 @@ import { getPolicyByKey } from "./policy";
 import { createCallStackSizeProtector } from "./utils/call-stack-size-protector";
 import type { ArrayHead } from "./utils/types";
 
-// Utility for logging a warning when no scope is available.
-const noScopeWarning = (msg: string) =>
-  console.warn(
-    [
-      msg,
-      "No scope available.",
-      "\n",
-      `(Attempting to access current Kilpi scope, but no scope is available.`,
-      `Provide a Kilpi scope either with a plugin or manually via Kilpi.runInScope().`,
-      `Read mode: https://kilpi.vercel.app/concepts/scope)`,
-    ].join(" "),
-  );
-
 /**
  * The KilpiCore class is the primary interface for interacting with the Kilpi library.
  */
@@ -37,44 +28,41 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * Connect your own authentication provider (and other subject data / metadata) via a
    * custom `getSubject` function.
    *
-   * This will be automatically cached within each scope unless `advanced.disableSubjectCaching`.
+   * This will be automatically cached within each scope unless `settings.disableSubjectCaching`.
    */
-  uncached_getSubject: () => TSubject | Promise<TSubject>;
+  private uncached_getSubject: () => Promise<TSubject>;
 
   /**
    * Default behaviour when no value is available from a scope.
    */
-  defaults?: KilpiScope<TSubject, TPolicyset>;
+  public defaults?: KilpiConstructorArgs<TSubject, TPolicyset>["defaults"];
 
   /**
    * The policies which define the authorization logic of the application.
    */
-  policies: TPolicyset;
-
-  /**
-   * All plugins
-   */
-  plugins: KilpiPlugin<TSubject, TPolicyset, Record<never, never>>[];
+  public policies: TPolicyset;
 
   /**
    * AsyncLocalStorage for running values in an explicit scope.
    *
    * Applied via `KilpiCore.runInScope()`.
    */
-  private scopeStorage: AsyncLocalStorage<KilpiScope<TSubject, TPolicyset>>;
+  private scopeStorage: AsyncLocalStorage<KilpiScope<typeof this>>;
 
   /**
-   * Advanced settings
+   * settings
    */
-  advanced: KilpiConstructorArgs<TSubject, TPolicyset>["advanced"];
+  public settings: KilpiConstructorArgs<TSubject, TPolicyset>["settings"];
 
   /**
    * Inferring utilities. Do not use at runtime.
    */
-  public $$infer = null as unknown as {
-    subject: TSubject;
-    policies: TPolicyset;
-  };
+  public $$infer = null as unknown as { subject: TSubject; policies: TPolicyset };
+
+  /**
+   * Current hooks
+   */
+  public hooks: KilpiHooks<typeof this>;
 
   /**
    * New instance
@@ -84,59 +72,52 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     this.policies = args.policies;
     this.defaults = args.defaults;
     this.scopeStorage = new AsyncLocalStorage();
-    this.advanced = args.advanced;
-
-    // Instantiate all plugins
-    this.plugins =
-      args.plugins?.map((instantiatePlugin) =>
-        instantiatePlugin(
-          this,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          () => this.resolveScope() as any,
-        ),
-      ) ?? [];
+    this.settings = args.settings;
+    this.hooks = new KilpiHooks();
   }
 
   /**
-   * Utility to get the subject, with a cache in the current scope.
+   * Utility to get the subject.
+   *
+   * Caches the subject in the current scope (if available) unless `settings.disableSubjectCaching`
+   * is set to true.
    */
   public async getSubject(): Promise<TSubject> {
-    // Respect advanced.disableSubjectCaching
-    if (this.advanced?.disableSubjectCaching) {
+    // Respect settings.disableSubjectCaching
+    if (this.settings?.disableSubjectCaching) {
       return await this.uncached_getSubject();
     }
 
-    // Cache hit in current scope
-    const subjectCache = this.resolveScope()?.subjectCache;
-    if (subjectCache) return subjectCache.subject;
-
-    // Cache miss, fetch the subject
-    const subject = await this.uncached_getSubject();
-
-    // Cache to current scope or warn
     const scope = this.resolveScope();
-    if (scope) {
-      scope.subjectCache = { subject };
-    } else {
-      noScopeWarning("Kilpi: getSubject() could not be cached.");
+
+    // Cache hit
+    if (scope?.subjectCache) {
+      return scope.subjectCache.subjectPromise;
     }
 
-    // Return the subject
-    return subject;
+    // Cache miss: Populate cache
+    const subjectPromise = this.uncached_getSubject();
+    if (!scope) warnOnScopeUnavailable("Kilpi: getSubject() could not be cached.");
+    else {
+      scope.subjectCache = { subjectPromise };
+    }
+
+    return await subjectPromise;
   }
 
   /**
    * Internal utility to resolve the current scope. Prioritizes the current explicit scope from
-   * `scopeStorage` if available, then the plugin scopes.
+   * `scopeStorage` if available. If not available, falls back to using scopes provided by e.g.
+   * plugins via the `onRequestScope` hook.
    */
-  private resolveScope(): KilpiScope<TSubject, TPolicyset> | null {
+  public resolveScope(): KilpiScope<typeof this> | null {
     const explicitScope = this.scopeStorage.getStore();
     if (explicitScope) return explicitScope;
 
-    // Fallback to any plugin scope if available
-    for (const plugin of this.plugins) {
-      const pluginScope = plugin.getScope?.();
-      if (pluginScope) return pluginScope;
+    // Fallback to onRequestScope hook
+    for (const hook of this.hooks.registeredHooks.onRequestScope) {
+      const scope = hook();
+      if (scope) return scope;
     }
 
     // No scope available
@@ -179,11 +160,13 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    */
   public onUnauthorized(handler: KilpiOnUnauthorizedHandler) {
     const scope = this.resolveScope();
-    if (scope) {
-      scope.onUnauthorized = handler;
-    } else {
-      noScopeWarning(`Kilpi: onUnauthorized handler not set.`);
+
+    if (!scope) {
+      warnOnScopeUnavailable(`Kilpi: onUnauthorized handler not set.`);
+      return;
     }
+
+    scope.onUnauthorized = handler;
   }
 
   /**
@@ -191,6 +174,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * the policy by key and evaluates the policy. Returns all authorization information.
    */
   async evaluateAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
+    options: { source: string },
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ) {
@@ -202,8 +186,18 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
       // Resolve the policy function by key
       const policy = getPolicyByKey(this.policies, key);
 
+      // Run `onBeforeAuthorization` hooks
+      this.hooks.registeredHooks.onBeforeAuthorization.forEach((hook) => {
+        hook({ source: options.source, policy: key, subject });
+      });
+
       // Evaluate the policy
       const authorization = await policy(subject, ...[...inputs]);
+
+      // Run `onAfterAuthorization` hooks
+      this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
+        hook({ source: options.source, policy: key, subject, authorization });
+      });
 
       // Return all relevant data
       return { authorization, policy, subject };
@@ -234,7 +228,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ) {
     // Evaluate policy and return the authorization object
-    const { authorization } = await this.evaluateAuthorization(key, ...inputs);
+    const { authorization } = await this.evaluateAuthorization(
+      { source: "getAuthorization" },
+      key,
+      ...inputs,
+    );
     return authorization;
   }
 
@@ -260,7 +258,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<boolean> {
     // Evaluate policy and return the granted boolean
-    const { authorization } = await this.evaluateAuthorization(key, ...inputs);
+    const { authorization } = await this.evaluateAuthorization(
+      { source: "isAuthorized" },
+      key,
+      ...inputs,
+    );
     return authorization.granted;
   }
 
@@ -290,7 +292,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<InferPolicySubject<GetPolicyByKey<TPolicyset, TKey>>> {
     // Evaluate policy and get the authorization object
-    const authorization = await this.getAuthorization(key, ...inputs);
+    const { authorization } = await this.evaluateAuthorization(
+      { source: "authorize" },
+      key,
+      ...inputs,
+    );
 
     // Granted, return the narrowed down subject and escape early
     if (authorization.granted) {
@@ -369,7 +375,10 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     TKey extends PolicysetKeys<TPolicyset>,
     TResource extends ArrayHead<InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>>,
   >(key: TKey, resources: TResource[]) {
+    // Get the current subject (cached)
     const subject = await this.getSubject();
+
+    // Resolve the policy function by key
     const policy = getPolicyByKey(this.policies, key);
 
     // Collect all resources which passed authorization here.
@@ -379,7 +388,18 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     await KilpiCore.CallStackSizeProtector.run(async () =>
       Promise.all(
         resources.map(async (resource) => {
+          // Run `onBeforeAuthorization` hooks
+          this.hooks.registeredHooks.onBeforeAuthorization.forEach((hook) => {
+            hook({ source: "filter", policy: key, subject });
+          });
+
           const authorization = await policy(subject, resource);
+
+          // Run `onAfterAuthorization` hooks
+          this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
+            hook({ source: "filter", policy: key, subject, authorization });
+          });
+
           if (authorization.granted) {
             authorizedResources.push(resource);
           }
@@ -435,3 +455,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
 		`.replace(/\s+/g, " "), // Normalize whitespace
   });
 }
+
+// Utility type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyKilpiCore = KilpiCore<any, any>;

@@ -7,7 +7,7 @@ import { TestUtils } from "./testUtils";
 const Kilpi = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
-  advanced: { disableSubjectCaching: true },
+  settings: { disableSubjectCaching: true },
 });
 
 describe("Kilpi.authorize", () => {

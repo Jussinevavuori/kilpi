@@ -4,9 +4,7 @@
  * Compare two types for equality.
  */
 export type Equals<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
-    ? true
-    : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 
 /**
  * Object with string keys to type T with any depth.
@@ -18,11 +16,7 @@ export type DeepObject<T> = {
 /**
  * Extracts all keys from an object which have a value of type Target.
  */
-export type RecursiveKeysTo<
-  Object,
-  Target,
-  Separator extends string = ".",
-> = Object extends object
+export type RecursiveKeysTo<Object, Target, Separator extends string = "."> = Object extends object
   ? {
       [Key in keyof Object]: Key extends string | number
         ? Object[Key] extends Target
@@ -57,13 +51,22 @@ export type MaybePromise<T> = T | Promise<T>;
 /**
  * Get head of array
  */
-export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]]
-  ? H
-  : never;
+export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]] ? H : never;
 
 /**
  * Get tail of array
  */
-export type ArrayTail<T extends any[]> = T extends [any, ...infer R]
-  ? R
-  : never;
+export type ArrayTail<T extends any[]> = T extends [any, ...infer R] ? R : never;
+
+/**
+ * Any function
+ */
+export type AnyFunction = (...args: any[]) => any;
+
+/**
+ * Prettify utility
+ * https://www.totaltypescript.com/concepts/the-prettify-helper
+ */
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

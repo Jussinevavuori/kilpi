@@ -45,15 +45,17 @@ export function createCallStackSizeProtector(options: {
   return {
     /**
      * Run function inside a call stack security guard, instead of manually calling push and pop
+     *
+     * Pass `disabled` as `true` to disable the call stack size protector for this call.
      */
-    async run<T>(fn: () => Promise<T>): Promise<T> {
-      push();
+    async run<T>(fn: () => Promise<T>, options: { disabled?: boolean } = {}): Promise<T> {
+      if (!options?.disabled) push();
       try {
         const result = await fn();
-        pop();
+        if (!options?.disabled) pop();
         return result;
       } catch (error) {
-        pop();
+        if (!options?.disabled) pop();
         throw error;
       }
     },

@@ -18,6 +18,7 @@ const Kilpi = createKilpi({
       delete: RbacPolicy("admin"),
     },
   },
+  settings: { disableSubjectCaching: true },
 });
 
 describe("Policy.rbac", () => {

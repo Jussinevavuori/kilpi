@@ -1,19 +1,6 @@
-import {
-  KilpiPlugin,
-  type EmptyInterface,
-  type KilpiCore,
-  type KilpiScope,
-  type Policyset,
-} from "@kilpi/core";
+import { createKilpiPlugin, type AnyKilpiCore, type AnyKilpiScope } from "@kilpi/core";
 import React from "react";
-
-type Interface = EmptyInterface;
-
-// Provide the request scope via React.cache
-const rscCache = React.cache(() => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  current: {} as KilpiScope<any, any>,
-}));
+import { createAccess } from "src/components/Access";
 
 // This is a hack to determine if we are running in a React Server Component context.
 // If a cached random function returns the same result twice, the cache is working
@@ -21,23 +8,28 @@ const rscCache = React.cache(() => ({
 const rscProbe = React.cache(() => Math.random());
 const isRscContext = () => rscProbe() === rscProbe();
 
+// Using React.cache allows us to keep a mutable value for the current request, but only
+// when inside a React Server Component context.
+const rscCache = React.cache(() => ({ current: {} as AnyKilpiScope }));
+
 /**
  * React server component plugin for automatically providing a Kilpi scope
  * in React Server Components.
  */
-export function ReactServerComponentPlugin<TSubject, TPolicyset extends Policyset<TSubject>>() {
-  return function pluginFactory(_Kilpi: KilpiCore<TSubject, TPolicyset>) {
-    return new KilpiPlugin<TSubject, TPolicyset, Interface>({
-      name: "ReactServerComponentPlugin",
-      interface: {},
+export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
+  return createKilpiPlugin((Kilpi: T) => {
+    // Provide automatic scope when in RSC context
+    Kilpi.hooks.onRequestScope(() => (isRscContext() ? rscCache().current : undefined));
 
-      getScope() {
-        if (isRscContext()) {
-          return rscCache().current;
-        }
-
-        return undefined;
+    return Object.assign(Kilpi, {
+      // Provide `ReactServer.createComponents`
+      ReactServer: {
+        createComponents() {
+          return {
+            Access: createAccess(Kilpi),
+          };
+        },
       },
     });
-  };
+  });
 }
