@@ -228,12 +228,14 @@ export function createKilpi<
 			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7, (t: T7) => T8, (t: T8) => T9]
 			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7, (t: T7) => T8, (t: T8) => T9, (t: T9) => T10]
   },
-): KilpiCore<S, P> | T1 | T2 | T3 | T4 {
+): KilpiCore<S, P> | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 {
   // Construct base KilpiCore class
   const Kilpi = new KilpiCore(args);
 
   // Run all plugins
-  return (args.plugins ?? []).reduce<KilpiCore<S, P> | T1 | T2 | T3 | T4>(
+  return (args.plugins ?? []).reduce<
+    KilpiCore<S, P> | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10
+  >(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (acc, fn) => fn(acc as any),
     Kilpi,
