@@ -1,5 +1,12 @@
 # @kilpi/react
 
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [ea30d78]
+  - @kilpi/core@0.8.2
+
 ## 0.8.1
 
 ### Patch Changes
