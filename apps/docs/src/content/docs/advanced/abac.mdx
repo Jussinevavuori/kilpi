@@ -6,7 +6,7 @@ sidebar:
 ---
 
 :::note
-With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
+With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, [RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
 
 This guide is a tutorial on how to implement authorization policies that would fall under the term of ABAC.
 :::
@@ -28,9 +28,11 @@ Implementing the above policy is trivial with the Kilpi Policy API.
 ```ts
 const policies = {
   documents: {
-    delete: AuthedPolicy((user, document: Document) => {
-      if (user.isAdmin) return true;
-      return user.id === document.ownerId && !document.expired;
+    async delete((user, document: Document) => {
+      if (!user) return deny()
+      if (user.isAdmin) return grant(user
+      if (user.id === document.ownerId && !document.expired) return grant(user)
+      return deny()
     })
   }
 };

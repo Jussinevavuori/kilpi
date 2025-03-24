@@ -3,6 +3,10 @@ title: Permissions
 description: Design a flexible permission system for your application.
 ---
 
+:::caution
+This guide is full of opinions. This is not the only way to implement permissions, but a suggestion of one implementation that has worked well in the past. Feel free to adapt it to your needs.
+:::
+
 This guide will show you how to design a very flexible authorization system based on organizations, roles, and dynamic permissions. It will not show you how to implement the data model, but will give you guidance on designing it.
 
 ## Target
@@ -78,23 +82,26 @@ Now defining policies is easy. Let's say documents can only be deleted by the or
 ```ts
 export const policies = {
   documents: {
-    delete: AuthedPolicy((subject, document: Document) => {
-      return hasPermission(subject, document.orgId, "documents:delete");
-    })
+    async delete(user, doc: Document) {
+      if (!user) return deny();
+      return hasPermission(user, doc.orgId, "docs:delete") ? grant() : deny()
+    }
   }
 }
 ```
 
-And with Kilpi, you are not limited to this. You can extend the policy with more complex ABAC logic, such as alwaus allowing the document owner to delete the document and never allowing archived documents to be deleted.
+And with Kilpi, you are not limited to this. You can extend the policy with more complex ABAC logic, such as always allowing the document owner to delete the document and never allowing archived documents to be deleted.
 
 ```ts
 export const policies = {
   documents: {
-    delete: AuthedPolicy((subject, document: Document) => {
-      if (document.ownerId === subject.id) return true;
-      if (document.archived) return false;
-      return hasPermission(subject, document.orgId, "documents:delete");
-    })
+    async delete(user, doc: Document) {
+      if (!user) return deny();
+      if (doc.archived) return deny();
+      if (doc.ownerId === user.id) return grant();
+      if (hasPermission(user, doc.orgId, "docs:delete")) return grant();
+      return deny();
+    } 
   }
 }
 ```

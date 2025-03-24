@@ -99,9 +99,15 @@ Kilpi provides the `Kilpi.filter` utility for this purpose.
 `Kilpi.filter` must be used with a policy that takes in a resource.
 :::
 
-```ts {2,11}
+```ts {4,17}
 // "documents:read" must take in a document as the resource
-AuthedPolicy((user, doc: Document) => user.id === doc.ownerId)
+const policies = {
+  documents: {
+    async read(subject, document: Document) {
+      return subject ? grant(subject) : deny();
+    }
+  }
+} as const satisfies Policyset<Subject | null>
 
 export const listDocuments = Kilpi.query(
   async () => {

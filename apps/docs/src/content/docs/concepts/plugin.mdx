@@ -29,10 +29,10 @@ Let's create an utility plugin for counting the total number of authorizations.
 
 ```ts
 export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
-  options?: MyCustomOptions // Any optional options for customizing your plugin's behaviour
+  options: { initialValue: number }
 ) {
   return createKilpiPlugin<T>(async (Kilpi: T) => {
-    let count = 0;
+    let count = options.initialValue;
 
     // Your plugin logic here: Call hooks, etc.
     Kilpi.hooks.onAfterAuthorization(() => {
@@ -53,7 +53,7 @@ export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
 // Apply and use
 const Kilpi = createKilpi({
   ...,
-  plugins: [AuthorizationCounterPlugin()],
+  plugins: [AuthorizationCounterPlugin({ initialValue: 10 })],
 });
 
 Kilpi.authorizationCounter.get();

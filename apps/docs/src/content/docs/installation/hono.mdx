@@ -10,8 +10,8 @@ Installing Kilpi for Hono is as easy as providing Kilpi scope within a middlewar
 ```ts
 app.use(async (_, next) => {
   Kilpi.runInScope(async () => {
-    Kilpi.onUnauthorized(() => {
-      throw new HTTPException(403)
+    Kilpi.onUnauthorized(({ message }) => {
+      throw new HTTPException(403, { message })
     })
     
     await next();

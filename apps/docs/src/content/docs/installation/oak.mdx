@@ -10,8 +10,8 @@ Installing Kilpi for Oak is as easy as providing Kilpi scope within a middleware
 ```ts
 app.use(async (ctx, next) => {
   Kilpi.runInScope(async () => {
-    Kilpi.onUnauthorized(() => {
-      ctx.throw(403);
+    Kilpi.onUnauthorized(({ message }) => {
+      ctx.throw(403, message);
     })
     
     await next();
