@@ -1,4 +1,4 @@
-import type { AnyKilpiCore } from "./kilpi-core";
+import type { AnyKilpiCore } from "./KilpiCore";
 
 export type KilpiPlugin<TIn extends AnyKilpiCore, TOut extends AnyKilpiCore> = (core: TIn) => TOut;
 

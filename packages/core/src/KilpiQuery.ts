@@ -1,4 +1,4 @@
-import type { KilpiCore } from "./kilpi-core";
+import type { KilpiCore } from "./KilpiCore";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

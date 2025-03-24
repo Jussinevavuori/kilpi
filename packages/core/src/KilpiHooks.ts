@@ -1,6 +1,6 @@
 import type { Authorization } from "./authorization";
-import type { AnyKilpiCore } from "./kilpi-core";
-import type { KilpiScope } from "./kilpi-scope";
+import type { AnyKilpiCore } from "./KilpiCore";
+import type { KilpiScope } from "./KilpiScope";
 import type { InferPolicySubject } from "./policy";
 
 /**

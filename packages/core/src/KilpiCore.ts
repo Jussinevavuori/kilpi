@@ -1,13 +1,13 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { KilpiError } from "./error";
-import { KilpiHooks } from "./kilpi-hooks";
-import type { KilpiQueryProtector } from "./kilpi-query";
-import { KilpiQuery } from "./kilpi-query";
+import { KilpiHooks } from "./KilpiHooks";
+import type { KilpiQueryProtector } from "./KilpiQuery";
+import { KilpiQuery } from "./KilpiQuery";
 import {
   warnOnScopeUnavailable,
   type KilpiOnUnauthorizedHandler,
   type KilpiScope,
-} from "./kilpi-scope";
+} from "./KilpiScope";
 import type {
   GetPolicyByKey,
   InferPolicyInputs,
@@ -16,7 +16,7 @@ import type {
   PolicysetKeys,
 } from "./policy";
 import { getPolicyByKey } from "./policy";
-import { createCallStackSizeProtector } from "./utils/call-stack-size-protector";
+import { createCallStackSizeProtector } from "./utils/callStackSizeProtector";
 import type { ArrayHead } from "./utils/types";
 
 /**

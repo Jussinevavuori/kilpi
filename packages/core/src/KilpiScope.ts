@@ -1,4 +1,4 @@
-import type { AnyKilpiCore } from "./kilpi-core";
+import type { AnyKilpiCore } from "./KilpiCore";
 
 /**
  * Type of handler which is called when `KilpiCore.authorize()` denies access. This handler is
