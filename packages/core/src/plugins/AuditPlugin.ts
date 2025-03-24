@@ -1,5 +1,5 @@
-import type { AnyKilpiCore } from "src/kilpi-core";
-import { createKilpiPlugin } from "src/kilpi-plugin";
+import type { AnyKilpiCore } from "src/KilpiCore";
+import { createKilpiPlugin } from "src/KilpiPlugin";
 
 /**
  * WIP: Audit plugin

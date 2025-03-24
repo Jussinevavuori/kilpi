@@ -1,6 +1,6 @@
 import type { Authorization } from "./authorization";
-import type { AnyKilpiCore } from "./kilpi-core";
-import type { KilpiScope } from "./kilpi-scope";
+import type { AnyKilpiCore } from "./KilpiCore";
+import type { KilpiScope } from "./KilpiScope";
 import type { InferPolicySubject } from "./policy";
 
 /**
@@ -52,7 +52,7 @@ export type KilpiOnAfterAuthorizationHook<T extends AnyKilpiCore> = (event: {
   /**
    * The resulting authorization object
    */
-  authorization: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
+  authorization?: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
 }) => void;
 
 export class KilpiHooks<T extends AnyKilpiCore> {

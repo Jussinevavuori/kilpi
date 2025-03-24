@@ -1,11 +1,11 @@
-import type { AnyKilpiCore } from "./kilpi-core";
+import type { AnyKilpiCore } from "./KilpiCore";
 
 /**
  * Type of handler which is called when `KilpiCore.authorize()` denies access. This handler is
  * primarily responsible for customizing which value is thrown when access is denied (e.g.
  * to redirect to a login page, or to return a 403 status code).
  */
-export type KilpiOnUnauthorizedHandler = (options: { message: string }) => void | never;
+export type KilpiOnUnauthorizedHandler = (opts: { message: string }) => void | never;
 
 /**
  * Kilpi should be scoped to a single request. A KilpiScope object holds scoped values for

@@ -17,32 +17,18 @@ export type AuthorizationDenied = { granted: false; message?: string };
  * An authorization object represents the result of an authorization check. It can either be granted
  * or denied. Each case includes more details about the result of the authorization check.
  */
-export type Authorization<TSubject> =
-  | AuthorizationGranted<TSubject>
-  | AuthorizationDenied;
+export type Authorization<TSubject> = AuthorizationGranted<TSubject> | AuthorizationDenied;
 
 /**
  * Utility to create an AuthorizationGranted object with a subject.
  */
-function Grant<TSubject>(subject: TSubject): AuthorizationGranted<TSubject> {
-  return {
-    granted: true,
-    subject,
-  };
+export function grant<TSubject>(subject: TSubject): AuthorizationGranted<TSubject> {
+  return { granted: true, subject };
 }
 
 /**
  * Utility to create an AuthorizationDenied object with a message.
  */
-function Deny(message?: string): AuthorizationDenied {
-  return {
-    granted: false,
-    message,
-  };
+export function deny(message: string = "Unauthorized"): AuthorizationDenied {
+  return { granted: false, message };
 }
-
-/**
- * Utilities for constructing authorization objects via intuitive `Authorization.Grant(subject)` and
- * `Authorization.Deny(message)` constructor functions.
- */
-export const Authorization = { Grant, Deny };

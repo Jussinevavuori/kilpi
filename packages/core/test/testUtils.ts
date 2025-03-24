@@ -1,4 +1,4 @@
-import { Policy } from "src/policy";
+import { deny, grant, type Policyset } from "src";
 
 export type TestRole = "admin" | "user" | "guest";
 
@@ -48,34 +48,45 @@ async function listAllDocuments() {
   return await Promise.resolve(Object.values(testState.documents));
 }
 
-// Policy creation utilities for creating test kilpi instance
-const PublicPolicy = Policy.as((subject: TestSubject | null) => ({ subject }));
-const AuthedPolicy = Policy.as((subject: TestSubject | null) => (subject ? { subject } : null));
-
 // All test policies
 const policies = {
   // Always fail
-  never: PublicPolicy(() => false),
+  async never() {
+    return deny();
+  },
 
   // Pass always
-  public: PublicPolicy(() => true),
+  async public(subject) {
+    return grant(subject);
+  },
 
   // Authed only
-  authed: AuthedPolicy(() => true),
+  async authed(subject) {
+    if (!subject) return deny("Unauthenticated");
+    return grant(subject);
+  },
 
   // Nested keys
   docs: {
     // Authed only if ID matches
-    ownDocument: AuthedPolicy((user, doc: TestDocument) => user.id === doc.userId),
+    async ownDocument(subject, doc: TestDocument) {
+      if (!subject) return deny("Unauthenticated");
+      if (subject.id !== doc.userId) return deny();
+      return grant(subject);
+    },
 
     // Deeply nested policy
     deeply: {
       nested: {
-        policy: AuthedPolicy((user, doc: TestDocument) => user.id === doc.userId),
+        async policy(subject, doc: TestDocument) {
+          if (!subject) return deny("Unauthenticated");
+          if (subject.id !== doc.userId) return deny();
+          return grant(subject);
+        },
       },
     },
   },
-} as const;
+} satisfies Policyset<TestSubject | null>;
 
 // Custom test error class for testing throwing custom errors
 class TestErrorClass extends Error {

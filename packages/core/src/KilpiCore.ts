@@ -1,14 +1,13 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { KilpiError } from "./error";
-import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
-import { KilpiHooks } from "./kilpi-hooks";
-import type { KilpiQueryProtector } from "./kilpi-query";
-import { KilpiQuery } from "./kilpi-query";
+import { KilpiHooks } from "./KilpiHooks";
+import type { KilpiQueryProtector } from "./KilpiQuery";
+import { KilpiQuery } from "./KilpiQuery";
 import {
   warnOnScopeUnavailable,
   type KilpiOnUnauthorizedHandler,
   type KilpiScope,
-} from "./kilpi-scope";
+} from "./KilpiScope";
 import type {
   GetPolicyByKey,
   InferPolicyInputs,
@@ -17,8 +16,39 @@ import type {
   PolicysetKeys,
 } from "./policy";
 import { getPolicyByKey } from "./policy";
-import { createCallStackSizeProtector } from "./utils/call-stack-size-protector";
+import { createCallStackSizeProtector } from "./utils/callStackSizeProtector";
 import type { ArrayHead } from "./utils/types";
+
+/**
+ * Arguments passed to construct a KilpiCore instance.
+ */
+export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject>> = {
+  /**
+   * Connect your own authentication provider (and other subject data / metadata) via a
+   * custom `getSubject` function.
+   *
+   * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
+   * during each authorization check.
+   */
+  getSubject: () => Promise<TSubject>;
+
+  /**
+   * Default values when no value is available from a scope.
+   */
+  defaults?: Pick<KilpiScope<KilpiCore<TSubject, TPolicyset>>, "onUnauthorized">;
+
+  /**
+   * The policies which define the authorization logic of the application.
+   */
+  policies: TPolicyset;
+
+  /**
+   * Custom settings
+   */
+  settings?: {
+    disableSubjectCaching?: boolean;
+  };
+};
 
 /**
  * The KilpiCore class is the primary interface for interacting with the Kilpi library.

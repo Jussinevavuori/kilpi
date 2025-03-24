@@ -12,7 +12,7 @@ import { Request, Response, NextFunction } from 'express';
 
 function kilpiMiddleware(req: Request, res: Response, next: NextFunction) {
   Kilpi.runInScope(async () => {
-    Kilpi.onUnauthorized(({ message }) => {
+    Kilpi.onUnauthorized(() => {
       throw new ForbiddenException();
     })
     
