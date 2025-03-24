@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.9.0
+
+### Minor Changes
+
+- c1f990e: change policy and authorization apis for defining policies
+
 ## 0.8.2
 
 ### Patch Changes
