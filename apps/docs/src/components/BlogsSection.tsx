@@ -9,13 +9,12 @@ export type BlogsSectionProps = {
 export function BlogsSection(props: BlogsSectionProps) {
   return (
     <DefaultSection>
-      <div className="flex flex-col gap-8">My blogs</div>
-
-      <div>
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}
+      >
         {props.blogs.map((blog) => (
-          <a key={blog.id} href={`/blog/${blog.id}`}>
-            <BlogPost blog={blog} />
-          </a>
+          <BlogPost key={blog.id} blog={blog} />
         ))}
       </div>
     </DefaultSection>

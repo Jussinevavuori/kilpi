@@ -1,6 +1,6 @@
 ---
+import "../../styles/custom.css";
 import "../../styles/global.css";
-import "../../styles/landing-page.css";
 
 import { BlogHeroSection } from "@/components/BlogHeroSection.tsx";
 import { BlogsSection } from "@/components/BlogsSection.tsx";
@@ -11,7 +11,7 @@ import { getCollection } from "astro:content";
 const blogs = await getCollection("blog");
 ---
 
-<StarlightPage frontmatter={{ title: "", template: "splash" }}>
+<StarlightPage frontmatter={{ title: "Blog", template: "splash" }}>
   <BlogHeroSection />
   <BlogsSection blogs={blogs} />
 </StarlightPage>

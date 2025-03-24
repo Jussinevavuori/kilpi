@@ -1,0 +1,45 @@
+---
+import "../../styles/blog.css";
+import "../../styles/custom.css";
+import "../../styles/global.css";
+
+import { DefaultSection } from "@/components/DefaultSection";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { getCollection } from "astro:content";
+import { formatDate } from "date-fns/format";
+
+// Get all blogs from blog collection
+
+// Statically prerender all blog pages
+export async function getStaticPaths() {
+  const blogs = await getCollection("blog");
+  return blogs.map((blog) => ({ params: { slug: blog.id }, props: { blog } }));
+}
+
+const { blog } = Astro.props;
+---
+
+<StarlightPage frontmatter={{ title: blog.data.title, template: "splash" }}>
+  <DefaultSection className="py-10 max-w-prose flex flex-col gap-4">
+    <p class="text-muted-foreground">
+      {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
+    </p>
+    <h1 class="font-bold tracking-tighter text-4xl">
+      {blog.data.title}
+    </h1>
+    <p class="text-muted-foreground">
+      By <a
+        class="underline text-foreground font-medium"
+        href={blog.data.authorUrl ?? "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {blog.data.author}
+      </a>
+    </p>
+  </DefaultSection>
+
+  <DefaultSection enableDefaultStyles className="pb-64 max-w-prose">
+    <article set:html={blog.rendered?.html} />
+  </DefaultSection>
+</StarlightPage>

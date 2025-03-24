@@ -20,7 +20,10 @@ export const collections = {
     schema: z.object({
       title: z.string(),
       author: z.string(),
+      authorUrl: z.string().optional(),
+      authorImage: z.string().url().optional(),
       date: z.date(),
+      summary: z.string(),
     }),
   }),
 };

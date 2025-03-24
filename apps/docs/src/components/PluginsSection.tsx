@@ -94,9 +94,7 @@ export function PluginsSection() {
                   <p className="font-semibold">{item.title}</p>
                 </div>
                 {item.description && (
-                  <p className="text-muted-foreground text-sm">
-                    {item.description}
-                  </p>
+                  <p className="text-muted-foreground text-sm">{item.description}</p>
                 )}
               </a>
             ))}
@@ -110,12 +108,9 @@ export function PluginsSection() {
       <div className="flex flex-col gap-1">
         <h3 className="text-xl font-semibold">Couldn't find yours?</h3>
         <p className="text-muted-foreground max-w-xl">
-          Kilpi is framework agnostic and can always be used without any plugins
-          or component libraries. You may also{" "}
-          <a
-            href="https://github.com/Jussinevavuor/kilpi/issues/new"
-            className="underline"
-          >
+          Kilpi is framework agnostic and can always be used without any plugins or component
+          libraries. You may also{" "}
+          <a href="https://github.com/Jussinevavuor/kilpi/issues/new" className="underline">
             request a new integration
           </a>{" "}
           or{" "}

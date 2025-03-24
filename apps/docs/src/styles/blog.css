@@ -1,0 +1,8 @@
+/* Fixes for blog content styles */
+.sl-markdown-content article ul {
+  margin-left: 1.5rem !important;
+}
+.sl-markdown-content article ol {
+  margin-left: 1.5rem !important;
+  list-style: decimal;
+}
