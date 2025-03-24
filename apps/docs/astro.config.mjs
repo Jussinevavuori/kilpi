@@ -34,10 +34,6 @@ export default defineConfig({
        */
       sidebar: [
         {
-          label: "Home",
-          link: "/",
-        },
-        {
           label: "Getting started",
           autogenerate: { directory: "getting-started" },
         },
@@ -85,13 +81,15 @@ export default defineConfig({
               label: "Docs",
               link: "/getting-started/introduction",
             },
+            {
+              label: "Blog",
+              link: "/blog",
+            },
           ],
           footerText: [
-            "👨🏻‍💻 Designed & created with ❤️ by [Jussi Nevavuori](https://www.jussinevavuori.com) in Brisbane & Helsinki",
-            "👀 Source code available on [GitHub](https://www.github.com/jussinevavuori/kilpi)",
-            "📄 All code is licensed under the [MIT License](https://opensource.org/licenses/MIT)",
-            "⚡ Powered by [Astro](https://astro.build), [Starlight](https://starlight.astro.build/) & [Vercel](https://vercel.com)",
-          ].join(" // "),
+            "Designed & created with ❤️ by [Jussi Nevavuori](https://www.jussinevavuori.com) in Brisbane & Helsinki",
+            "Docs powered by [Astro](https://astro.build), [Starlight](https://starlight.astro.build/) & [Vercel](https://vercel.com)",
+          ].join(" — "),
         }),
       ],
     }),

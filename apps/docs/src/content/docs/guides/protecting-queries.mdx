@@ -103,7 +103,7 @@ Kilpi provides the `Kilpi.filter` utility for this purpose.
 // "documents:read" must take in a document as the resource
 const policies = {
   documents: {
-    async read(subject, document: Document) {
+    read(subject, document: Document) {
       return subject ? grant(subject) : deny();
     }
   }

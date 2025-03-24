@@ -37,18 +37,30 @@ Designed and created by [Jussi Nevavuori](https://jussinevavuori.com/) with â¤ï
 
 ## Examples
 
-```ts
-await Kilpi.authorize("documents:update", document);
-```
+Define policies declaratively
 
 ```ts
-const policies = {
-  documents: {
-    read: AuthedPolicy((user, doc: Document) => user.id === doc.userId),
-    update: AuthedPolicy((user, doc: Document) => user.id === doc.userId)
+// Kilpi.ts
+export const Kilpi = createKilpi({ 
+  getSubject, 
+  policies: {
+    documents: {
+      update(user, doc: Document) {
+        if (!user) return deny("Unauthenticated");
+        return user.id === doc.ownerId ? grant(user) : deny();
+      }
+    }
   }
-}
+})
 ```
+
+Authorize actions with one line
+
+```ts
+const user = await Kilpi.authorize("documents:update", document);
+```
+
+Protect your data right at the source
 
 ```ts
 const getDocument = Kilpi.query(

@@ -31,7 +31,7 @@ Let's create an utility plugin for counting the total number of authorizations.
 export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
   options: { initialValue: number }
 ) {
-  return createKilpiPlugin<T>(async (Kilpi: T) => {
+  return createKilpiPlugin<T>((Kilpi: T) => {
     let count = options.initialValue;
 
     // Your plugin logic here: Call hooks, etc.

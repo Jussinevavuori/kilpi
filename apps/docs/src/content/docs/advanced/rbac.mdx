@@ -20,7 +20,7 @@ Furthermore, [implementing permissions](/advanced/permissions) instead of roles 
 Implementing a role-based access control with Kilpi is simple with the `createRbacPolicy` utility, which is an alternative policy constructor API.
 
 ```ts
-export const RbacPolicy = createRbacPolicy(
+export const rbacPolicy = createRbacPolicy(
   (subject: Subject | null) => { // May optionally be async, and e.g. fetch data
     if (!subject) return null; // Subject narrowing
     return { 
@@ -31,14 +31,14 @@ export const RbacPolicy = createRbacPolicy(
 )
 ```
 
-The `RbacPolicy` constructor can now be used to easily create RBAC policies with strong typesafety.
+The `rbacPolicy` constructor can now be used to easily create RBAC policies with strong typesafety.
 
 ```ts
 export const policies = {
   documents: {
-    read: RbacPolicy("user", "admin", "guest"),
-    create: RbacPolicy("user", "admin"),
-    delete: RbacPolicy("admin"),
+    read: rbacPolicy("user", "admin", "guest"),
+    create: rbacPolicy("user", "admin"),
+    delete: rbacPolicy("admin"),
   },
 }
 ```
@@ -50,10 +50,10 @@ We believe this is justified, as most authorization systems quickly run into lim
 ```diff lang="ts"
 export const policies = {
   documents: {
-    read: RbacPolicy("user", "admin", "guest"),
-    create: RbacPolicy("user", "admin"),
--    delete: RbacPolicy("admin"),
-+    async delete((user, document: Document) {
+    read: rbacPolicy("user", "admin", "guest"),
+    create: rbacPolicy("user", "admin"),
+-    delete: rbacPolicy("admin"),
++    delete((user, document: Document) {
 +      return user && (hasRole(user, "admin") || user.id === document.ownerId) ? grant(user) : deny()
 +    })
   },

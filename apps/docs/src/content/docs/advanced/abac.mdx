@@ -28,12 +28,12 @@ Implementing the above policy is trivial with the Kilpi Policy API.
 ```ts
 const policies = {
   documents: {
-    async delete((user, document: Document) => {
+    delete(user, document: Document) {
       if (!user) return deny()
-      if (user.isAdmin) return grant(user
+      if (user.isAdmin) return grant(user)
       if (user.id === document.ownerId && !document.expired) return grant(user)
       return deny()
-    })
+    }
   }
 };
 

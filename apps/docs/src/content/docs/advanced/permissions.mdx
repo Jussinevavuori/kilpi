@@ -82,7 +82,7 @@ Now defining policies is easy. Let's say documents can only be deleted by the or
 ```ts
 export const policies = {
   documents: {
-    async delete(user, doc: Document) {
+    delete(user, doc: Document) {
       if (!user) return deny();
       return hasPermission(user, doc.orgId, "docs:delete") ? grant() : deny()
     }
@@ -95,7 +95,7 @@ And with Kilpi, you are not limited to this. You can extend the policy with more
 ```ts
 export const policies = {
   documents: {
-    async delete(user, doc: Document) {
+    delete(user, doc: Document) {
       if (!user) return deny();
       if (doc.archived) return deny();
       if (doc.ownerId === user.id) return grant();

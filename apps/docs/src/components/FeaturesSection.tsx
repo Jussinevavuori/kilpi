@@ -46,7 +46,7 @@ const FEATURES = [
   {
     title: "Async policies",
     description:
-      "All policies are async functions, allowing you to fetch data from your database, API, or any other source.",
+      "All policies are functions, allowing you to fetch data from your database, API, or any other source.",
     Icon: Loader2Icon,
   },
   {
@@ -90,20 +90,17 @@ const FEATURES = [
 const ROADMAP = [
   {
     title: "Audit plugin",
-    description:
-      "Track and log authorization decisions for compliance and debugging.",
+    description: "Track and log authorization decisions for compliance and debugging.",
     Icon: NotebookTabsIcon,
   },
   {
     title: "Authorization endpoint",
-    description:
-      "A secure server endpoint for requesting authorization decisions.",
+    description: "A secure server endpoint for requesting authorization decisions.",
     Icon: GlobeLockIcon,
   },
   {
     title: "Specialized RBAC API",
-    description:
-      "An improved way to define your policies for Role-Based Access Control systems.",
+    description: "An improved way to define your policies for Role-Based Access Control systems.",
     Icon: LaptopIcon,
   },
   {
@@ -114,14 +111,12 @@ const ROADMAP = [
   },
   {
     title: "Client-only authorization",
-    description:
-      "An alternative API for client-only SPAs who don't require a server.",
+    description: "An alternative API for client-only SPAs who don't require a server.",
     Icon: MonitorSmartphoneIcon,
   },
   {
     title: "More pre-made plugins",
-    description:
-      "More features and support for even more frameworks, libraries and services.",
+    description: "More features and support for even more frameworks, libraries and services.",
     Icon: ToyBrickIcon,
   },
 ];
@@ -135,9 +130,8 @@ export function FeaturesSection() {
         </h2>
 
         <p className="max-w-xl text-center !mx-auto text-muted-foreground">
-          Designed to solve real problems for real applications, Kilpi was born
-          after solving the same problem time after time, for client after
-          client.
+          Designed to solve real problems for real applications, Kilpi was born after solving the
+          same problem time after time, for client after client.
         </p>
       </div>
 
@@ -150,12 +144,8 @@ export function FeaturesSection() {
         {FEATURES.map((feature, index) => (
           <div key={index} className="flex flex-col gap-2">
             <feature.Icon className="size-5 text-accent-500" />
-            <h3 className="text-2xl font-bold tracking-tight">
-              {feature.title}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {feature.description}
-            </p>
+            <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
+            <p className="text-sm text-muted-foreground">{feature.description}</p>
           </div>
         ))}
       </div>
@@ -181,12 +171,8 @@ export function FeaturesSection() {
               </p>
             </div>
 
-            <h3 className="text-2xl font-bold tracking-tight">
-              {feature.title}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {feature.description}
-            </p>
+            <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
+            <p className="text-sm text-muted-foreground">{feature.description}</p>
           </div>
         ))}
       </div>

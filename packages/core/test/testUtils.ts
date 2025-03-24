@@ -51,17 +51,17 @@ async function listAllDocuments() {
 // All test policies
 const policies = {
   // Always fail
-  async never() {
+  never() {
     return deny();
   },
 
   // Pass always
-  async public(subject) {
+  public(subject) {
     return grant(subject);
   },
 
   // Authed only
-  async authed(subject) {
+  authed(subject) {
     if (!subject) return deny("Unauthenticated");
     return grant(subject);
   },
@@ -69,7 +69,7 @@ const policies = {
   // Nested keys
   docs: {
     // Authed only if ID matches
-    async ownDocument(subject, doc: TestDocument) {
+    ownDocument(subject, doc: TestDocument) {
       if (!subject) return deny("Unauthenticated");
       if (subject.id !== doc.userId) return deny();
       return grant(subject);
@@ -78,7 +78,7 @@ const policies = {
     // Deeply nested policy
     deeply: {
       nested: {
-        async policy(subject, doc: TestDocument) {
+        policy(subject, doc: TestDocument) {
           if (!subject) return deny("Unauthenticated");
           if (subject.id !== doc.userId) return deny();
           return grant(subject);

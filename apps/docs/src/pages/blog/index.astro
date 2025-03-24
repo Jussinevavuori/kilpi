@@ -1,0 +1,17 @@
+---
+import "../../styles/global.css";
+import "../../styles/landing-page.css";
+
+import { BlogHeroSection } from "@/components/BlogHeroSection.tsx";
+import { BlogsSection } from "@/components/BlogsSection.tsx";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { getCollection } from "astro:content";
+
+// Get all blogs from blog collection
+const blogs = await getCollection("blog");
+---
+
+<StarlightPage frontmatter={{ title: "", template: "splash" }}>
+  <BlogHeroSection />
+  <BlogsSection blogs={blogs} />
+</StarlightPage>

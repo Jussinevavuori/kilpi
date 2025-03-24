@@ -107,7 +107,7 @@ export const Kilpi = createKilpi({
   getSubject, 
   policies: {
     documents: {
-      async update(user, doc: Document) {
+      update(user, doc: Document) {
         if (!user) return deny("Unauthenticated");
         return user.id === doc.ownerId ? grant(user) : deny();
       }

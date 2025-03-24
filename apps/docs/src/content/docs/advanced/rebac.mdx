@@ -24,9 +24,9 @@ This is trivial to implement with Kilpi as follows.
 ```ts
 export const policies = {
   comments: {
-    async delete(user, comment: Comment) {
+    delete(user, comment: Comment) {
       return user && user.id === comment.userId ? grant(user) : deny()
-    })
+    }
   }
 }
 ```
@@ -71,7 +71,7 @@ export const policies = {
     async delete(user, folderId: string) {
       if (!user) return deny("Unauthenticated");
       return await isOwnerOfFolderOrParent(folderId) ? grant(user) : deny()
-    }),
+    },
   }
 }
 ```
@@ -106,7 +106,7 @@ export function isMember(user: Subject, orgId: string) {
 
 export const policies = {
   documents: {
-    async create(user: Subject, organizationId: string) {
+    create(user: Subject, organizationId: string) {
       if (!user) return deny("Unauthenticated");
       return isMember(user, organizationId) ? grant(user) : deny()
     },

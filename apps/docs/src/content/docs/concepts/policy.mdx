@@ -11,8 +11,7 @@ In a nutshell...
 - Policies can be nested as deep as you want, forming a hierarchy.
 - Policies always take the subject as the first argument.
 - Policies can optionally take in a resource as the second argument.
-- Policies are asynchronous.
-- Policies can fetch data.
+- Policies can be asynchronous functions and fetch data from external sources for deciding access.
 - A policy must explicitly either grant (with `return grant(subject)`) or deny (with `return deny(reason?)`) access.
 
 ## Defining policies
@@ -31,7 +30,7 @@ export const policies = {
   documents: {
 
     // Allow all authed members to read docs
-    async read(user) {
+    read(user) {
       if (!user) return deny("Unauthenticated");
       return grant(user);
     },
@@ -49,7 +48,7 @@ A basic policy takes in a `subject` (often aliased as `user`) and returns an aut
 ```ts
 export const policies = {
   comments: {
-    async create(user) {
+    create(user) {
       if (!user) return deny("Unauthenticated");
       return grant(user);
     }
@@ -66,7 +65,7 @@ A policy can optionally receive a **resource** as the second argument.
 ```ts {3,5,10}
 export const policies = {
   comments: {
-    async delete(user, comment: Comment) {
+    delete(user, comment: Comment) {
       if (!user) return deny("Unauthenticated");
       return comment.userId === user.id ? grant(user) : deny();
     }
@@ -76,7 +75,7 @@ export const policies = {
 await Kilpi.authorize("comments:delete", myComment);
 ```
 
-### Defining a data-fetching policy
+### Defining an asynchronous data-fetching policy
 
 Policies can even fetch data during evaluation, as they are by design always asynchronous.
 
@@ -135,7 +134,7 @@ Due to this method of defining policies, the final subject type is automatically
 ```ts {4-5,11}
 export const policies = {
   documents: {
-    async read(user) {
+    read(user) {
       if (!user) return deny("Unauthenticated");
       return grant(user);
     },
@@ -156,30 +155,18 @@ See [project structure](/getting-started/project-structure) for more information
 ```ts
 // policies/documents.ts
 export const documentPolicies = {
-  async read(subject, document) {
-    ...
-  },
-  async create(subject, document) {
-    ...
-  },
-  async delete(subject, document) {
-    ...
-  },
+  read(subject, document) { ... },
+  create(subject, document) { ... },
+  delete(subject, document) { ... },
 } as const satisfies Policyset<MySubjectType>;
 ```
 
 ```ts
 // policies/organizations.ts
 export const organizationPolicies = {
-  async read(subject, document) {
-    ...
-  },
-  async create(subject, document) {
-    ...
-  },
-  async delete(subject, document) {
-    ...
-  },
+  read(subject, document) { ... },
+  create(subject, document) { ... },
+  delete(subject, document) { ... },
 } as const satisfies Policyset<MySubjectType>;
 ```
 

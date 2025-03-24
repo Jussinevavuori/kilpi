@@ -90,14 +90,14 @@ Get started quickly with Kilpi using this guide.
       documents: {
         // Create a policy that does not take in a resource:
         // All authed users can create documents
-        async create(user) {
+        create(user) {
           if (!user) return deny("Unauthenticated");
           return grant(user);
         }
 
         // Create a policy that takes in a resource:
         // All authed users can read documents they own or public documents
-        async read(user, document: Document) {
+        read(user, document: Document) {
           if (!user) return deny("Unauthenticated");
           if (document.isPublic) return grant(user);
           if (user.id === document.ownerId) return grant(user);
