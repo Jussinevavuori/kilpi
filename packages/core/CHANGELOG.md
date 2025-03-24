@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.9.1
+
+### Patch Changes
+
+- a55d4ab: allow sync policy definitions
+
 ## 0.9.0
 
 ### Minor Changes
