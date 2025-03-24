@@ -13,8 +13,7 @@ const Kilpi = createKilpi({
 describe("Kilpi.getAuthorization", () => {
   const resource: TestDocument = { id: "doc1", userId: "user1" };
 
-  const Denied = { granted: false, message: undefined };
-  const Granted = (subject: TestSubject | null) => ({ granted: true, subject });
+  const Granted = (subject: TestSubject | null) => ({ subject });
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
@@ -30,7 +29,7 @@ describe("Kilpi.getAuthorization", () => {
 
   it("should deny authed when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(Kilpi.getAuthorization("authed")).resolves.toMatchObject(Denied);
+      await expect(Kilpi.getAuthorization("authed")).resolves.toBeUndefined();
     });
   });
 
@@ -42,9 +41,7 @@ describe("Kilpi.getAuthorization", () => {
 
   it("should deny authed resource check when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
-        Denied,
-      );
+      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toBeUndefined();
     });
   });
 
@@ -58,9 +55,7 @@ describe("Kilpi.getAuthorization", () => {
 
   it("should deny authed resource check when authed as incorrect user", async () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
-      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
-        Denied,
-      );
+      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toBeUndefined();
     });
   });
 
@@ -68,7 +63,7 @@ describe("Kilpi.getAuthorization", () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       await expect(
         Kilpi.getAuthorization("docs:deeply:nested:policy", resource),
-      ).resolves.toMatchObject(Denied);
+      ).resolves.toBeUndefined();
     });
   });
 });

@@ -12,7 +12,7 @@ class KilpiInternalError extends Error {
  * Error thrown when an authorization check fails.
  */
 class KilpiAuthorizationDeniedError extends Error {
-  constructor(message: string) {
+  constructor(message = "Unauthorized") {
     super(message);
     this.name = "Kilpi_AuthorizationDeniedError";
   }

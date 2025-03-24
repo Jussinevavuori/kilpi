@@ -1,10 +1,11 @@
 import { describe } from "node:test";
-import { createKilpi, Policy } from "src";
+import { createKilpi } from "src";
+import { createRbacPolicy } from "src/rbac-policy";
 import { expect, it } from "vitest";
 import { TestUtils, type TestSubject } from "./testUtils";
 
 // Rbac policy
-const RbacPolicy = Policy.rbac((subject: TestSubject | null) => {
+const RbacPolicy = createRbacPolicy((subject: TestSubject | null) => {
   if (!subject) return null;
   return { subject, roles: subject.roles };
 });

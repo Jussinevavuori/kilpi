@@ -52,7 +52,7 @@ export type KilpiOnAfterAuthorizationHook<T extends AnyKilpiCore> = (event: {
   /**
    * The resulting authorization object
    */
-  authorization: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
+  authorization?: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
 }) => void;
 
 export class KilpiHooks<T extends AnyKilpiCore> {

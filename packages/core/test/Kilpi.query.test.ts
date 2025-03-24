@@ -80,8 +80,8 @@ describe("Kilpi.query", async () => {
 
   await it("protect call respects onDeny", async () => {
     await Kilpi.runInScope(async () => {
-      Kilpi.onUnauthorized(({ message }) => {
-        throw new TestUtils.TestErrorClass(message);
+      Kilpi.onUnauthorized(() => {
+        throw new TestUtils.TestErrorClass("Unauthorized");
       });
       await TestUtils.runAs(null, async () => {
         await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(TestUtils.TestErrorClass);

@@ -219,7 +219,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * if (authorization.granted) {
    *   console.log(`User ${authorization.subject.id} can read resource ${resource.id}`);
    * } else {
-   *   console.log(`Can not read resource: ${authorization.message}`);
+   *   console.log(`Can not read resource`);
    * }
    * ```
    */
@@ -263,7 +263,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
       key,
       ...inputs,
     );
-    return authorization.granted;
+    return !!authorization;
   }
 
   /**
@@ -299,19 +299,18 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     );
 
     // Granted, return the narrowed down subject and escape early
-    if (authorization.granted) {
+    if (authorization) {
       return authorization.subject;
     }
 
     // Unauthorized
-    this.unauthorized(authorization.message ?? "Unauthorized");
+    this.unauthorized();
   }
 
   /**
    * When a manually defined authorization check fails, trigger the `onUnauthorized` procedure
    * similarly as with `.authorize()` with this function.
    *
-   * @param message The optional message to pass to the onUnauthorized handler.
    * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
    *
@@ -326,15 +325,15 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * await updateResource(resource, user);
    * ```
    */
-  unauthorized(message = "Unauthorized"): never {
+  unauthorized(): never {
     // Run onUnauthorized handler in current scope if available
-    this.resolveScope()?.onUnauthorized?.({ message });
+    this.resolveScope()?.onUnauthorized?.();
 
     // Run default onUnauthorized handler if available
-    this.defaults?.onUnauthorized?.({ message });
+    this.defaults?.onUnauthorized?.();
 
     // Throw by default
-    throw new KilpiError.AuthorizationDenied(message);
+    throw new KilpiError.AuthorizationDenied();
   }
 
   /**
@@ -400,9 +399,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
             hook({ source: "filter", policy: key, subject, authorization });
           });
 
-          if (authorization.granted) {
-            authorizedResources.push(resource);
-          }
+          if (authorization) authorizedResources.push(resource);
         }),
       ),
     );
