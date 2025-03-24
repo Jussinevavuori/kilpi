@@ -86,42 +86,28 @@ Get started quickly with Kilpi using this guide.
     import { Policy } from "@kilpi/core";
     import { Subject } from "./subject";
 
-    // Optional tip: Create policies with narrowed subjects for
-    // easier use and better type-safety
-    const AuthedPolicy = Policy.as((subject: Subject | null) => {
-      if (!subject) return null;
-      return { subject }
-    })
-
-    // Tip: Create common utility functions
-    function isAdmin(subject: Subject) {
-      return subject?.role === "admin";
-    }
-
-    // You can nest as much as you like
     const policies = {
       documents: {
         // Create a policy that does not take in a resource:
         // All authed users can create documents
-        create: AuthedPolicy((user) => {
-          return true; 
-        }),
+        async create(user) {
+          if (!user) return deny("Unauthenticated");
+          return grant(user);
+        }
 
         // Create a policy that takes in a resource:
         // All authed users can read documents they own or public documents
-        read: AuthedPolicy((user, document: Document) => {
-          return user.id === document.ownerId || document.isPublic;
-        }),
-
-        // Auther users can delete only their own documents, admins can delete all documents
-        delete: AuthedPolicy((user, document: Document) => {
-          return isAdmin(user) || user.id === document.ownerId;
-        }),
+        async read(user, document: Document) {
+          if (!user) return deny("Unauthenticated");
+          if (document.isPublic) return grant(user);
+          if (user.id === document.ownerId) return grant(user);
+          return deny();
+        },
       },
-    }
+    } satisfies Policyset<Subject | null>
     ```
 
-    [Read more about policies](/concepts/policy) and [how to create them](/guides/creating-policies).
+    [Read more about policies](/concepts/policy).
 
 5.  ### Create your Kilpi instance
 

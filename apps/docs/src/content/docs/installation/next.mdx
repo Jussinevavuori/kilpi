@@ -53,7 +53,7 @@ If you are wrapping your server actions or endpoints with anything that supports
     ```ts
     export const ActionClient = createSafeActionClient({})
       .use(async ({ next }) => {
-        return await Kilpi.runInscope(async () => {
+        return await Kilpi.runInScope(async () => {
           // Tip: This is a great place to setup a
           // global error handler for server actions
 

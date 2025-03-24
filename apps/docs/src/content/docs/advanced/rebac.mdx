@@ -6,7 +6,7 @@ sidebar:
 ---
 
 :::note
-With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
+With Kilpi, you don't have to decide between [RBAC](/advanced/rbac), [ABAC](/advanced/abac), [ReBAC](/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, [RBAC](/advanced/rbac), [ABAC](/advanced/abac) and [ReBAC](/advanced/rebac) are not completely separate models (e.g. [RBAC](/advanced/rbac) is a subset of [ABAC](/advanced/abac)).
 
 This guide is a tutorial on how to implement authorization policies that would fall under the term of ReBAC.
 :::
@@ -24,8 +24,8 @@ This is trivial to implement with Kilpi as follows.
 ```ts
 export const policies = {
   comments: {
-    delete: AuthedPolicy((user, comment: Comment) => {
-      return user.id === comment.userId;
+    async delete(user, comment: Comment) {
+      return user && user.id === comment.userId ? grant(user) : deny()
     })
   }
 }
@@ -68,8 +68,9 @@ async function isOwnerOfFolderOrParent(folderId: string): Promise<boolean> {
 
 export const policies = {
   folders: {
-    delete: AuthedPolicy(async (user, folderId: string) => {
-      return await isOwnerOfFolderOrParent(folderId);
+    async delete(user, folderId: string) {
+      if (!user) return deny("Unauthenticated");
+      return await isOwnerOfFolderOrParent(folderId) ? grant(user) : deny()
     }),
   }
 }
@@ -105,9 +106,10 @@ export function isMember(user: Subject, orgId: string) {
 
 export const policies = {
   documents: {
-    create: AuthedPolicy((user: Subject, organizationId: string) => {
-      return isMember(user, organizationId);
-    }),
+    async create(user: Subject, organizationId: string) {
+      if (!user) return deny("Unauthenticated");
+      return isMember(user, organizationId) ? grant(user) : deny()
+    },
   }
 }
 ```
