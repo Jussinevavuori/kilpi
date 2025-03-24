@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { KilpiError } from "./error";
-import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
 import { KilpiHooks } from "./kilpi-hooks";
 import type { KilpiQueryProtector } from "./kilpi-query";
 import { KilpiQuery } from "./kilpi-query";
@@ -19,6 +18,37 @@ import type {
 import { getPolicyByKey } from "./policy";
 import { createCallStackSizeProtector } from "./utils/call-stack-size-protector";
 import type { ArrayHead } from "./utils/types";
+
+/**
+ * Arguments passed to construct a KilpiCore instance.
+ */
+export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject>> = {
+  /**
+   * Connect your own authentication provider (and other subject data / metadata) via a
+   * custom `getSubject` function.
+   *
+   * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
+   * during each authorization check.
+   */
+  getSubject: () => Promise<TSubject>;
+
+  /**
+   * Default values when no value is available from a scope.
+   */
+  defaults?: Pick<KilpiScope<KilpiCore<TSubject, TPolicyset>>, "onUnauthorized">;
+
+  /**
+   * The policies which define the authorization logic of the application.
+   */
+  policies: TPolicyset;
+
+  /**
+   * Custom settings
+   */
+  settings?: {
+    disableSubjectCaching?: boolean;
+  };
+};
 
 /**
  * The KilpiCore class is the primary interface for interacting with the Kilpi library.
@@ -219,7 +249,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * if (authorization.granted) {
    *   console.log(`User ${authorization.subject.id} can read resource ${resource.id}`);
    * } else {
-   *   console.log(`Can not read resource`);
+   *   console.log(`Can not read resource: ${authorization.message}`);
    * }
    * ```
    */
@@ -263,7 +293,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
       key,
       ...inputs,
     );
-    return !!authorization;
+    return authorization.granted;
   }
 
   /**
@@ -299,18 +329,19 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     );
 
     // Granted, return the narrowed down subject and escape early
-    if (authorization) {
+    if (authorization.granted) {
       return authorization.subject;
     }
 
     // Unauthorized
-    this.unauthorized();
+    this.unauthorized(authorization.message ?? "Unauthorized");
   }
 
   /**
    * When a manually defined authorization check fails, trigger the `onUnauthorized` procedure
    * similarly as with `.authorize()` with this function.
    *
+   * @param message The optional message to pass to the onUnauthorized handler.
    * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
    *
@@ -325,15 +356,15 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * await updateResource(resource, user);
    * ```
    */
-  unauthorized(): never {
+  unauthorized(message = "Unauthorized"): never {
     // Run onUnauthorized handler in current scope if available
-    this.resolveScope()?.onUnauthorized?.();
+    this.resolveScope()?.onUnauthorized?.({ message });
 
     // Run default onUnauthorized handler if available
-    this.defaults?.onUnauthorized?.();
+    this.defaults?.onUnauthorized?.({ message });
 
     // Throw by default
-    throw new KilpiError.AuthorizationDenied();
+    throw new KilpiError.AuthorizationDenied(message);
   }
 
   /**
@@ -399,7 +430,9 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
             hook({ source: "filter", policy: key, subject, authorization });
           });
 
-          if (authorization) authorizedResources.push(resource);
+          if (authorization.granted) {
+            authorizedResources.push(resource);
+          }
         }),
       ),
     );

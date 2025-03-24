@@ -1,4 +1,4 @@
-import { authorization, type Policyset } from "src";
+import { deny, grant, type Policyset } from "src";
 
 export type TestRole = "admin" | "user" | "guest";
 
@@ -52,32 +52,36 @@ async function listAllDocuments() {
 const policies = {
   // Always fail
   async never() {
-    return undefined;
+    return deny();
   },
 
   // Pass always
   async public(subject) {
-    return authorization(subject);
+    return grant(subject);
   },
 
   // Authed only
   async authed(subject) {
-    if (!subject) return;
-    return authorization(subject);
+    if (!subject) return deny("Unauthenticated");
+    return grant(subject);
   },
 
   // Nested keys
   docs: {
     // Authed only if ID matches
     async ownDocument(subject, doc: TestDocument) {
-      if (subject && subject.id === doc.userId) return authorization(subject);
+      if (!subject) return deny("Unauthenticated");
+      if (subject.id !== doc.userId) return deny();
+      return grant(subject);
     },
 
     // Deeply nested policy
     deeply: {
       nested: {
         async policy(subject, doc: TestDocument) {
-          if (subject && subject.id === doc.userId) return authorization(subject);
+          if (!subject) return deny("Unauthenticated");
+          if (subject.id !== doc.userId) return deny();
+          return grant(subject);
         },
       },
     },

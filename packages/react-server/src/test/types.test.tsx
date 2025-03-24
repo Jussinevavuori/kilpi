@@ -1,4 +1,4 @@
-import { createKilpi, Policy } from "@kilpi/core";
+import { createKilpi, deny, grant, type Policyset } from "@kilpi/core";
 import { describe } from "node:test";
 import { ReactServerComponentPlugin } from "src/plugins/ReactServerComponentPlugin";
 import { expect, it } from "vitest";
@@ -9,14 +9,19 @@ const sub = { id: 1 };
 type Doc = { id: number; userId: number };
 const doc = { id: 1, userId: 1 };
 
-const P = Policy.as((subject: Sub) => ({ subject }));
-
 const policies = {
-  example: P(() => true),
-  documents: {
-    read: P((user, doc: Doc) => user.id === doc.userId),
+  async example(user) {
+    return grant(user);
   },
-};
+
+  documents: {
+    async read(user, doc: Doc) {
+      if (!user) return deny();
+      if (doc.userId !== user.id) return deny();
+      return grant(user);
+    },
+  },
+} satisfies Policyset<Sub | null>;
 
 const Kilpi = createKilpi({
   getSubject: () => Promise.resolve(sub),

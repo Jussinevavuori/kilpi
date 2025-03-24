@@ -1,5 +1,4 @@
-import type { KilpiConstructorArgs } from "./kilpi-constructor-args";
-import { KilpiCore } from "./kilpi-core";
+import { KilpiCore, type KilpiConstructorArgs } from "./kilpi-core";
 import type { Policyset } from "./policy";
 
 /**

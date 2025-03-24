@@ -20,10 +20,7 @@ export type Policy<
   TInputs extends AnyPolicyInput,
   TSubjectInput,
   TSubjectOutput = TSubjectInput,
-> = (
-  subject: TSubjectInput,
-  ...inputs: TInputs
-) => Promise<Authorization<TSubjectOutput> | undefined>;
+> = (subject: TSubjectInput, ...inputs: TInputs) => Promise<Authorization<TSubjectOutput>>;
 
 /**
  * Utility type for inferring the inputs of a policy.
