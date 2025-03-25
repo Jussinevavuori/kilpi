@@ -18,6 +18,7 @@
     "dev": "vitest watch"
   },
   "dependencies": {
+    "nanoid": "^5.1.5",
     "superjson": "^2.2.2",
     "zod": "^3.24.1"
   },
