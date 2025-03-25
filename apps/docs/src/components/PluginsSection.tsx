@@ -1,3 +1,4 @@
+import { ToyBrickIcon } from "lucide-react";
 import { DefaultSection } from "./DefaultSection";
 import { SvgLogos } from "./SvgLogos";
 
@@ -11,6 +12,19 @@ export const CATEGORIES = [
         description: "Automatic RSC scope and <Access /> component.",
         Icon: SvgLogos.React,
         link: "/plugins/react-server-components",
+      },
+    ],
+  },
+  {
+    title: "Utilities",
+    description: "Plugins to extend the features of Kilpi.",
+    items: [
+      {
+        title: "Endpoint Plugin",
+        description:
+          "Automatically construct an API endpoint for fetching the current subject and authorization decisions.",
+        Icon: ToyBrickIcon,
+        link: "/plugins/endpoint",
       },
     ],
   },

@@ -4,10 +4,8 @@ import {
   CodeIcon,
   DatabaseZapIcon,
   FingerprintIcon,
-  GlobeLockIcon,
   LaptopIcon,
   Loader2Icon,
-  MonitorSmartphoneIcon,
   NotebookTabsIcon,
   PlugZapIcon,
   PuzzleIcon,
@@ -62,6 +60,12 @@ const FEATURES = [
     Icon: PuzzleIcon,
   },
   {
+    title: "Client-side authorization",
+    description:
+      "Performant solution for fetching your subject and authorization decisions from the server with deduping, batching and caching.",
+    Icon: LaptopIcon,
+  },
+  {
     title: "Plugin API & Library",
     description:
       "Extend Kilpi with ready-made & custom plugins to fit your use case. See below for list of plugins.",
@@ -94,28 +98,7 @@ const ROADMAP = [
     Icon: NotebookTabsIcon,
   },
   {
-    title: "Authorization endpoint",
-    description: "A secure server endpoint for requesting authorization decisions.",
-    Icon: GlobeLockIcon,
-  },
-  {
-    title: "Specialized RBAC API",
-    description: "An improved way to define your policies for Role-Based Access Control systems.",
-    Icon: LaptopIcon,
-  },
-  {
-    title: "Client-side authorization",
-    description:
-      "A new API for using Kilpi on the client-side by connecting to the authorization endpoint to request authorization decisions.",
-    Icon: LaptopIcon,
-  },
-  {
-    title: "Client-only authorization",
-    description: "An alternative API for client-only SPAs who don't require a server.",
-    Icon: MonitorSmartphoneIcon,
-  },
-  {
-    title: "More pre-made plugins",
+    title: "React client plugin",
     description: "More features and support for even more frameworks, libraries and services.",
     Icon: ToyBrickIcon,
   },

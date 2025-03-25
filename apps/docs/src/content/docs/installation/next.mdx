@@ -12,6 +12,10 @@ Ensure you have setup Kilpi using the [quickstart guide](/getting-started/quicks
 
 Install the [React Server Components Plugin](/installation/react-server-components) first to start using Kilpi in your Next.js application.
 
+### React Client Components Plugin
+
+Upcoming: React Client Components Plugin for component and hook bindings into `@react/client`. For now, see [this guide](/getting-started/usage-on-client) to see how to use the `KilpiClient` instance directly on the client.
+
 ### Provide a scope for server actions and endpoints
 
 The React Server Components Plugin can't automatically provide a scope for server actions or endpoints as there is no global request-scoped API. You have to do this manually with `Kilpi.runInScope` to use all Kilpi features, such as `Kilpi.onUnauthorized`.

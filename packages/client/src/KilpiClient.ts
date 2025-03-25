@@ -110,7 +110,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
     return this.cache.wrap({ cacheKey: ["fetchIsAuthorized", key, ...inputs] }, async () => {
       // Fetch authorization from the server (with batching)
       const isAuthorized = await this.batcher.queueJob({
-        type: "getAuthorization",
+        type: "getIsAuthorized",
         policy: key,
         requestId: nanoid(),
         resource: inputs[0],
