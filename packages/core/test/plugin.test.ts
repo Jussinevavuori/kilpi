@@ -13,7 +13,7 @@ export function TestPlugin<T extends AnyKilpiCore>() {
   return createKilpiPlugin((Kilpi: T) => {
     Kilpi.hooks.onRequestScope(() => scope);
 
-    return Kilpi.extend({
+    return {
       test: {
         get() {
           return value;
@@ -22,7 +22,7 @@ export function TestPlugin<T extends AnyKilpiCore>() {
           value = v;
         },
       },
-    });
+    };
   });
 }
 

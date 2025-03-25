@@ -22,7 +22,7 @@ export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
     // Provide automatic scope when in RSC context
     Kilpi.hooks.onRequestScope(() => (isRscContext() ? rscCache().current : undefined));
 
-    return Kilpi.extend({
+    return {
       ReactServer: {
         createComponents() {
           return {
@@ -30,6 +30,6 @@ export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
           };
         },
       },
-    });
+    };
   });
 }

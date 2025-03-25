@@ -1,4 +1,5 @@
 import { KilpiCore, type KilpiConstructorArgs } from "./KilpiCore";
+import type { KilpiPlugin } from "./KilpiPlugin";
 import type { Policyset } from "./policy";
 
 /**
@@ -14,229 +15,221 @@ export function createKilpi<S, P extends Policyset<S>>(
     plugins?: [];
   },
 ): KilpiCore<S, P>;
-export function createKilpi<S, P extends Policyset<S>, T1 extends KilpiCore<S, P>>(
-  args: KilpiConstructorArgs<S, P> & {
-    plugins: [(t: KilpiCore<S, P>) => T1];
-  },
-): T1;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [(t: KilpiCore<S, P>) => T1, (t: T1) => T2];
+    plugins: [P1];
   },
-): T2;
+): KilpiCore<S, P> & ReturnType<P1>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3];
+    plugins: [P1, P2];
   },
-): T3;
+): KilpiCore<S, P> & ReturnType<P1> & ReturnType<P2>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4];
+    plugins: [P1, P2, P3];
   },
-): T4;
+): KilpiCore<S, P> & ReturnType<P1> & ReturnType<P2> & ReturnType<P3>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-    ];
+    plugins: [P1, P2, P3, P4];
   },
-): T5;
+): KilpiCore<S, P> & ReturnType<P1> & ReturnType<P2> & ReturnType<P3> & ReturnType<P4>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-      (t: T5) => T6,
-    ];
+    plugins: [P1, P2, P3, P4, P5];
   },
-): T6;
+): KilpiCore<S, P> &
+  ReturnType<P1> &
+  ReturnType<P2> &
+  ReturnType<P3> &
+  ReturnType<P4> &
+  ReturnType<P5>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
-  T7 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P6 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-      (t: T5) => T6,
-      (t: T6) => T7,
-    ];
+    plugins: [P1, P2, P3, P4, P5, P6];
   },
-): T7;
+): KilpiCore<S, P> &
+  ReturnType<P1> &
+  ReturnType<P2> &
+  ReturnType<P3> &
+  ReturnType<P4> &
+  ReturnType<P5> &
+  ReturnType<P6>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
-  T7 extends KilpiCore<S, P>,
-  T8 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P6 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P7 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-      (t: T5) => T6,
-      (t: T6) => T7,
-      (t: T7) => T8,
-    ];
+    plugins: [P1, P2, P3, P4, P5, P6, P7];
   },
-): T8;
+): KilpiCore<S, P> &
+  ReturnType<P1> &
+  ReturnType<P2> &
+  ReturnType<P3> &
+  ReturnType<P4> &
+  ReturnType<P5> &
+  ReturnType<P6> &
+  ReturnType<P7>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
-  T7 extends KilpiCore<S, P>,
-  T8 extends KilpiCore<S, P>,
-  T9 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P6 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P7 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P8 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-      (t: T5) => T6,
-      (t: T6) => T7,
-      (t: T7) => T8,
-      (t: T8) => T9,
-    ];
+    plugins: [P1, P2, P3, P4, P5, P6, P7, P8];
   },
-): T9;
+): KilpiCore<S, P> &
+  ReturnType<P1> &
+  ReturnType<P2> &
+  ReturnType<P3> &
+  ReturnType<P4> &
+  ReturnType<P5> &
+  ReturnType<P6> &
+  ReturnType<P7> &
+  ReturnType<P8>;
+
 export function createKilpi<
   S,
   P extends Policyset<S>,
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
-  T7 extends KilpiCore<S, P>,
-  T8 extends KilpiCore<S, P>,
-  T9 extends KilpiCore<S, P>,
-  T10 extends KilpiCore<S, P>,
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P6 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P7 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P8 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P9 extends KilpiPlugin<KilpiCore<S, P>, object>,
 >(
   args: KilpiConstructorArgs<S, P> & {
-    plugins: [
-      (t: KilpiCore<S, P>) => T1,
-      (t: T1) => T2,
-      (t: T2) => T3,
-      (t: T3) => T4,
-      (t: T4) => T5,
-      (t: T5) => T6,
-      (t: T6) => T7,
-      (t: T7) => T8,
-      (t: T8) => T9,
-      (t: T9) => T10,
-    ];
+    plugins: [P1, P2, P3, P4, P5, P6, P7, P8, P9];
   },
-): T10;
+): KilpiCore<S, P> &
+  ReturnType<P1> &
+  ReturnType<P2> &
+  ReturnType<P3> &
+  ReturnType<P4> &
+  ReturnType<P5> &
+  ReturnType<P6> &
+  ReturnType<P7> &
+  ReturnType<P8> &
+  ReturnType<P9>;
+
+// Implementation
 export function createKilpi<
   S, //TSubject
   P extends Policyset<S>, // TPolicyset
-  T1 extends KilpiCore<S, P>,
-  T2 extends KilpiCore<S, P>,
-  T3 extends KilpiCore<S, P>,
-  T4 extends KilpiCore<S, P>,
-  T5 extends KilpiCore<S, P>,
-  T6 extends KilpiCore<S, P>,
-  T7 extends KilpiCore<S, P>,
-  T8 extends KilpiCore<S, P>,
-  T9 extends KilpiCore<S, P>,
-  T10 extends KilpiCore<S, P>,
->(
-  args: KilpiConstructorArgs<S, P> & {
-    // Strongly typed plugins
-    // prettier-ignore
-    plugins?:
-      | undefined
+  P1 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P2 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P3 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P4 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P5 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P6 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P7 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P8 extends KilpiPlugin<KilpiCore<S, P>, object>,
+  P9 extends KilpiPlugin<KilpiCore<S, P>, object>,
+>({
+  plugins = [],
+  ...args
+}: KilpiConstructorArgs<S, P> & {
+  // Strongly typed plugins
+  // prettier-ignore
+  plugins?:
       | []
-      | [(t: KilpiCore<S, P>) => T1]
-      | [(t: KilpiCore<S, P>) => T1, (t: T1) => T2]
-      | [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3]
-      | [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7, (t: T7) => T8]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7, (t: T7) => T8, (t: T8) => T9]
-			| [(t: KilpiCore<S, P>) => T1, (t: T1) => T2, (t: T2) => T3, (t: T3) => T4, (t: T4) => T5, (t: T5) => T6, (t: T6) => T7, (t: T7) => T8, (t: T8) => T9, (t: T9) => T10]
-  },
-): KilpiCore<S, P> | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10 {
+			| [P1]
+			| [P1, P2]
+			| [P1, P2, P3]
+			| [P1, P2, P3, P4]
+			| [P1, P2, P3, P4, P5]
+			| [P1, P2, P3, P4, P5, P6]
+			| [P1, P2, P3, P4, P5, P6, P7]
+			| [P1, P2, P3, P4, P5, P6, P7, P8]
+			| [P1, P2, P3, P4, P5, P6, P7, P8, P9];
+}) {
   // Construct base KilpiCore class
   const Kilpi = new KilpiCore(args);
 
-  // Run all plugins
-  return (args.plugins ?? []).reduce<
-    KilpiCore<S, P> | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | T9 | T10
-  >(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc, fn) => fn(acc as any),
-    Kilpi,
+  // Apply each plugin and get the plugin interfaces
+  const interfaces = plugins.map((applyPlugin) => applyPlugin(Kilpi));
+
+  // Merge all plugin interfaces
+  const mergedInterface = interfaces.reduce(
+    (acc, plugin) => {
+      return { ...acc, ...plugin };
+    },
+    {} as ReturnType<P1> &
+      ReturnType<P2> &
+      ReturnType<P3> &
+      ReturnType<P4> &
+      ReturnType<P5> &
+      ReturnType<P6> &
+      ReturnType<P7> &
+      ReturnType<P8> &
+      ReturnType<P9>,
   );
+
+  // Return Kilpi with merged interface
+  return Object.assign(Kilpi, mergedInterface);
 }
