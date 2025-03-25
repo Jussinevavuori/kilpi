@@ -1,5 +1,16 @@
 # @kilpi/react
 
+## 0.9.0
+
+### Minor Changes
+
+- df8d374: introduce @kilpi/client, update plugins to only return public interface
+
+### Patch Changes
+
+- Updated dependencies [df8d374]
+  - @kilpi/core@0.10.0
+
 ## 0.8.4
 
 ### Patch Changes

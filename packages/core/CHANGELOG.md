@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.10.0
+
+### Minor Changes
+
+- df8d374: introduce @kilpi/client, update plugins to only return public interface
+
 ## 0.9.1
 
 ### Patch Changes
