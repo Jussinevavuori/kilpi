@@ -1,6 +1,6 @@
 {
   "name": "@kilpi/client",
-  "description": "Kilpi client",
+  "description": "Kilpi client-side API · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
   "version": "0.9.0",
   "license": "MIT",
   "main": "dist/index.js",

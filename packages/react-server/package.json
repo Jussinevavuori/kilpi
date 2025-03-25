@@ -1,6 +1,6 @@
 {
   "name": "@kilpi/react-server",
-  "description": "Kilpi react server component integration",
+  "description": "Kilpi RSC Plugin and Components · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
   "version": "0.8.4",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,6 +1,6 @@
 {
   "name": "@kilpi/core",
-  "description": "Kilpi core",
+  "description": "Kilpi Core · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
   "version": "0.9.1",
   "license": "MIT",
   "main": "dist/index.js",
