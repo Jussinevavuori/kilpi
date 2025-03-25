@@ -35,8 +35,5 @@
     "authorization",
     "abac",
     "rbac"
-  ],
-  "dependencies": {
-    "@fontsource/geist-mono": "^5.2.5"
-  }
+  ]
 }

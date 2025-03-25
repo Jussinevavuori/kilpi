@@ -13,6 +13,7 @@
     "@astrojs/react": "^4.2.1",
     "@astrojs/starlight": "^0.32.2",
     "@astrojs/starlight-tailwind": "^3.0.0",
+    "@fontsource/geist-mono": "^5.2.5",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.14",
