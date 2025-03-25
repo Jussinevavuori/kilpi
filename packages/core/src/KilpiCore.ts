@@ -203,7 +203,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * Internal utility called by all authorization functions. Gets the subject, resolves
    * the policy by key and evaluates the policy. Returns all authorization information.
    */
-  async evaluateAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
+  private async evaluateAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
     options: { source: string },
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
@@ -466,13 +466,6 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   ) {
     // Implemented in a KilpiQuery class.
     return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
-  }
-
-  /**
-   * Utility for extending the current instance (uses `Object.assign(this, ...)` under the hood.)
-   */
-  public extend<T extends object>(extension: T) {
-    return Object.assign(this, extension);
   }
 
   /**

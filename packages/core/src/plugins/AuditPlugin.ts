@@ -5,11 +5,11 @@ import { createKilpiPlugin } from "src/KilpiPlugin";
  * WIP: Audit plugin
  */
 export function AuditPlugin<T extends AnyKilpiCore>() {
-  return createKilpiPlugin((Kilpi: T) => {
-    return Kilpi.extend({
+  return createKilpiPlugin((_Kilpi: T) => {
+    return {
       audit: () => {
         throw new Error("Not implemented");
       },
-    });
+    };
   });
 }

@@ -1,0 +1,111 @@
+---
+title: Usage on client
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+You can also use Kilpi on the client-side.
+
+:::note
+By design, all authorization is performed on the server. The `@kilpi/client` package only fetches authorization decisions from the server, with request caching, batching and deduping.
+:::
+
+<Steps>
+
+1.  ### Install the `@kilpi/client` package
+
+    <Tabs syncKey="package-manager">
+      <TabItem label="npm">
+        ```bash
+        npm install @kilpi/client
+        ```
+      </TabItem>
+
+      <TabItem label="yarn">
+        ```bash
+        yarn add @kilpi/client
+        ```
+      </TabItem>
+
+      <TabItem label="pnpm">
+        ```bash
+        pnpm add @kilpi/client
+        ```
+      </TabItem>
+
+      
+      <TabItem label="bun">
+        ```bash
+        bun add @kilpi/client
+        ```
+      </TabItem>
+    </Tabs>
+
+
+2.  ### Setup environment variables
+
+    Create **public** environment variables (e.g. with `NEXT_PUBLIC_` or similar prefix to ensure they are included in the client bundle).
+
+    ```bash
+    NEXT_PUBLIC_KILPI_URL=http://localhost:3000/api/kilpi
+    NEXT_PUBLIC_KILPI_SECRET=my-public-secret-value
+    ```
+
+3.  ### Provide an authorization endpoint
+
+    Use the `EndpointPlugin` provided by `@kilpi/core` to create an authorization endpoint. It exposes the `Kilpi.createPostEndpoint()` function, which constructs a web-standard request-response functions. Expose it using your framework of choice.
+
+    ```ts
+    // kilpi.ts
+    export const Kilpi = createKilpi({
+      ...,
+      plugins: [
+        EndpointPlugin({ secret: process.env.NEXT_PUBLIC_KILPI_SECRET })
+      ]
+    })
+    ```
+
+    <Tabs syncKey="backend">
+      <TabItem label="Next.js (App router)">
+        ```ts
+        // app/api/kilpi/route.ts
+        export const POST = Kilpi.createPostEndpoint();
+        ```
+      </TabItem>
+    </Tabs>
+
+4.  ### Create your `KilpiClient` instance.
+
+    Create your `KilpiClient` instance with `createKilpiClient`.
+
+    ```ts
+    // kilpi-client.ts
+    export const KilpiClient = createKilpiClient({
+      connect: {
+        endpointUrl: process.env.NEXT_PUBLIC_KILPI_URL,
+        secret: process.env.NEXT_PUBLIC_KILPI_SECRET
+      },
+    })
+    ```
+
+5.  ### Start using on the client
+
+    Now you can use the `KilpiClient` instance to fetch the subject and authorization decisions. It has the same signature as `Kilpi.isAuthorized` and `Kilpi.getSubject`.
+
+    ```ts
+    const subject = await KilpiClient.fetchSubject()
+    const canCreateDocument = await KilpiClient.fetchIsAuthorized("documents:create");
+    const canUpdateComment = await KilpiClient.fetchIsAuthorized("comments:create", comment);
+    ```
+
+    :::note
+    All requests are **cached**, **deduped** and **batched** for performance. You can clear the cache with `KilpiClient.clearCache()` and control the batching options in `createKilpiClient` with the `batching` option.
+    :::
+  
+6.  ### Integrate into your frontend framework of choice
+
+    Upcoming: `@kilpi/react-client` and other `@kilpi/client` bindings for popular frontend frameworks.
+
+</Steps>

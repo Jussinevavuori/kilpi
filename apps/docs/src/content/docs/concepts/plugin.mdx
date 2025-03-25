@@ -23,7 +23,7 @@ const { Access } = Kilpi.ReactServer.createComponents();
 
 ## Creating custom plugins
 
-Creating custom plugins is easy with the `createKilpiPlugin` method. For improved typesafety and customizability, you should wrap your plugin in a generic function. The `createKilpiPlugin` method will take in the `Kilpi` instance and return the same instance, optionally with added methods using `Kilpi.extend`.
+Creating custom plugins is easy with the `createKilpiPlugin` method. For improved typesafety and customizability, you should wrap your plugin in a generic function. The `createKilpiPlugin` method will take in the `Kilpi` instance and return the public interface for the plugin (or `{}` if no public interface).
 
 Let's create an utility plugin for counting the total number of authorizations.
 
@@ -40,13 +40,13 @@ export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
     });
 
     // Return the instance (optionally add your custom methods)
-    return Kilpi.extend({
+    return {
       authorizationCounter: {
         get() {
           return value;
         },
       }
-    })
+    }
   });
 }
 
