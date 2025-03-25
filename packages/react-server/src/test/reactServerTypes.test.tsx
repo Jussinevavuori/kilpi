@@ -36,9 +36,11 @@ describe("types", () => {
   it("should be typesafe and have correct types", async () => {
     const { Access } = Kilpi.ReactServer.createComponents();
 
+    // These should not throw type errors if all's well
     void (<Access to="example" />);
     void (<Access to="documents:read" on={doc} />);
 
+    // No run-time tests
     expect(true).toBe(true);
   });
 });

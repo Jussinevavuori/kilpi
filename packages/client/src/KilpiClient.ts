@@ -6,9 +6,16 @@ import type {
   PolicysetKeys,
 } from "@kilpi/core";
 import { nanoid } from "nanoid";
-import { parse as superJsonParse, stringify as superJsonStringify } from "superjson";
+import { parse as superJsonParse } from "superjson";
 import { z } from "zod";
-import { Batcher, type BatcherOptions, type BatchJob } from "./batcher";
+import { Batcher, type BatcherOptions, type BatchJob } from "./Batcher";
+import { ClientCache } from "./ClientCache";
+import {
+  createHandleRequestStrategy,
+  type AnyRequestStrategyOptions,
+  type HandleRequestStrategy,
+} from "./HandleRequestStrategy";
+import { deepEquals } from "./utils/deepEquals";
 import { getRequestErrorMessage } from "./utils/getRequestErrorMessage";
 import { tryCatch } from "./utils/tryCatch";
 
@@ -21,26 +28,16 @@ const responseSchema = z.array(
   }),
 );
 
-export type KilpiClientOptions<T extends AnyKilpiCore> = {
+export type KilpiClientOptions = {
   /**
-   * URL of the Kilpi server endpoint.
+   * Connection options. This constructs a HandleRequestStrategy under the hood.
    */
-  kilpiUrl: KilpiClient<T>["kilpiUrl"];
-
-  /**
-   * Public key to authenticate with the Kilpi server.
-   */
-  kilpiSecret: KilpiClient<T>["kilpiSecret"];
-
-  /**
-   * Custom fetch function. Primarily used for mocking in tests.
-   */
-  fetch?: typeof fetch;
+  connect: AnyRequestStrategyOptions;
 
   /**
    * Enable customizing the batching behaviour.
    */
-  batching?: BatcherOptions;
+  batching?: Pick<BatcherOptions<KilpiClientRequest>, "batchDelayMs" | "jobTimeoutMs">;
 };
 
 /**
@@ -48,14 +45,9 @@ export type KilpiClientOptions<T extends AnyKilpiCore> = {
  */
 export class KilpiClient<T extends AnyKilpiCore> {
   /**
-   * URL of the Kilpi server endpoint.
+   * Handle request strategy to use.
    */
-  private kilpiUrl: string;
-
-  /**
-   * Public key to authenticate with the Kilpi server.
-   */
-  private kilpiSecret: string;
+  private handleRequestStrategy: HandleRequestStrategy;
 
   /**
    * All currently batched events to fetch.
@@ -63,37 +55,49 @@ export class KilpiClient<T extends AnyKilpiCore> {
   private batcher: Batcher<KilpiClientRequest>;
 
   /**
-   * Custom fetch function
-   */
-  private _fetch: typeof fetch;
-
-  /**
    * Inferring utilities
    */
   public $$infer: T["$$infer"] = {} as T["$$infer"];
 
-  constructor(options: KilpiClientOptions<T>) {
-    // Configuration
-    this.kilpiUrl = options.kilpiUrl;
-    this.kilpiSecret = options.kilpiSecret;
-    this._fetch = options.fetch ?? global.fetch;
+  /**
+   * Request cache
+   */
+  private cache: ClientCache;
+
+  constructor(options: KilpiClientOptions) {
+    // Setup request handler strategy with factory
+    this.handleRequestStrategy = createHandleRequestStrategy(options.connect);
+
+    // Setup cache
+    this.cache = new ClientCache();
 
     // Setup batcher to run all jobs
-    this.batcher = new Batcher((jobs) => this.runJobs(jobs), options.batching);
+    this.batcher = new Batcher({
+      // Run jobs function
+      runJobs: (jobs) => this.runJobs(jobs),
+
+      // Always dedupe requests. Do not compare request ID as it is always unique.
+      dedupe: (a, b) => deepEquals({ ...a, requestId: "" }, { ...b, requestId: "" }),
+
+      // Apply custom batching options to override defaults
+      ...options.batching,
+    });
   }
 
   /**
    * Fetch the current subject.
    */
   public async fetchSubject() {
-    // Fetch subject from the server (with batching)
-    const subject = await this.batcher.queueJob({
-      type: "getSubject",
-      requestId: nanoid(),
-    });
+    return this.cache.wrap({ cacheKey: ["fetchSubject"] }, async () => {
+      // Fetch subject from the server (with batching)
+      const subject = await this.batcher.queueJob({
+        type: "getSubject",
+        requestId: nanoid(),
+      });
 
-    // Return subject (not able to validate subject type)
-    return subject as T["$$infer"]["subject"];
+      // Return subject (not able to validate subject type)
+      return subject as T["$$infer"]["subject"];
+    });
   }
 
   /**
@@ -103,43 +107,46 @@ export class KilpiClient<T extends AnyKilpiCore> {
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>
   ): Promise<boolean> {
-    // Fetch authorization from the server (with batching)
-    const isAuthorized = await this.batcher.queueJob({
-      type: "getAuthorization",
-      policy: key,
-      requestId: nanoid(),
-      resource: inputs[0],
+    return this.cache.wrap({ cacheKey: ["fetchIsAuthorized", key, ...inputs] }, async () => {
+      // Fetch authorization from the server (with batching)
+      const isAuthorized = await this.batcher.queueJob({
+        type: "getAuthorization",
+        policy: key,
+        requestId: nanoid(),
+        resource: inputs[0],
+      });
+
+      // Ensure the response is a boolean
+      if (typeof isAuthorized !== "boolean") {
+        throw new Error(
+          `Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`,
+        );
+      }
+
+      // Return isAuthorized boolean
+      return isAuthorized;
     });
-
-    // Ensure the response is a boolean
-    if (typeof isAuthorized !== "boolean") {
-      throw new Error(
-        `Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`,
-      );
-    }
-
-    // Return isAuthorized boolean
-    return isAuthorized;
   }
+
+  /**
+   * Utility to clear the cache.
+   */
+  public clearCache() {
+    this.cache.clear();
+  }
+
   /**
    * Utility function used to fetch all requests as batched jobs.
    */
   private async runJobs(jobs: Array<BatchJob<KilpiClientRequest>>) {
-    // Fetch response for each request in batch
-    const response = await this._fetch(this.kilpiUrl, {
-      method: "POST",
-      body: superJsonStringify(jobs.map((job) => job.payload)),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.kilpiSecret}`,
-      },
-    });
+    // Use request handler strategy to get response
+    const response = await this.handleRequestStrategy.request(jobs.map((job) => job.payload));
 
     // Error status: Reject all requests with useful message
     if (response.status !== 200) {
-      const error = new Error(getRequestErrorMessage(response.status));
-      jobs.forEach((job) => job.reject(error));
-      throw error;
+      return jobs.forEach((job) => {
+        job.reject(new Error(getRequestErrorMessage(response.status)));
+      });
     }
 
     // Parse body as Super JSON against response schema
@@ -150,11 +157,11 @@ export class KilpiClient<T extends AnyKilpiCore> {
         .then((_) => responseSchema.parse(_)),
     );
 
-    // Body had an error
+    // Body had an error: Reject all requests with useful message
     if (body.error) {
-      const error = new Error("Kilpi server responded with invalid data.");
-      jobs.forEach((job) => job.reject(error));
-      throw error;
+      return jobs.forEach((job) => {
+        job.reject(new Error("Kilpi server responded with invalid data."));
+      });
     }
 
     // Resolve all jobs from the response data

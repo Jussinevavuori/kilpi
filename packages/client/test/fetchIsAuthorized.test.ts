@@ -1,17 +1,9 @@
 import { createKilpi, deny, EndpointPlugin, grant } from "@kilpi/core";
 import { createKilpiClient } from "src";
 import { describe, expect } from "vitest";
-import { mockFetch } from "./mockFetch";
 
-type Sub = {
-  id: string;
-  name: string;
-};
-
-type Doc = {
-  id: string;
-  userId: string;
-};
+type Sub = { id: string; name: string };
+type Doc = { id: string; userId: string };
 
 /**
  * Setup a new server and client.
@@ -19,30 +11,23 @@ type Doc = {
 function init(options: { subject: Sub | null }) {
   // Setup Kilpi server instance
   const Kilpi = createKilpi({
-    async getSubject() {
-      return options.subject;
-    },
+    getSubject: async () => options.subject,
     policies: {
       always: (s) => grant(s),
       never: () => deny(),
       authed: (s) => (s ? grant(s) : deny()),
       own: (s, doc: Doc) => (s && s.id === doc.userId ? grant(s) : deny()),
     },
-    plugins: [EndpointPlugin({ kilpiSecret: "secret" })],
+    plugins: [EndpointPlugin({ secret: "secret" })],
   });
 
-  // Create an endpoint and a mock fetcher to fetch from the endpoint for testing
-  const endpoint = Kilpi.createPostEndpoint();
-  const fetcher = mockFetch(endpoint);
+  return createKilpiClient<typeof Kilpi>({
+    // Connect directly to endpoint
+    connect: { handleRequest: Kilpi.createPostEndpoint(), secret: "secret" },
 
-  const Client = createKilpiClient<typeof Kilpi>({
-    kilpiSecret: "secret",
-    kilpiUrl: "http://localhost:3000",
-    fetch: fetcher,
+    // Short timeout for local testing
     batching: { jobTimeoutMs: 100 },
   });
-
-  return Client;
 }
 
 describe("fetchIsAuthorized", (it) => {

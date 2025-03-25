@@ -26,12 +26,16 @@ export const endpointRequestSchema = z.discriminatedUnion("type", [
  * ```ts
  * export const Kilpi = createKilpi({
  *   ...,
- *   plugins: [EndpointPlugin({ kilpiSecret: "my-public-secret" })]
+ *   plugins: [EndpointPlugin({ secret: "my-public-secret" })]
  * })
  *
  * export const POST = Kilpi.createPostEndpoint();
  */
-export function EndpointPlugin<T extends AnyKilpiCore>(options: { kilpiSecret: string }) {
+export function EndpointPlugin<T extends AnyKilpiCore>(options: {
+  secret: string;
+  onBeforeHandleRequest?: (req: Request) => void;
+  onBeforeProcessItem?: (request: z.infer<typeof endpointRequestSchema>) => void;
+}) {
   return createKilpiPlugin((Kilpi: T) => {
     /**
      * Utility function to process requests into a JSON object that can be responded with.
@@ -39,6 +43,9 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: { kilpiSecret: s
     async function processRequests(body: Array<z.infer<typeof endpointRequestSchema>>) {
       return await Promise.all(
         body.map(async (request) => {
+          // Callback
+          options.onBeforeProcessItem?.(request);
+
           // Utility to construct and SuperJSON stringify a response
           function createResponse(data: unknown) {
             return { requestId: request.requestId, data };
@@ -81,8 +88,11 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: { kilpiSecret: s
       createPostEndpoint() {
         return async function handle(req: Request) {
           return Kilpi.runInScope(async () => {
-            // Authenticate request: Must have Bearer {kilpiSecret} in Authorization header.
-            if (req.headers.get("Authorization") !== `Bearer ${options.kilpiSecret}`) {
+            // Callback
+            options.onBeforeHandleRequest?.(req);
+
+            // Authenticate request: Must have Bearer {secret} in Authorization header.
+            if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {
               return Response.json({ message: "Unauthorized" }, { status: 401 });
             }
 

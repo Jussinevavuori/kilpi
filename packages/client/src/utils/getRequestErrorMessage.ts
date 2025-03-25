@@ -19,7 +19,7 @@ export function getRequestErrorMessage(status: number) {
 
   if (status === 401) {
     rows.push("Unauthorized to access Kilpi server.");
-    rows.push("Ensure you have the correct `kilpiSecret` setup in the client and the server.");
+    rows.push("Ensure you have the correct secret setup in the client and the server.");
   }
 
   return rows.join(" ");
