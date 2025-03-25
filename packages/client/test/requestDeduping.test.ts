@@ -1,6 +1,6 @@
 import { createKilpi, deny, EndpointPlugin, grant } from "@kilpi/core";
 import { createKilpiClient } from "src";
-import { Batcher } from "src/Batcher";
+import { Batcher } from "src/utils/Batcher";
 import { deepEquals } from "src/utils/deepEquals";
 import { describe, expect, vi } from "vitest";
 

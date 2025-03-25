@@ -1,4 +1,4 @@
-import { PromiseWithResolvers } from "./utils/PromiseWithResolvers";
+import { PromiseWithResolvers } from "./PromiseWithResolvers";
 
 export type BatchJob<T> = {
   payload: T;

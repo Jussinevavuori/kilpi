@@ -1,4 +1,4 @@
-import { ClientCache } from "src/ClientCache";
+import { ClientCache } from "src/utils/ClientCache";
 import { describe, expect, it } from "vitest";
 
 describe("ClientCache", () => {

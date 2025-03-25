@@ -8,13 +8,13 @@ import type {
 import { nanoid } from "nanoid";
 import { parse as superJsonParse } from "superjson";
 import { z } from "zod";
-import { Batcher, type BatcherOptions, type BatchJob } from "./Batcher";
-import { ClientCache } from "./ClientCache";
+import { Batcher, type BatcherOptions, type BatchJob } from "./utils/Batcher";
+import { ClientCache } from "./utils/ClientCache";
 import {
   createHandleRequestStrategy,
   type AnyRequestStrategyOptions,
   type HandleRequestStrategy,
-} from "./HandleRequestStrategy";
+} from "./utils/HandleRequestStrategy";
 import { deepEquals } from "./utils/deepEquals";
 import { getRequestErrorMessage } from "./utils/getRequestErrorMessage";
 import { tryCatch } from "./utils/tryCatch";
