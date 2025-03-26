@@ -1,20 +1,20 @@
 import { deleteArticleAction, updateArticleAction } from "@/data-layer/articleActions";
 import { Article } from "@/data-layer/articleService";
 import { Access } from "@/kilpi";
-import { forceRevalidateCurrentPage } from "@/utils/forceRevalidateCurrentPage";
+import { revalidatePath } from "next/cache";
 import { Button } from "./ui/button";
 
 export type ManageArticleFormProps = {
   article: Article;
 };
 
-export function ManageArticleForm(props: ManageArticleFormProps) {
+export function ManageArticleForm({ article }: ManageArticleFormProps) {
   return (
     <div className="flex flex-row gap-2 items-center">
       {/* Update article button */}
       <Access
         to="articles:update"
-        on={props.article}
+        on={article}
         Loading={
           <Button disabled variant="secondary">
             Loading ...
@@ -22,22 +22,19 @@ export function ManageArticleForm(props: ManageArticleFormProps) {
         }
         Unauthorized={
           <Button disabled variant="secondary">
-            Not authorized to {props.article.isPublished ? "unpublish" : "publish"}
+            Not authorized to {article.isPublished ? "unpublish" : "publish"}
           </Button>
         }
       >
         <form
-          onSubmit={async () => {
+          action={async () => {
             "use server";
-            await updateArticleAction({
-              id: props.article.id,
-              isPublished: !props.article.isPublished,
-            });
-            await forceRevalidateCurrentPage();
+            await updateArticleAction({ id: article.id, isPublished: !article.isPublished });
+            await revalidatePath(`/article/${article.id}`);
           }}
         >
           <Button type="submit" variant="secondary">
-            {props.article.isPublished ? "Unpublish" : "Publish"}
+            {article.isPublished ? "Unpublish" : "Publish"}
           </Button>
         </form>
       </Access>
@@ -45,7 +42,7 @@ export function ManageArticleForm(props: ManageArticleFormProps) {
       {/* Delete article button */}
       <Access
         to="articles:delete"
-        on={props.article}
+        on={article}
         Loading={
           <Button disabled variant="ghost">
             Loading ...
@@ -58,10 +55,10 @@ export function ManageArticleForm(props: ManageArticleFormProps) {
         }
       >
         <form
-          onSubmit={async () => {
+          action={async () => {
             "use server";
-            await deleteArticleAction({ id: props.article.id });
-            await forceRevalidateCurrentPage();
+            await deleteArticleAction({ id: article.id });
+            await revalidatePath(`/article/${article.id}`);
           }}
         >
           <Button type="submit" variant="ghost">

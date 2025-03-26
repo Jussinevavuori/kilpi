@@ -2,6 +2,18 @@
 
 This is an example project on how to use Kilpi in a Next.js App Router project using RSC with multiple good practices.
 
+## Setup
+
+Run this project using
+
+```bash
+bun run bootsrap
+```
+
+This will install all dependencies, then build and start the Next.js application and automatically migrate and seed the database. View the project at `http://localhost:3000`.
+
+> This project uses `bun` as the package manager and for the `bun:sqlite` package ([Install Bun](https://bun.sh/docs/installation)).
+
 ## Description & features
 
 This project is a simple news application to demo basic authorization concepts and patterns with Kilpi.
@@ -12,14 +24,6 @@ This project is a simple news application to demo basic authorization concepts a
 - Admins and article authors can delete articles.
 - Article authors can publish or unpublish their articles.
 - For demo purposes, authenticated users can change their role on the fly.
-
-## Setup
-
-This project uses `bun` as the package manager and for the `bun:sqlite` package ([Install Bun](https://bun.sh/docs/installation)).
-
-To run this project, run `bun run bootstrap` in the project directory. The command will install all dependencies, then build and start the Next.js application. You can then open `http://localhost:3000` in your browser and start using the application. Get started by signing up.
-
-The project uses a Bun SQLite database which requires no additional setup. It will create a `demo-db.sqlite` file (.gitignore'd) in your project directory. The database is seeded automatically on startup.
 
 ## Stack
 

@@ -1,9 +1,7 @@
-import { ArticleCard } from "@/components/ArticleCard";
-import { ArticleService } from "@/data-layer/articleService";
+import { ArticlesList } from "@/components/ArticlesList";
+import { Suspense } from "react";
 
 export default async function Home() {
-  const articles = await ArticleService.listArticles.protect();
-
   return (
     <main className="flex flex-col gap-16">
       <div className="flex flex-col gap-4">
@@ -13,16 +11,11 @@ export default async function Home() {
         </p>
       </div>
 
-      <div
-        className="grid gap-8"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-        }}
+      <Suspense
+        fallback={<p className="text-muted-foreground animate-pulse">Loading articles...</p>}
       >
-        {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} />
-        ))}
-      </div>
+        <ArticlesList />
+      </Suspense>
     </main>
   );
 }

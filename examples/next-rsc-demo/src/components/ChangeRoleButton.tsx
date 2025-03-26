@@ -1,11 +1,11 @@
 import { db } from "@/db";
 import { Kilpi } from "@/kilpi";
-import { forceRevalidateCurrentPage } from "@/utils/forceRevalidateCurrentPage";
-import { Button, ButtonProps } from "./ui/button";
+import { revalidatePath } from "next/cache";
 
-export type ChangeRoleButtonProps = ButtonProps;
-
-export async function ChangeRoleButton({ ...ButtonProps }: ChangeRoleButtonProps) {
+export async function ChangeRoleButton({
+  children,
+  ...ButtonProps
+}: React.ComponentProps<"button">) {
   // Require user to be authenticated
   const user = await Kilpi.getSubject();
   if (!user) return null;
@@ -15,28 +15,19 @@ export async function ChangeRoleButton({ ...ButtonProps }: ChangeRoleButtonProps
 
   return (
     <form
-      onSubmit={async () => {
+      action={async () => {
         "use server";
-
-        // No authorizatin here: This is to demo authorization
-
-        const sql = `
-					UPDATE user
-					SET role = $role
-					WHERE id = $id;
-				`;
-
-        await db.query(sql).run({
-          $role: targetRole,
-          $id: user.id,
-        });
-
-        await forceRevalidateCurrentPage();
+        // Update user role and revalidate layout. No authorization as this is made to demo
+        // authorization capabilities.
+        await db
+          .query("UPDATE user SET role = $role WHERE id = $id")
+          .run({ $role: targetRole, $id: user.id });
+        await revalidatePath("/", "layout");
       }}
     >
-      <Button type="submit" {...ButtonProps}>
-        <span>Change role</span>
-      </Button>
+      <button type="submit" {...ButtonProps}>
+        {children || "Change role"}
+      </button>
     </form>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
 import { authClient } from "@/better-auth.client";
-import { Button, ButtonProps } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export type SignOutButtonProps = ButtonProps;
-
-export function SignOutButton({ children, ...ButtonProps }: SignOutButtonProps) {
+export function SignOutButton({ children, ...ButtonProps }: React.ComponentProps<"button">) {
   async function handleSignOut() {
     await authClient.signOut({
       fetchOptions: {
@@ -21,8 +18,8 @@ export function SignOutButton({ children, ...ButtonProps }: SignOutButtonProps) 
   }
 
   return (
-    <Button {...ButtonProps} onClick={handleSignOut}>
+    <button {...ButtonProps} onClick={handleSignOut}>
       {children || "Sign out"}
-    </Button>
+    </button>
   );
 }
