@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -24,8 +23,6 @@ const formSchema = z.object({
 });
 
 export default function SignInForm() {
-  const router = useRouter();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
@@ -40,7 +37,8 @@ export default function SignInForm() {
       },
       {
         onSuccess() {
-          router.push("/");
+          // Force full revalidation
+          window.location.pathname = "/";
         },
         onError: (ctx) => {
           toast.error(ctx.error.message || "Sign in failed");

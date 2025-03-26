@@ -17,6 +17,7 @@ export const auth = betterAuth({
   // Demo sign in with email and password.
   emailAndPassword: {
     enabled: true,
+    autoSignIn: true,
   },
 
   plugins: [
