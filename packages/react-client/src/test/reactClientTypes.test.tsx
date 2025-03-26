@@ -43,12 +43,14 @@ describe("types", () => {
   it("should be typesafe and have correct types", async () => {
     const { ClientAccess, useIsAuthorized, useSubject } = Client.ReactClient.createComponents();
 
-    // These should not throw type errors if all's well
-    void (<ClientAccess to="example" />);
-    void (<ClientAccess to="documents:read" on={doc} />);
-    void useSubject();
-    void useIsAuthorized("example");
-    void useIsAuthorized("documents:read", doc);
+    // These should not throw type errors if all's well - wrapped in function as not to be called
+    void function () {
+      void (<ClientAccess to="example" />);
+      void (<ClientAccess to="documents:read" on={doc} />);
+      void useSubject();
+      void useIsAuthorized("example");
+      void useIsAuthorized("documents:read", doc);
+    };
 
     // No run-time tests
     expect(true).toBe(true);
