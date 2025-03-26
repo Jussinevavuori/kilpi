@@ -1,5 +1,5 @@
-import { deleteArticleAction, updateArticleAction } from "@/data-layer/articleActions";
-import { Article } from "@/data-layer/articleService";
+import { deleteArticleAction, updateArticleAction } from "@/article-actions";
+import { Article } from "@/article-service";
 import { Access } from "@/kilpi";
 import { revalidatePath } from "next/cache";
 import { Button } from "./ui/button";

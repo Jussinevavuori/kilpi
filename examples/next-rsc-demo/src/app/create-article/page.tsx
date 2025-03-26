@@ -1,7 +1,10 @@
 import { CreateArticleForm } from "@/components/CreateArticleForm";
 import { Kilpi } from "@/kilpi";
+import { headers } from "next/headers";
 
 export default async function CreateArticlePage() {
+  await headers();
+
   // Ensure user is authorized to create articles
   await Kilpi.authorize("articles:create");
 

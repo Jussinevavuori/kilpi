@@ -5,7 +5,7 @@ import "server-only";
 import { ActionClient } from "@/next-safe-action-client";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { ArticleService } from "./articleService";
+import { ArticleService } from "./article-service";
 
 /**
  * Wrapper for ArticleService.createArticle, redirects to the newly created article

@@ -1,5 +1,5 @@
 import { deny, grant, Policyset } from "@kilpi/core";
-import { Article } from "./data-layer/articleService";
+import { Article } from "./article-service";
 import { Subject } from "./kilpi.subject";
 
 export const policies = {

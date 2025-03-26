@@ -7,7 +7,7 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "bun --bun next lint",
-    "bootstrap": "bun install && bun run build && bun run start"
+    "bootstrap": "bun run ./src/scripts/env.ts && bun run ./src/scripts/seed.ts && bun install && bun run build && bun run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

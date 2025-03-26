@@ -122,7 +122,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
 
     // Cache hit
     if (scope?.subjectCache) {
-      return scope.subjectCache.subjectPromise;
+      return await scope.subjectCache.subjectPromise;
     }
 
     // Cache miss: Populate cache

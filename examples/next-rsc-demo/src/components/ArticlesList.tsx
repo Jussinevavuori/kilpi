@@ -1,4 +1,4 @@
-import { ArticleService } from "@/data-layer/articleService";
+import { ArticleService } from "@/article-service";
 import { ArticleCard } from "./ArticleCard";
 
 export async function ArticlesList() {

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFoundPage() {
   return (
-    <main className="flex flex-col gap-16">
+    <main className="flex flex-col gap-16 min-h-[70vh]">
       <div className="flex flex-col gap-4">
         <h1 className="text-5xl font-bold tracking-tight">Not found</h1>
         <p className="text-muted-foreground">

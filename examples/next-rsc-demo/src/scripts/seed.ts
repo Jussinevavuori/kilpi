@@ -1,8 +1,10 @@
-import { db } from "./db";
+import { db } from "../db";
+
 /**
  * Seed the database when initializing
  */
 export async function seed() {
+  console.log();
   console.log(`🟢 Seeding database...`);
 
   /**
@@ -26,7 +28,7 @@ export async function seed() {
 		);	
 	`);
 
-  console.log(`🟢 Created "users" table`);
+  console.log(`🟢 > Created "users" table`);
 
   /**
    * Create better-auth session table
@@ -47,7 +49,7 @@ export async function seed() {
 		);
 	`);
 
-  console.log(`🟢 Created "session" table`);
+  console.log(`🟢 > Created "session" table`);
 
   /**
    * Create better-auth account table
@@ -73,7 +75,7 @@ export async function seed() {
 		);
 	`);
 
-  console.log(`🟢 Created "account" table`);
+  console.log(`🟢 > Created "account" table`);
 
   /**
    * Create better-auth verification table
@@ -91,7 +93,7 @@ export async function seed() {
 		);
 	`);
 
-  console.log(`🟢 Created "verification" table`);
+  console.log(`🟢 > Created "verification" table`);
 
   /**
    * Create custom news-article table.
@@ -108,7 +110,7 @@ export async function seed() {
 		);
 	`);
 
-  console.log(`🟢 Created "articles" table`);
+  console.log(`🟢 > Created "articles" table`);
 
   /**
    * Insert 3 example users. Use creative names.
@@ -121,7 +123,7 @@ export async function seed() {
 			('3', 'Charlie Chaplin', 'charlie.chaplin@mail.com', 1, '2021-01-01', '2021-01-01', 'user');
 	`);
 
-  console.log(`🟢 Created example users`);
+  console.log(`🟢 > Created example users`);
 
   /**
    * Insert example articles.
@@ -187,7 +189,9 @@ export async function seed() {
 			);
 	`);
 
-  console.log(`🟢 Created example articles`);
+  console.log(`🟢 > Created example articles`);
 
-  console.log(`🟢 Database seeded`);
+  console.log(`🟢 > Database seeded`);
 }
+
+seed();

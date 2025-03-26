@@ -30,8 +30,19 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.production
+.env.test
+.env.testing
+.env.staging
+.env.prod
+.env.dev
+.env.development
 
 # vercel
 .vercel

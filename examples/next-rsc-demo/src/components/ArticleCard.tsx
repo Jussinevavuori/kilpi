@@ -1,3 +1,4 @@
+import { Article } from "@/article-service";
 import {
   Card,
   CardContent,
@@ -6,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Article } from "@/data-layer/articleService";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
 

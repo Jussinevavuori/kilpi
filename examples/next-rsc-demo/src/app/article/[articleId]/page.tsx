@@ -1,5 +1,5 @@
+import { ArticleService } from "@/article-service";
 import { ManageArticleForm } from "@/components/ManageArticleForm";
-import { ArticleService } from "@/data-layer/articleService";
 import { cn } from "@/utils/cn";
 import { redirect } from "next/navigation";
 
