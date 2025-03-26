@@ -15,7 +15,9 @@ function init(options: { subject: Sub | null }) {
     plugins: [EndpointPlugin({ secret: "secret" })],
   });
 
-  return createKilpiClient<typeof Kilpi>({
+  return createKilpiClient({
+    infer: {} as typeof Kilpi,
+
     // Connect directly to endpoint
     connect: { handleRequest: Kilpi.createPostEndpoint(), secret: "secret" },
 

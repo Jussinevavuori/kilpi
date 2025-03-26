@@ -15,6 +15,7 @@ import {
   type AnyRequestStrategyOptions,
   type HandleRequestStrategy,
 } from "./utils/HandleRequestStrategy";
+import { createSubscribable, type Subscribable } from "./utils/createSubscribable";
 import { deepEquals } from "./utils/deepEquals";
 import { getRequestErrorMessage } from "./utils/getRequestErrorMessage";
 import { tryCatch } from "./utils/tryCatch";
@@ -64,12 +65,20 @@ export class KilpiClient<T extends AnyKilpiCore> {
    */
   private cache: ClientCache;
 
+  /**
+   * Subscribable to listen to cache clearings.
+   */
+  public _cacheClearSubscribable: Subscribable<void>;
+
   constructor(options: KilpiClientOptions) {
     // Setup request handler strategy with factory
     this.handleRequestStrategy = createHandleRequestStrategy(options.connect);
 
     // Setup cache
     this.cache = new ClientCache();
+
+    // Setup subscribables
+    this._cacheClearSubscribable = createSubscribable();
 
     // Setup batcher to run all jobs
     this.batcher = new Batcher({
@@ -133,6 +142,13 @@ export class KilpiClient<T extends AnyKilpiCore> {
    */
   public clearCache() {
     this.cache.clear();
+  }
+
+  /**
+   * Utility to listen to when cache was cleared
+   */
+  public onCacheClear(callback: () => void) {
+    return this._cacheClearSubscribable.subscribe(callback);
   }
 
   /**

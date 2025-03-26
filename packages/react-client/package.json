@@ -1,0 +1,39 @@
+{
+  "name": "@kilpi/react-client",
+  "description": "Kilpi React Client Components · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint && tsc",
+    "test": "vitest run",
+    "dev": "vitest watch"
+  },
+  "dependencies": {
+    "@kilpi/client": "workspace:*",
+    "@kilpi/core": "workspace:*",
+    "react": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0"
+  },
+  "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+  "homepage": "https://kilpi.vercel.app",
+  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jussinevavuori/kilpi.git"
+  },
+  "keywords": [
+    "fine-grained",
+    "authorization",
+    "abac",
+    "rbac",
+    "react"
+  ]
+}

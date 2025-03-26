@@ -28,7 +28,9 @@ function init() {
     ],
   });
 
-  const KilpiClient = createKilpiClient<typeof Kilpi>({
+  const KilpiClient = createKilpiClient({
+    infer: {} as typeof Kilpi,
+
     // Connect directly to endpoint
     connect: { handleRequest: Kilpi.createPostEndpoint(), secret: "secret" },
 

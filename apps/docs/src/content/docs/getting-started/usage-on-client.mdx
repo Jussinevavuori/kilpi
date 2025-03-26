@@ -82,7 +82,10 @@ By design, all authorization is performed on the server. The `@kilpi/client` pac
 
     ```ts
     // kilpi-client.ts
+    import type { Kilpi } from "./kilpi.ts";
+
     export const KilpiClient = createKilpiClient({
+      infer: {} as typeof Kilpi, // Infer subject and policies from server instance
       connect: {
         endpointUrl: process.env.NEXT_PUBLIC_KILPI_URL,
         secret: process.env.NEXT_PUBLIC_KILPI_SECRET
