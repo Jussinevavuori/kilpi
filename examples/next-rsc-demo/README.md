@@ -7,7 +7,7 @@ This is an example project on how to use Kilpi in a Next.js App Router project u
 Run the project using `bun run bootstrap` and visit `http://localhost:3000`. Requires [Bun](https://bun.sh/docs/installation).
 
 ```bash
-bun run bootsrap
+bun run bootstrap
 ```
 
 This will initialize `.env`, migrate and seed the local SQLite database at `demo-db.sqlite`, install all dependencies, then build and start the Next.js application.
