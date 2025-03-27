@@ -1,6 +1,6 @@
 ---
-title: "How to protect your data and queries in full-stack applications"
-subtitle: "Introducing the Protected Query pattern"
+title: "Introducing the Protected Query Pattern for secure data access"
+subtitle: "How to protect your data in full-stack applications"
 author: Jussi Nevavuori
 authorUrl: https://jussinevavuori.com
 authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
@@ -17,9 +17,9 @@ This problem seems simple initially, but may quickly grow into a difficult beast
 
 This guide introduces the protected query pattern as a solution to this problem.
 
+Note: This guide views the problem from the perspective of full-stack web applications, such as ones built with Next.js, however this is fully applicable to any application with server-side data fetching.
+
 > This guide will use [Kilpi](https://kilpi.vercel.app) to implement strong authorizations, however the concepts can be transferred to your projects with or without using it.
->
-> Furthermore, the examples shown here are written for Next.js, but express concepts that can be applied to any full-stack application.
 
 
 ## Protecting your queries
