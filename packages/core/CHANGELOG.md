@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.10.2
+
+### Patch Changes
+
+- 3016769: update unstable audit plugin api
+
 ## 0.10.1
 
 ### Patch Changes
