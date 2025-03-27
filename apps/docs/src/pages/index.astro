@@ -11,8 +11,9 @@ import { SupportSection } from "@/components/SupportSection";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import { getCollection } from "astro:content";
 
-// Get all blogs from blog collection
+// Get all blogs from blog collection (newest first)
 const blogs = await getCollection("blog");
+blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
 <StarlightPage
