@@ -9,12 +9,17 @@ export function BlogPost(props: BlogPostProps) {
   return (
     <a
       href={`/blog/${props.blog.id}`}
-      className="flex flex-col gap-1 border rounded-lg p-4 hover:outline"
+      className="flex flex-col gap-2 border rounded-lg p-4 hover:outline"
     >
       <span className="text-muted-foreground text-sm">
         {formatDate(props.blog.data.date, "EEEE, MMMM do yyyy")}
       </span>
-      <h2 className="text-2xl font-semibold tracking-tight">{props.blog.data.title}</h2>
+      <h2 className="text-xl font-semibold tracking-tight leading-[1.2]">
+        {props.blog.data.title}
+      </h2>
+      {props.blog.data.subtitle && (
+        <h2 className="font-medium tracking-tight leading-[1.2]">{props.blog.data.subtitle}</h2>
+      )}
       <div className="flex items-center gap-2 flex-row">
         {props.blog.data.authorImage && (
           <img
@@ -23,7 +28,7 @@ export function BlogPost(props: BlogPostProps) {
             className="rounded-full size-6"
           />
         )}
-        <span className="text-muted-foreground">By {props.blog.data.author}</span>
+        <span className="text-muted-foreground text-sm">By {props.blog.data.author}</span>
       </div>
 
       <hr className="!my-2" />
