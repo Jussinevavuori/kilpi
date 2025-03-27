@@ -20,30 +20,48 @@ const { blog } = Astro.props;
 ---
 
 <StarlightPage frontmatter={{ title: blog.data.title, template: "splash" }}>
-  <DefaultSection className="py-10 max-w-prose flex flex-col gap-4">
+  <!-- Header section -->
+  <DefaultSection className="py-10 max-w-prose flex flex-col gap-8">
+    <!-- Date -->
     <p class="text-muted-foreground">
       {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
     </p>
-    <h1 class="font-bold tracking-tighter text-4xl">
-      {blog.data.title}
-    </h1>
-    {
-      blog.data.subtitle && (
-        <h2 class="font-semibold tracking-tight text-2xl">{blog.data.subtitle}</h2>
-      )
-    }
-    <p class="text-muted-foreground">
-      By <a
-        class="underline text-foreground font-medium"
-        href={blog.data.authorUrl ?? "#"}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {blog.data.author}
-      </a>
-    </p>
+
+    <!-- Titles closer to each other -->
+    <div class="flex flex-col gap-4">
+      <h1 class="font-bold tracking-tighter text-4xl">
+        {blog.data.title}
+      </h1>
+      {
+        blog.data.subtitle && (
+          <h2 class="font-semibold tracking-tight text-2xl">{blog.data.subtitle}</h2>
+        )
+      }
+    </div>
+
+    <!-- Author + image -->
+    <div class="flex items-center gap-4">
+      {
+        blog.data.authorImage && (
+          <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-10" />
+        )
+      }
+
+      <div>
+        <p class="leading-tight text-muted-foreground">Written by</p>
+        <a
+          class="leading-tight underline text-foreground font-medium"
+          href={blog.data.authorUrl ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {blog.data.author}
+        </a>
+      </div>
+    </div>
   </DefaultSection>
 
+  <!-- Content section -->
   <DefaultSection enableDefaultStyles className="pb-64 max-w-prose">
     <article set:html={blog.rendered?.html} />
   </DefaultSection>

@@ -11,7 +11,6 @@ import {
   PuzzleIcon,
   SearchCodeIcon,
   ShieldCheckIcon,
-  ToyBrickIcon,
   UnplugIcon,
 } from "lucide-react";
 import { FullWidthSection } from "./FullWidthSection";
@@ -96,11 +95,6 @@ const ROADMAP = [
     title: "Audit plugin",
     description: "Track and log authorization decisions for compliance and debugging.",
     Icon: NotebookTabsIcon,
-  },
-  {
-    title: "React client plugin",
-    description: "More features and support for even more frameworks, libraries and services.",
-    Icon: ToyBrickIcon,
   },
 ];
 

@@ -13,6 +13,12 @@ export const CATEGORIES = [
         Icon: SvgLogos.React,
         link: "/plugins/react-server-components",
       },
+      {
+        title: "React Client",
+        description: "React client components and hooks for Kilpi Client bindings.",
+        Icon: SvgLogos.React,
+        link: "/plugins/react-client-components",
+      },
     ],
   },
   {
@@ -125,7 +131,7 @@ export function PluginsSection() {
           Kilpi is framework agnostic and can always be used without any plugins or component
           libraries. You may also{" "}
           <a href="https://github.com/Jussinevavuor/kilpi/issues/new" className="underline">
-            request a new integration
+            request a new integration, feature, or plugin
           </a>{" "}
           or{" "}
           <a

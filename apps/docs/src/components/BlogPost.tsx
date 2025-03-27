@@ -7,19 +7,8 @@ export type BlogPostProps = {
 
 export function BlogPost(props: BlogPostProps) {
   return (
-    <a
-      href={`/blog/${props.blog.id}`}
-      className="flex flex-col gap-2 border rounded-lg p-4 hover:outline"
-    >
-      <span className="text-muted-foreground text-sm">
-        {formatDate(props.blog.data.date, "EEEE, MMMM do yyyy")}
-      </span>
-      <h2 className="text-xl font-semibold tracking-tight leading-[1.2]">
-        {props.blog.data.title}
-      </h2>
-      {props.blog.data.subtitle && (
-        <h2 className="font-medium tracking-tight leading-[1.2]">{props.blog.data.subtitle}</h2>
-      )}
+    <div className="flex flex-col gap-4">
+      {/* Author and date */}
       <div className="flex items-center gap-2 flex-row">
         {props.blog.data.authorImage && (
           <img
@@ -29,11 +18,26 @@ export function BlogPost(props: BlogPostProps) {
           />
         )}
         <span className="text-muted-foreground text-sm">By {props.blog.data.author}</span>
+        <span className="text-muted-foreground text-sm">·</span>
+        <span className="text-muted-foreground text-sm">
+          {formatDate(props.blog.data.date, "EEEE, MMMM do yyyy")}
+        </span>
       </div>
 
-      <hr className="!my-2" />
+      {/* Title */}
+      <div className="max-w-lg flex flex-col gap-2">
+        <h2 className="text-2xl font-semibold tracking-tight leading-[1.2]">
+          <a href={`/blog/${props.blog.id}`} className="hover:underline">
+            {props.blog.data.title}
+          </a>
+        </h2>
+        {props.blog.data.subtitle && (
+          <h2 className="font-medium tracking-tight leading-[1.2]">{props.blog.data.subtitle}</h2>
+        )}
+      </div>
 
-      <p className="text-sm">{props.blog.data.summary}</p>
-    </a>
+      {/* Summary */}
+      <p className="text-sm max-w-lg">{props.blog.data.summary}</p>
+    </div>
   );
 }

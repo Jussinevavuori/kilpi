@@ -82,7 +82,7 @@ export default defineConfig({
               link: "/getting-started/introduction",
             },
             {
-              label: "Blog",
+              label: "Articles",
               link: "/blog",
             },
           ],
