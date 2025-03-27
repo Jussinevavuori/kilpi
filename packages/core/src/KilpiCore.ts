@@ -226,7 +226,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
 
       // Run `onAfterAuthorization` hooks
       this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-        hook({ source: options.source, policy: key, subject, authorization });
+        hook({ source: options.source, policy: key, subject, authorization, resource: inputs[0] });
       });
 
       // Return all relevant data
