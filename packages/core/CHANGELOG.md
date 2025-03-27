@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.10.1
+
+### Patch Changes
+
+- 7741f05: introduce audit plugin in beta
+
 ## 0.10.0
 
 ### Minor Changes
