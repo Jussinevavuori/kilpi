@@ -1,8 +1,8 @@
 import { tryCatch } from "src/utils/tryCatch";
 import * as SuperJSON from "superjson";
 import { z } from "zod";
-import type { AnyKilpiCore } from "../KilpiCore";
-import { createKilpiPlugin } from "../KilpiPlugin";
+import type { AnyKilpiCore } from "../../KilpiCore";
+import { createKilpiPlugin } from "../../KilpiPlugin";
 
 /**
  * Endpoint request schemas for different types of requests.

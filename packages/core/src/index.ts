@@ -4,6 +4,6 @@ export * from "./error";
 export * from "./KilpiCore";
 export * from "./KilpiPlugin";
 export * from "./KilpiScope";
-export * from "./plugins/AuditPlugin";
-export * from "./plugins/EndpointPlugin";
+export * from "./plugins/audit/AuditPlugin";
+export * from "./plugins/endpoint/EndpointPlugin";
 export * from "./policy";

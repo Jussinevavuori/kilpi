@@ -53,6 +53,11 @@ export interface AuditFlushStrategy<T extends AnyKilpiCore> {
    * Add event to storage.
    */
   onAuditEvent(event: KilpiAuditEvent<T>): void;
+
+  /**
+   * Trigger flushing manually
+   */
+  triggerFlush(): void;
 }
 
 /**
@@ -75,18 +80,29 @@ export class ImmediateAuditFlushStrategy<T extends AnyKilpiCore> implements Audi
   onAuditEvent(event: KilpiAuditEvent<T>): void {
     this.onFlushEvents([event]);
   }
+
+  triggerFlush(): void {}
 }
 
 /**
  * Any flush strategy options to pass to flush strategy factory.
  */
-export type AnyFlushStrategyOptions<T extends AnyKilpiCore> = ImmediateAuditFlushStrategyOptions<T>;
+export type AnyFlushStrategyOptions<T extends AnyKilpiCore> =
+  | ImmediateAuditFlushStrategyOptions<T>
+  | PeriodicalAuditFlushStrategyOptions<T>;
 
 /**
  * Factory function to construct any flush strategy.
  */
 export function createAuditFlushStrategy<T extends AnyKilpiCore>(
   options: AnyFlushStrategyOptions<T>,
-) {
-  return new ImmediateAuditFlushStrategy(options);
+): AuditFlushStrategy<T> {
+  switch (options.strategy) {
+    case "immediate": {
+      return new ImmediateAuditFlushStrategy(options);
+    }
+    case "periodical": {
+      return new PeriodicalAuditFlushStrategy(options);
+    }
+  }
 }
