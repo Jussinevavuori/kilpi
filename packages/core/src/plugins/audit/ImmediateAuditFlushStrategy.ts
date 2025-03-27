@@ -1,9 +1,6 @@
 import type { AnyKilpiCore } from "src/KilpiCore";
-import type {
-  AuditFlushStrategy,
-  AuditFlushStrategyOptions,
-  KilpiAuditEvent,
-} from "./AuditFlushStrategy";
+import type { AuditFlushStrategy, AuditFlushStrategyOptions } from "./AuditFlushStrategy";
+import type { KilpiAuditEvent } from "./KilpiAuditEvent";
 
 /**
  * Options to construct a immediate flush strategy.
