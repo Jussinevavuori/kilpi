@@ -60,40 +60,31 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
      * as the subject is cached and only fetched once.
      */
     useEffect(() => {
+      // Cleanup utilities: When unmounted, cancel fetch and prevent further state updates.
+      let isMounted = true;
       const abortController = new AbortController();
 
-      // Fetching function
-      async function fetch() {
+      // Define data fetching logic with respect to cleanup utilities.
+      async function fetchIsAuthorized() {
+        if (isMounted) setValue({ status: "loading", error: null, isAuthorized: null });
         try {
-          // Mark as loading
-          setValue({
-            status: "loading",
-            isAuthorized: null,
-            error: null,
+          const isAuthorized = await KilpiClient.fetchIsAuthorized({
+            key,
+            resource: inputs[0],
+            queryOptions: { signal: abortController.signal },
           });
-
-          // Fetch isAuthorized
-          const isAuthorized = await KilpiClient.fetchIsAuthorized(key, ...inputs);
-
-          // Mark as success
-          setValue({
-            status: "success",
-            isAuthorized: isAuthorized,
-            error: null,
-          });
+          if (isMounted) setValue({ status: "success", error: null, isAuthorized });
         } catch (error) {
-          // Mark as error
-          setValue({
-            status: "error",
-            isAuthorized: null,
-            error: error,
-          });
+          if (isMounted) setValue({ status: "error", error, isAuthorized: null });
         }
       }
 
-      fetch();
+      // Initiate fetch
+      fetchIsAuthorized();
 
+      // Trigger cleanup utilities
       return () => {
+        isMounted = false;
         abortController.abort();
       };
     }, [setValue, cacheSignal]);

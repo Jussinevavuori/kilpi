@@ -27,7 +27,7 @@ export const POST = Kilpi.createPostEndpoint();
 See [this guide](/getting-started/usage-on-client) for how to set up the client to call the endpoint with utility functions including batching, caching and deduplication, as shown below.
 
 ```ts
-await KilpiClient.fetchIsAuthorized("documents:delete", myDocument);
+await KilpiClient.fetchIsAuthorized({ key: "documents:delete", resource: myDocument });
 ```
 
 ## API reference

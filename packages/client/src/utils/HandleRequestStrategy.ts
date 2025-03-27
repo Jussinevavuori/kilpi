@@ -1,7 +1,11 @@
 import { stringify as superJsonStringify } from "superjson";
 
+type RequestOptions = {
+  signal?: AbortSignal | null | undefined;
+};
+
 export interface HandleRequestStrategy {
-  request(body: unknown): Promise<Response>;
+  request(body: unknown, options?: RequestOptions): Promise<Response>;
 }
 
 /**
@@ -63,7 +67,7 @@ export class SendRequestToServerEndpointStrategy implements HandleRequestStrateg
   /**
    * Implement the request method.
    */
-  async request(body: unknown): Promise<Response> {
+  async request(body: unknown, options: RequestOptions = {}): Promise<Response> {
     return fetch(this.endpointUrl, {
       method: this.method,
       headers: {
@@ -71,6 +75,7 @@ export class SendRequestToServerEndpointStrategy implements HandleRequestStrateg
         Authorization: `Bearer ${this.secret}`,
       },
       body: superJsonStringify(body),
+      signal: options?.signal,
     });
   }
 }
@@ -112,7 +117,7 @@ export class HandleRequestCallbackStrategy implements HandleRequestStrategy {
   /**
    * Implement the request method.
    */
-  async request(body: unknown): Promise<Response> {
+  async request(body: unknown, options: RequestOptions = {}): Promise<Response> {
     // Construct SuperJSON stringified request from body
     const request = new Request(
       "https://127.0.0.1:3000/", // Doesn't do anything
@@ -123,6 +128,7 @@ export class HandleRequestCallbackStrategy implements HandleRequestStrategy {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.secret}`,
         },
+        signal: options?.signal,
       },
     );
 

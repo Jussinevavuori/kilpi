@@ -57,40 +57,29 @@ export function createUseSubject<T extends AnyKilpiCore>(KilpiClient: KilpiClien
      * as the subject is cached and only fetched once.
      */
     useEffect(() => {
+      // Cleanup utilities: When unmounted, cancel fetch and prevent further state updates.
+      let isMounted = true;
       const abortController = new AbortController();
 
-      // Fetching function
-      async function fetch() {
+      // Define data fetching logic with respect to cleanup utilities.
+      async function fetchSubject() {
+        if (isMounted) setValue({ status: "loading", subject: null, error: null });
         try {
-          // Mark as loading
-          setValue({
-            status: "loading",
-            subject: null,
-            error: null,
+          const subject = await KilpiClient.fetchSubject({
+            queryOptions: { signal: abortController.signal },
           });
-
-          // Fetch subject
-          const subject = await KilpiClient.fetchSubject();
-
-          // Mark as success
-          setValue({
-            status: "success",
-            subject: subject,
-            error: null,
-          });
+          if (isMounted) setValue({ status: "success", subject: subject, error: null });
         } catch (error) {
-          // Mark as error
-          setValue({
-            status: "error",
-            subject: null,
-            error: error,
-          });
+          if (isMounted) setValue({ status: "error", subject: null, error: error });
         }
       }
 
-      fetch();
+      // Initiate fetch
+      fetchSubject();
 
+      // Trigger cleanup utilities
       return () => {
+        isMounted = false;
         abortController.abort();
       };
     }, [setValue, cacheSignal]);

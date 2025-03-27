@@ -14,7 +14,7 @@ export function createKilpiClient<T extends AnyKilpiCore, TInterface extends obj
   plugins?: KilpiClientPlugin<T, TInterface>[];
 }) {
   // Construct base KilpiCore class
-  const Client = new KilpiClient(options);
+  const Client = new KilpiClient<T>(options);
 
   // Apply each plugin and get the plugin interfaces
   const interfaces = plugins.map((applyPlugin) => applyPlugin(Client));

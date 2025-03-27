@@ -53,9 +53,9 @@ describe("requestBatching", (it) => {
     const { KilpiClient, handleRequestCb, processItemCb } = init();
 
     // Send 3 requests
-    KilpiClient.fetchIsAuthorized("doc", { id: "1", userId: "1" });
-    KilpiClient.fetchIsAuthorized("doc", { id: "2", userId: "1" });
-    KilpiClient.fetchIsAuthorized("doc", { id: "3", userId: "1" });
+    KilpiClient.fetchIsAuthorized({ key: "doc", resource: { id: "1", userId: "1" } });
+    KilpiClient.fetchIsAuthorized({ key: "doc", resource: { id: "2", userId: "1" } });
+    KilpiClient.fetchIsAuthorized({ key: "doc", resource: { id: "3", userId: "1" } });
 
     // No requests should have been sent before batch flushed
     expect(processItemCb).toHaveBeenCalledTimes(0);
@@ -69,8 +69,8 @@ describe("requestBatching", (it) => {
     expect(handleRequestCb).toHaveBeenCalledTimes(1);
 
     // Send new items in batch
-    KilpiClient.fetchIsAuthorized("doc", { id: "4", userId: "1" });
-    KilpiClient.fetchIsAuthorized("doc", { id: "5", userId: "1" });
+    KilpiClient.fetchIsAuthorized({ key: "doc", resource: { id: "4", userId: "1" } });
+    KilpiClient.fetchIsAuthorized({ key: "doc", resource: { id: "5", userId: "1" } });
 
     // Wait for flush
     await new Promise((r) => setTimeout(r, 30));

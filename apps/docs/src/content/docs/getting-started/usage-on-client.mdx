@@ -95,12 +95,21 @@ By design, all authorization is performed on the server. The `@kilpi/client` pac
 
 5.  ### Start using on the client
 
-    Now you can use the `KilpiClient` instance to fetch the subject and authorization decisions. It has the same signature as `Kilpi.isAuthorized` and `Kilpi.getSubject`.
-
+    Now you can use the `KilpiClient` instance to fetch the subject and authorization decisions. For passing query options, such as abort signals, it has a different signature than the server side `Kilpi` instance.
+    
     ```ts
-    const subject = await KilpiClient.fetchSubject()
-    const canCreateDocument = await KilpiClient.fetchIsAuthorized("documents:create");
-    const canUpdateComment = await KilpiClient.fetchIsAuthorized("comments:create", comment);
+    const subject = await KilpiClient.fetchSubject();
+    const subject = await KilpiClient.fetchSubject({ queryOptions: { ... }}); 
+
+    const canCreateDocument = await KilpiClient.fetchIsAuthorized({
+      key: "documents:create",
+      queryOptions: { ... } // Optional
+    });
+    const canUpdateComment = await KilpiClient.fetchIsAuthorized({
+      key: "comments:update",
+      resource: comment,
+      queryOptions: { ... } // Optional
+    });
     ```
 
     :::note

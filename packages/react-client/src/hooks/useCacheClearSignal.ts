@@ -7,8 +7,8 @@ import { useWrapRef } from "./useWrapRef";
  * Get a signal to pass to `useEffect` or other react hook as dependency to force re-calculating
  * when `
  */
-export function useCacheClearSignal(
-  client: KilpiClient<AnyKilpiCore>,
+export function useCacheClearSignal<T extends AnyKilpiCore>(
+  client: KilpiClient<T>,
   onCacheCleared?: () => void,
 ) {
   const [signal, setSignal] = useState(0);

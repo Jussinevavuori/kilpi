@@ -12,3 +12,8 @@ export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) ex
 ) => void
   ? I
   : never;
+
+/**
+ * Get head of array
+ */
+export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]] ? H : never;

@@ -8,7 +8,9 @@ import type {
 import { nanoid } from "nanoid";
 import { parse as superJsonParse } from "superjson";
 import { z } from "zod";
-import { Batcher, type BatcherOptions, type BatchJob } from "./utils/Batcher";
+import { AbortSignalAll } from "./utils/AbortSignalAll";
+import type { BatchJob } from "./utils/BatchJob";
+import { Batcher, type BatcherOptions } from "./utils/Batcher";
 import { ClientCache } from "./utils/ClientCache";
 import {
   createHandleRequestStrategy,
@@ -19,6 +21,7 @@ import { createSubscribable, type Subscribable } from "./utils/createSubscribabl
 import { deepEquals } from "./utils/deepEquals";
 import { getRequestErrorMessage } from "./utils/getRequestErrorMessage";
 import { tryCatch } from "./utils/tryCatch";
+import type { ArrayHead } from "./utils/types";
 
 type KilpiClientRequest = z.infer<typeof endpointRequestSchema>;
 
@@ -96,13 +99,15 @@ export class KilpiClient<T extends AnyKilpiCore> {
   /**
    * Fetch the current subject.
    */
-  public async fetchSubject() {
+  public async fetchSubject(
+    options: { queryOptions?: { signal?: AbortSignal | null | undefined } } = {},
+  ) {
     return this.cache.wrap({ cacheKey: ["fetchSubject"] }, async () => {
       // Fetch subject from the server (with batching)
-      const subject = await this.batcher.queueJob({
-        type: "getSubject",
-        requestId: nanoid(),
-      });
+      const subject = await this.batcher.queueJob(
+        { type: "getSubject", requestId: nanoid() },
+        { signal: options.queryOptions?.signal },
+      );
 
       // Return subject (not able to validate subject type)
       return subject as T["$$infer"]["subject"];
@@ -112,29 +117,36 @@ export class KilpiClient<T extends AnyKilpiCore> {
   /**
    * Fetch whether the current subject is authorized to the policy.
    */
-  public async fetchIsAuthorized<TKey extends PolicysetKeys<T["$$infer"]["policies"]>>(
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>
-  ): Promise<boolean> {
-    return this.cache.wrap({ cacheKey: ["fetchIsAuthorized", key, ...inputs] }, async () => {
-      // Fetch authorization from the server (with batching)
-      const isAuthorized = await this.batcher.queueJob({
-        type: "getIsAuthorized",
-        policy: key,
-        requestId: nanoid(),
-        resource: inputs[0],
-      });
-
-      // Ensure the response is a boolean
-      if (typeof isAuthorized !== "boolean") {
-        throw new Error(
-          `Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`,
+  public async fetchIsAuthorized<TKey extends PolicysetKeys<T["$$infer"]["policies"]>>(options: {
+    key: TKey;
+    resource?: ArrayHead<InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>>;
+    queryOptions?: { signal?: AbortSignal | null | undefined };
+  }): Promise<boolean> {
+    return this.cache.wrap(
+      { cacheKey: ["fetchIsAuthorized", options.key, options.resource] },
+      async () => {
+        // Fetch authorization from the server (with batching)
+        const isAuthorized = await this.batcher.queueJob(
+          {
+            type: "getIsAuthorized",
+            policy: options.key,
+            requestId: nanoid(),
+            resource: options.resource,
+          },
+          { signal: options.queryOptions?.signal },
         );
-      }
 
-      // Return isAuthorized boolean
-      return isAuthorized;
-    });
+        // Ensure the response is a boolean
+        if (typeof isAuthorized !== "boolean") {
+          throw new Error(
+            `Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`,
+          );
+        }
+
+        // Return isAuthorized boolean
+        return isAuthorized;
+      },
+    );
   }
 
   /**
@@ -156,7 +168,12 @@ export class KilpiClient<T extends AnyKilpiCore> {
    */
   private async runJobs(jobs: Array<BatchJob<KilpiClientRequest>>) {
     // Use request handler strategy to get response
-    const response = await this.handleRequestStrategy.request(jobs.map((job) => job.payload));
+    const response = await this.handleRequestStrategy.request(
+      jobs.map((job) => job.payload),
+
+      // Cancel request once all jobs cancelled
+      { signal: AbortSignalAll(jobs.map((job) => job.signal)) },
+    );
 
     // Error status: Reject all requests with useful message
     if (response.status !== 200) {
