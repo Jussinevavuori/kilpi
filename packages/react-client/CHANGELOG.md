@@ -1,5 +1,16 @@
 # @kilpi/react-client
 
+## 0.3.0
+
+### Minor Changes
+
+- 99b47bb: change to new KilpiClient function signature, better cleanup from hooks with abort signals and isMounted
+
+### Patch Changes
+
+- Updated dependencies [99b47bb]
+  - @kilpi/client@0.12.0
+
 ## 0.2.0
 
 ### Minor Changes
