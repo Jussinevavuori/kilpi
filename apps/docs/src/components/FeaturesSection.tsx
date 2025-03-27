@@ -93,7 +93,8 @@ const FEATURES = [
 const ROADMAP = [
   {
     title: "Audit plugin",
-    description: "Track and log authorization decisions for compliance and debugging.",
+    description:
+      "Track and log authorization decisions for compliance and debugging. (Currently under development as unstable API).",
     Icon: NotebookTabsIcon,
   },
 ];
