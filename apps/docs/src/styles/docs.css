@@ -13,12 +13,19 @@
 /* Add emoji logo to title */
 header span.title-text {
   font-size: 1.2rem;
+  padding-left: 2.5rem;
+  position: relative;
 }
-header span.title-text:before {
-  content: "🐢";
+header span.title-text::before {
+  content: url(/turtle-emoji.png);
+  font-size: 1rem;
   display: inline-block;
-  transform: translateY(-0.1rem) scale(1.4);
-  margin-right: 0.5rem;
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: -4px;
+  left: 0;
+  transform: scale(18%);
 }
 header a.active {
   font-weight: 600 !important;

@@ -9,11 +9,23 @@ export function HeroSection() {
       <div className="flex flex-col items-center gap-8 text-center">
         {/* Header text */}
         <div className="flex flex-col gap-4">
-          <p className="!-mt-8 text-3xl sm:text-4xl md:text-5xl translate-y-[34px] -translate-x-4 sm:translate-y-[35px] sm:-translate-x-5 md:translate-y-[37px] md:-translate-x-7">
-            🐢
-          </p>
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl relative font-bold tracking-tighter sm:text-5xl md:text-6xl">
             Authorization made simple
+            {/* Position turtle on top of text */}
+            <img
+              className={[
+                //
+                "absolute left-1/2",
+                //
+                "size-7 -top-[15px] -translate-x-[30px]",
+                //
+                "sm:size-9 sm:-top-[20px] sm:-translate-x-[42px]",
+                //
+                "md:size-11 md:-top-[24px] md:-translate-x-[52px]",
+              ].join(" ")}
+              src="/turtle-emoji.png"
+              alt="Turtle Emoji"
+            />
           </h1>
           <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
             Kilpi is the open-source TypeScript authorization library designed for developers who
