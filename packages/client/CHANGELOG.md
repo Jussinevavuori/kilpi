@@ -1,5 +1,15 @@
 # @kilpi/client
 
+## 0.13.0
+
+### Minor Changes
+
+- 16e9b1d: release audit plugin as stable, improve flushing strategies, add enabling and disabling, add batching strategy, add support for waitUntil
+
+### Patch Changes
+
+- f334fa2: fix typing of createKilpi and createKilpiClient with multiple plugins
+
 ## 0.12.0
 
 ### Minor Changes

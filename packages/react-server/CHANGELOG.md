@@ -1,5 +1,15 @@
 # @kilpi/react
 
+## 0.9.3
+
+### Patch Changes
+
+- f334fa2: fix typing of createKilpi and createKilpiClient with multiple plugins
+- Updated dependencies [f334fa2]
+- Updated dependencies [3beb86f]
+- Updated dependencies [16e9b1d]
+  - @kilpi/core@0.11.0
+
 ## 0.9.2
 
 ### Patch Changes
