@@ -1,5 +1,3 @@
-**Unstable API until 1.0.0 released**
-
 # 🐢 Kilpi — React Server Plugin
 
 [Read more about Kilpi](https://kilpi.vercel.app)

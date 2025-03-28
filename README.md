@@ -1,4 +1,4 @@
-# 🛡️ Kilpi — Authorization made simple
+# 🐢 Kilpi — Authorization made simple
 
 [Read the docs to get started](https://kilpi.vercel.app)
 

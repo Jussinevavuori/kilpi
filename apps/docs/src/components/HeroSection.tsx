@@ -9,6 +9,9 @@ export function HeroSection() {
       <div className="flex flex-col items-center gap-8 text-center">
         {/* Header text */}
         <div className="flex flex-col gap-4">
+          <p className="!-mt-8 text-3xl sm:text-4xl md:text-5xl translate-y-[34px] -translate-x-4 sm:translate-y-[35px] sm:-translate-x-5 md:translate-y-[37px] md:-translate-x-7">
+            🐢
+          </p>
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
             Authorization made simple
           </h1>

@@ -9,3 +9,17 @@
 .sl-steps > li:not(:last-of-type) {
   padding-bottom: 64px;
 }
+
+/* Add emoji logo to title */
+header span.title-text {
+  font-size: 1.2rem;
+}
+header span.title-text:before {
+  content: "🐢";
+  display: inline-block;
+  transform: translateY(-0.1rem) scale(1.4);
+  margin-right: 0.5rem;
+}
+header a.active {
+  font-weight: 600 !important;
+}
