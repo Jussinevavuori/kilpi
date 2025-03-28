@@ -20,7 +20,7 @@ export default defineConfig({
      */
     starlight({
       // Customize site
-      favicon: "favicon.ico",
+      favicon: "turtle-emoji.png",
       title: "Kilpi",
       tagline: "The modern authorization framework for TypeScript",
       social: {
