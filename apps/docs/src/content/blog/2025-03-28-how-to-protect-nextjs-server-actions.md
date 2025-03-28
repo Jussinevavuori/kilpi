@@ -1,0 +1,248 @@
+---
+title: "How to protect Next.js server actions"
+author: Jussi Nevavuori
+authorUrl: https://jussinevavuori.com
+authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
+date: 2025-03-28
+summary: This article introduces you to using Kilpi to authorize your server actions.
+---
+
+
+Protecting Next.js server actions is easy initially. However, ensuring maintainability and great user experience for your application requires slightly more thought.
+
+This article will take you through the steps on creating a solid authorization layer for your server actions, starting from the simplest methods and moving towards a scalable solution.
+
+## Creating a server action
+
+To create a server action, create a new file, e.g. `action.ts`, that has `"use server"` at the top and exports asynchronous functions. [Read more in the Next.js docs](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+
+```ts
+// action.ts
+"use server";
+
+export async function deleteComment(id: string) {
+  await sql`DELETE FROM comments WHERE id = ${id}`;
+}
+```
+
+> Note: we assume a tagged template literal function `sql` that also sanitizes the input, as is common. This is not an SQL injection vulnerability.
+
+Good. However, now anyone can call this action. You need to **authorize the action** to ensure that the the caller has the right to call it.
+
+In order to do **authorization**, you first need to **authenticate** the user. (This is outside the scope of this article. See for example [Better Auth](https://www.better-auth.com/) or [Next Auth](https://next-auth.js.org/) for great open-source authentication solutions.)
+
+## Simple authorization
+
+Let's assume we only want users to be able to delete their own comments. We can implement this with a simple authorization check after authenticating the user.
+
+```diff lang="ts"
+  "use server";
+  
+  export async function deleteComment(id: string) {
++   // 1. Authentication
++   const user = await getCurrentUser(); // From your auth solution
++ 
++   // 2. Authorization: Only allow the user to delete their own comments
++   if (!user || user.id !== comment.userId) {
++     throw new Error("You are not authorized to delete this comment");
++   }
+
+    await sql`DELETE FROM comments WHERE id = ${id}`;
+  }
+```
+
+**Great, you're done!** Your server action is now safe. But can we do better?
+
+## Room for improvement
+
+Let's explore ways to improve on this solution. While simple, doing authorization checks as manually as this may lead to several problems.
+
+- **Tight coupling** between actions and authentication
+- **Repeated authorization logic** in multiple places: In server action, in UI to hide buttons, etc.
+- Your codebase will grow to be **difficult to maintain** as more authorization policies are added and repeated all over, always coupled with authentication.
+- **Poor error handling**, no thought in how to handle errors and show them to the user.
+- **No data validation**. Caller may send any data and we simply assume it is correct.
+
+### Centralizing authorization logic
+
+Let's tackle the first three issues mentioned above. By **centralizing our authorization logic** and policies, we by definition de-duplicate all authorization logic. This makes the codebase more maintainable and even reduces coupling.
+
+You may do this yourself, however we suggest using an authorization layer such as [Kilpi](https://kilpi.vercel.app) to do this for you.
+
+```ts
+// kilpi.ts
+export const Kilpi = createKilpi({
+  // Connect your authentication solution to Kilpi to reduce coupling
+  async getSubject() {
+    return getCurrentUser(); // From your auth solution
+  },
+  // Define your authorization policies in a centralized manner
+  policies: {
+    ...,
+    comments: {
+      ...,
+      delete(user, commentId: string) {
+        return user && user.id === comment.userId
+          ? grant(user)
+          : deny("Only the author can delete the comment");
+      }
+    }
+  },
+})
+```
+
+Now authorizing your server action becomes a beautiful one-liner.
+
+```diff lang="ts"
+  "use server";
+  
+  export async function deleteComment(id: string) {
+-   // 1. Authentication
+-   const user = await getCurrentUser(); // From your auth solution
+- 
+-   // 2. Authorization: Only allow the user to delete their own comments
+-   if (!user || user.id !== comment.userId) {
+-     throw new Error("You are not authorized to delete this comment");
+-   }
++   await Kilpi.authorize("comments:delete", id);
+
+    await sql`DELETE FROM comments WHERE id = ${id}`;
+  }
+```
+
+Even better, centralized authorization policies allow for an even cleaner UI as well to automatically match your authorization policies.
+
+```diff lang="tsx"
+  export async function Comment({ comment }) {
+-   const user = await getCurrentUser();
+  
+    return (
+      <div>
+        <p>{comment.userName}</p>
+        <p>{comment.text}</p>
+-       {
+-         user && comment.userId === user.id &&
+-         <DeleteCommentButton commentId={comment.id} />
+-       }
++       <Access to="comments:delete" on={comment.id}>
++         <DeleteCommentButton commentId={comment.id} />
++       </Access>
+      </div>
+    );
+  }
+```
+
+While this example seems simple enough, imagine more complex policies that require checking active subscriptions, invites, roles and permissions in organizations and much more.
+
+### Validating data with `next-safe-action` & `zod`
+
+Server actions are a great primitive. However, in most cases a framework for creating and using server actions makes your codebase much simpler to maintain.
+
+For this purpose, you can DIY or use a proven solution such as [next-safe-action](https://next-safe-action.dev/).
+
+With `next-safe-action` and `zod`, validating incoming data is trivial to make your server action even more secure.
+
+```ts {9}
+// action.ts
+"use server";
+
+import { actionClient } from "./next-safe-action-client";
+import { z } from "zod";
+import { Kilpi } from "./kilpi";
+
+export const deleteComment = actionClient
+  .schema(z.object({ commentId: z.string() }))
+  .action(async ({ parsedInput: { commentId } }) => {
+    await Kilpi.authorize("comments:delete", commentId);
+    await sql`DELETE FROM comments WHERE id = ${commentId}`;
+  })
+
+```
+
+### Finally, error handling
+
+Lastly, you need to carefully think about how you want to handle your errors. Simply erroring without user feedback is often a poor solution.
+
+Let's explore a great pattern to start with: toast your error messages to users.
+
+With `next-safe-action`, this is dead simple.
+
+1. Define a custom `UserReadableError` error class.
+
+    This allows you to be explicit about which errors should be shown to the user and ensures no sensitive information or non-user readable errors are shown to the user.
+
+    ```ts
+    export class UserReadableError extends Error {
+      constructor(message: string) {
+        super(message);
+      }
+    }
+    ```
+
+2. Create a custom `next-safe-action` error handler in your action client to handle user readable errors and pass them to the user.
+
+    ```ts {3}
+    export const actionClient = createSafeActionClient({
+      handleServerError(error) {
+        if (error instanceof UserReadableError) return error.message;
+        return "An unknown error occurred";
+      }
+    })
+    ```
+
+3. Change your thrown errors to user readable errors.
+
+    ```ts {5}
+    "use server";
+
+    const myAction = actionClient.action(async ({}) => {
+      // ...
+      if (!comment) throw new UserReadableError("Comment not found")
+      // ...
+    })
+    ```
+
+4. Finally, toast the error message in your UI.
+
+    ```tsx
+    "use client";
+
+    export function DeleteCommentButton({ commentId }: { commentId: string }) {
+      const action = useSafeAction(deleteCommentAction);
+
+      return (
+        <button onClick={() => action.executeAsync({ commentId })}>
+          Delete comment
+        </button>
+      );
+    }
+    ```
+
+5. **Bonus for Kilpi users**: Apply a middleware to your action client to show user-friendly errors when authorization fails.
+
+    ```ts {5-11}
+    import { Kilpi } from "./kilpi";
+    import { ClientSafeError } from "kilpi";
+
+    export const actionClient = createSafeActionClient({ ... })
+      .use(async ({ next }) => {
+        return await Kilpi.runInScope(async () => {
+          Kilpi.onUnauthorized(({ message }) => {
+            throw new UserReadableError(message ?? "Unauthorized");
+          });
+          return await next();
+        });
+      });
+    ```
+
+There you go. There are also other alternatives available for handling errors and displaying them to the user, but this should act as a great starting point.
+
+## Conclusion
+
+Protecting Next.js server actions is easy, but making your application scalable and easily maintainable often requires using well designed abstractions over framework primitives.
+
+This is also the case for server actions.
+
+### Final notes on Kilpi
+
+[Kilpi](https://kilpi.vercel.app) is an authorization framework for Typescript applications for securing full-stack applications. It allows for easy protection of your server actions and matching your UI to your authorization policies, as seen in this article. Additionally, it has many more features for authorization from plugins to protected queries. If you're interested, [read the documentation](https://kilpi.vercel.app/getting-started/introduction) for more information.

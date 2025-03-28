@@ -6,6 +6,7 @@ authorUrl: https://jussinevavuori.com
 authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
 date: 2025-03-27
 summary: This article introduces the protected query pattern for authorizing your data queries with a clean and powerful API.
+recommended: true
 ---
 
 

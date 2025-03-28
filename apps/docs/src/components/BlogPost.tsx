@@ -8,6 +8,14 @@ export type BlogPostProps = {
 export function BlogPost(props: BlogPostProps) {
   return (
     <div className="flex flex-col gap-4">
+      {/* Recommended badge */}
+      {props.blog.data.recommended && (
+        <span className="inline-flex items-center justify-center rounded-full bg-lime-100 px-2 py-1 text-sm font-medium text-lime-800 w-fit">
+          <span className="bg-lime-500 size-1.5 rounded-full !ml-1 !mr-2" />
+          Recommended article
+        </span>
+      )}
+
       {/* Author and date */}
       <div className="flex items-center gap-2 flex-row">
         {props.blog.data.authorImage && (

@@ -25,6 +25,7 @@ export const collections = {
       authorImage: z.string().url().optional(),
       date: z.date(),
       summary: z.string(),
+      recommended: z.boolean().optional(),
     }),
   }),
 };
