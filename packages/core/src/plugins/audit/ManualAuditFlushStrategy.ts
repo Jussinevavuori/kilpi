@@ -13,34 +13,31 @@ export type ManualAuditFlushStrategyOptions<T extends AnyKilpiCore> = {
  * Flush strategy that only flushes when `triggerFlush` is explicitly called.
  */
 export class ManualAuditFlushStrategy<T extends AnyKilpiCore> implements AuditFlushStrategy<T> {
-  /**
-   * Callback for when events are flushed.
-   */
-  private onFlushEvents: AuditFlushStrategyOptions<T>["onFlushEvents"];
+  private options: ManualAuditFlushStrategyOptions<T>;
 
-  /**
-   * Events that have been collected since the last flush.
-   */
-  private events: KilpiAuditEvent<T>[] = [];
+  // Event batch
+  private events: KilpiAuditEvent<T>[];
 
   constructor(options: ManualAuditFlushStrategyOptions<T>) {
-    this.onFlushEvents = options.onFlushEvents;
+    this.options = options;
+    this.events = [];
   }
 
-  /**
-   * On event received, store it until next flush.
-   */
   onAuditEvent(event: KilpiAuditEvent<T>): void {
     this.events.push(event);
   }
 
-  /**
-   * Trigger a flush of all stored events. Immediately empty events array to prevent
-   * double-flushing any events.
-   */
-  triggerFlush(): void {
-    const poppedEvents = this.events;
+  async triggerFlush(): Promise<void> {
+    // Clear event batch
+    const events = this.events;
     this.events = [];
-    this.onFlushEvents(poppedEvents);
+
+    // No events to flush
+    if (events.length === 0) return;
+
+    // Flush events, apply waitUntil
+    const promise = this.options.onFlushEvents(events);
+    this.options.waitUntil?.(promise);
+    await promise;
   }
 }

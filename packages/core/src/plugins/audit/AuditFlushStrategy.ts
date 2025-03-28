@@ -9,6 +9,11 @@ export type AuditFlushStrategyOptions<T extends AnyKilpiCore> = {
    * When strategy flushes events, run this callback.
    */
   onFlushEvents(events: KilpiAuditEvent<T>[]): Promise<void>;
+
+  /**
+   * Optional waitUntil function for serverless environments to ensure latest batch completes.
+   */
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
 export interface AuditFlushStrategy<T extends AnyKilpiCore> {
@@ -20,5 +25,5 @@ export interface AuditFlushStrategy<T extends AnyKilpiCore> {
   /**
    * Trigger flushing manually
    */
-  triggerFlush(): void;
+  triggerFlush(): Promise<void>;
 }

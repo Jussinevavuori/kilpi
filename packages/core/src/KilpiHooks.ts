@@ -11,29 +11,9 @@ import type { InferPolicySubject } from "./policy";
 export type KilpiOnRequestScopeHook<T extends AnyKilpiCore> = () => KilpiScope<T> | undefined;
 
 /**
- * Type of hook which is called before authorization is performed.
+ * OnAfterAuthorization event
  */
-export type KilpiOnBeforeAuthorizationHook<T extends AnyKilpiCore> = (event: {
-  /**
-   * Source (Where was the authorization triggered from)
-   */
-  source: string;
-
-  /**
-   * Policy key to authorize
-   */
-  policy: string;
-
-  /**
-   * Current subject
-   */
-  subject: T["$$infer"]["subject"];
-}) => void;
-
-/**
- * Type of hook which is called after authorization has been performed.
- */
-export type KilpiOnAfterAuthorizationHook<T extends AnyKilpiCore> = (event: {
+export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
   /**
    * Source (Where was the authorization triggered from)
    */
@@ -58,7 +38,14 @@ export type KilpiOnAfterAuthorizationHook<T extends AnyKilpiCore> = (event: {
    * The resource being authorized
    */
   resource?: unknown;
-}) => void;
+};
+
+/**
+ * Type of hook which is called after authorization has been performed.
+ */
+export type KilpiOnAfterAuthorizationHook<T extends AnyKilpiCore> = (
+  event: KilpiOnAfterAuthorizationEvent<T>,
+) => void;
 
 export class KilpiHooks<T extends AnyKilpiCore> {
   /**
@@ -66,7 +53,6 @@ export class KilpiHooks<T extends AnyKilpiCore> {
    */
   public registeredHooks: {
     onRequestScope: Set<KilpiOnRequestScopeHook<T>>;
-    onBeforeAuthorization: Set<KilpiOnBeforeAuthorizationHook<T>>;
     onAfterAuthorization: Set<KilpiOnAfterAuthorizationHook<T>>;
   };
 
@@ -74,7 +60,6 @@ export class KilpiHooks<T extends AnyKilpiCore> {
   constructor() {
     this.registeredHooks = {
       onRequestScope: new Set(),
-      onBeforeAuthorization: new Set(),
       onAfterAuthorization: new Set(),
     };
   }
@@ -85,14 +70,6 @@ export class KilpiHooks<T extends AnyKilpiCore> {
   public onRequestScope(hook: KilpiOnRequestScopeHook<T>) {
     this.registeredHooks.onRequestScope.add(hook);
     return () => this.registeredHooks.onRequestScope.delete(hook);
-  }
-
-  /**
-   * Register a new `onBeforeAuthorization` hook. Returns an unsubscribe function.
-   */
-  public onBeforeAuthorization(hook: KilpiOnBeforeAuthorizationHook<T>) {
-    this.registeredHooks.onBeforeAuthorization.add(hook);
-    return () => this.registeredHooks.onBeforeAuthorization.delete(hook);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ToyBrickIcon } from "lucide-react";
+import { ScanSearchIcon, ToyBrickIcon } from "lucide-react";
 import { DefaultSection } from "./DefaultSection";
 import { SvgLogos } from "./SvgLogos";
 
@@ -25,6 +25,12 @@ export const CATEGORIES = [
     title: "Utilities",
     description: "Plugins to extend the features of Kilpi.",
     items: [
+      {
+        title: "Audit Plugin",
+        description: "Collect your authorization decisions for auditing.",
+        Icon: ScanSearchIcon,
+        link: "/plugins/audit",
+      },
       {
         title: "Endpoint Plugin",
         description:

@@ -1,6 +1,10 @@
 import type { AnyKilpiCore } from "src/KilpiCore";
 import type { AuditFlushStrategy } from "./AuditFlushStrategy";
 import {
+  BatchAuditFlushStrategy,
+  type BatchAuditFlushStrategyOptions,
+} from "./BatchAuditFlushStrategy";
+import {
   ImmediateAuditFlushStrategy,
   type ImmediateAuditFlushStrategyOptions,
 } from "./ImmediateAuditFlushStrategy";
@@ -19,7 +23,8 @@ import {
 export type AnyFlushStrategyOptions<T extends AnyKilpiCore> =
   | ImmediateAuditFlushStrategyOptions<T>
   | PeriodicalAuditFlushStrategyOptions<T>
-  | ManualAuditFlushStrategyOptions<T>;
+  | ManualAuditFlushStrategyOptions<T>
+  | BatchAuditFlushStrategyOptions<T>;
 
 /**
  * Factory function to construct any flush strategy.
@@ -36,6 +41,9 @@ export function createAuditFlushStrategy<T extends AnyKilpiCore>(
     }
     case "manual": {
       return new ManualAuditFlushStrategy(options);
+    }
+    case "batch": {
+      return new BatchAuditFlushStrategy(options);
     }
   }
 }

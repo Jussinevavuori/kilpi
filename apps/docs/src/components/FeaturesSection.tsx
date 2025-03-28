@@ -6,7 +6,6 @@ import {
   FingerprintIcon,
   LaptopIcon,
   Loader2Icon,
-  NotebookTabsIcon,
   PlugZapIcon,
   PuzzleIcon,
   SearchCodeIcon,
@@ -90,15 +89,6 @@ const FEATURES = [
   },
 ];
 
-const ROADMAP = [
-  {
-    title: "Audit plugin",
-    description:
-      "Track and log authorization decisions for compliance and debugging. (Currently under development as unstable API).",
-    Icon: NotebookTabsIcon,
-  },
-];
-
 export function FeaturesSection() {
   return (
     <FullWidthSection id="features">
@@ -122,33 +112,6 @@ export function FeaturesSection() {
         {FEATURES.map((feature, index) => (
           <div key={index} className="flex flex-col gap-2">
             <feature.Icon className="size-5 text-accent-500" />
-            <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
-            <p className="text-sm text-muted-foreground">{feature.description}</p>
-          </div>
-        ))}
-      </div>
-
-      <hr />
-
-      <h2 className="text-xl font-semibold text-center tracking-tight">
-        With much more on the roadmap...
-      </h2>
-
-      <div
-        className="grid grid-cols-1 gap-8"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-        }}
-      >
-        {ROADMAP.map((feature, index) => (
-          <div key={index} className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <feature.Icon className="size-5 text-accent-500" />
-              <p className="w-fit px-2 text-sm font-medium rounded-full bg-amber-500/20">
-                Upcoming
-              </p>
-            </div>
-
             <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
             <p className="text-sm text-muted-foreground">{feature.description}</p>
           </div>

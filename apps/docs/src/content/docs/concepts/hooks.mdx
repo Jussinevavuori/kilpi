@@ -26,22 +26,12 @@ const unregister = Kilpi.hooks.onRequestScope(() => {
 });
 ```
 
-### `onBeforeAuthorization`
-
-Called before a policy is evaluated (from `.authorize()`, `.isAuthorized()` or any other function). Only used as a callback.
-
-```ts
-const unregister = Kilpi.hooks.onBeforeAuthorization((event) => {
-  console.log(`Before authorization`, event.policy, `from`, event.source)
-});
-```
-
-### `onBeforeAuthorization`
+### `onAfterAuthorization`
 
 Called after a policy is evaluated with the authorization result (from `.authorize()`, `.isAuthorized()` or any other function). Only used as a callback.
 
 ```ts
-const unregister = Kilpi.hooks.onBeforeAuthorization((event) => {
+const unregister = Kilpi.hooks.onAfterAuthorization((event) => {
   console.log(`Authorization ${event.authorization.granted ? "passed" : "denied"} on ${event.policy} from ${event.source} for ${event.subject.name}`)
 });
 ```

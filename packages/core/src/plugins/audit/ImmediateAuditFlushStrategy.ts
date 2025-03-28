@@ -13,24 +13,24 @@ export type ImmediateAuditFlushStrategyOptions<T extends AnyKilpiCore> = {
  * Flush strategy that flushes every event immediately as they come.
  */
 export class ImmediateAuditFlushStrategy<T extends AnyKilpiCore> implements AuditFlushStrategy<T> {
-  /**
-   * Callback for when events are flushed.
-   */
-  private onFlushEvents: AuditFlushStrategyOptions<T>["onFlushEvents"];
+  private options: ImmediateAuditFlushStrategyOptions<T>;
 
   constructor(options: ImmediateAuditFlushStrategyOptions<T>) {
-    this.onFlushEvents = options.onFlushEvents;
+    this.options = options;
   }
 
-  /**
-   * On event received, flush it immediately.
-   */
   onAuditEvent(event: KilpiAuditEvent<T>): void {
-    this.onFlushEvents([event]);
+    const promise = this.options.onFlushEvents([event]);
+    this.options.waitUntil?.(promise);
   }
 
-  /**
-   * This is a no-op as we don't store any events to be flushed later.
-   */
-  triggerFlush(): void {}
+  async triggerFlush(): Promise<void> {
+    console.warn(
+      [
+        `You are manually attempting to flush all audit events in Kilpi AuditPlugin`,
+        `with the immediate flushing strategy. This will not do anything as`,
+        `all events are flushed immediately.`,
+      ].join(" "),
+    );
+  }
 }

@@ -17,7 +17,7 @@ export type KilpiPlugin<TIn extends AnyKilpiCore, TExtension extends object> = (
  *
  *     let count = 0;
  *
- *     Kilpi.hooks.onBeforeAuthorization(() => {
+ *     Kilpi.hooks.onAfterAuthorization(() => {
  *       count++;
  *     })
  *

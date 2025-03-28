@@ -1,0 +1,174 @@
+---
+title: Audit Plugin
+description: Logging, monitoring and auditing your authorization policies
+sidebar:
+  badge: New
+---
+
+The audit plugin is used to receive events from the Kilpi server and send them to an external service. This is useful for logging, monitoring and auditing your authorization policies.
+
+The audit plugin is already included in `@kilpi/core`. Apply the plugin in your Kilpi configuration as follows.
+
+```diff lang="ts"
+// kilpi.ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
++  plugins: [AuditPlugin({ ... })]
+})
+```
+
+The audit plugin is designed to primarily work independently after being configured. You however need to configure at the least the `strategy` and `onFlushEvents` callback.
+
+## Configure strategy
+
+Sending every event immediately and separately is not efficient. Instead, AuditPlugin provides several different strategies you can pick to decide how you want to batch and flush your events.
+
+### Batch strategy (Recommended)
+
+**The recommended strategy is batching**. When an event is received, a new batch is started. Every event after that event is added to the batch until `batchTimeoutSeconds` expires, at which point all events in the batch are sent to the external service.
+
+```ts
+AuditPlugin({
+  strategy: "batch",
+  batchTimeoutSeconds: 5,
+  async onFlushEvents(events) { ... },
+})
+```
+
+You can also prematurely flush the current batch by calling `Kilpi.audit.flush()`.
+
+### Periodical strategy
+
+The periodical strategy sends events every `flushIntervalSeconds` seconds (if any).
+
+```ts
+AuditPlugin({
+  strategy: "periodical",
+  flushIntervalSeconds: 5,
+  async onFlushEvents(events) { ... },
+})
+```
+
+You can also prematurely flush the current batch by calling `Kilpi.audit.flush()`.
+
+### Manual strategy
+
+The manual strategy collects all events and waits until `Kilpi.audit.flush()` is manually called by you. This allows for full developer control on when events are flushed.
+
+```ts
+AuditPlugin({
+  strategy: "manual",
+  async onFlushEvents(events) { ... },
+})
+
+Kilpi.audit.flush()
+```
+
+### Immediate strategy
+
+Finally, primarily for testing purposes, the immediate strategy sends every event separately immediately as they come. Calling `Kilpi.audit.flush()` will have no effect.
+
+```ts
+AuditPlugin({
+  strategy: "immediate",
+  async onFlushEvents(events) { ... },
+})
+```
+
+### Using in serverless environments
+
+Batching in serverless environments is difficult. You have to ensure that the batch has time to flush and complete before the serverless function dies.
+
+For this purpose, AuditPlugin allows you to pass a `waitUntil` function provided by some serverless environments, such as [Vercel's `waitUntil`](https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package#waituntil) or [Cloudflare's `waitUntil`](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil). Pass it as the `waitUntil` option to the plugin.
+
+All strategies respect the `waitUntil` option.
+
+```ts
+import { waitUntil } from "@vercel/functions";
+
+AuditPlugin({
+  strategy: "batch",
+  batchTimeoutSeconds: 5,
+  waitUntil, // Signature: (promise: Promise<unknown>) => void
+  async onFlushEvents(events) { ... },
+})
+```
+
+> Note for Next.js: Using [`after`](https://nextjs.org/docs/app/api-reference/functions/after) is possible however it will only work in RSCs.
+
+## Configure external service
+
+AuditPlugin is fully agnostic to the external service you want to send events to. Connect your audit, logging or monitoring service with the `onFlushEvents` callback.
+
+```ts
+AuditPlugin({
+  ...,
+  async onFlushEvents(events) {
+    await fetch(`https://my-audit-service.com/send-events`, {
+      method: "POST",
+      body: JSON.stringify(events),
+      headers: { "Content-Type": "application/json" },
+    })
+  },
+})
+```
+
+### Filtering events
+
+You may optionally filter events using the `filterEvents` option. For example, to only include denied decisions you may do the following.
+
+```ts
+AuditPlugin({
+  ...,
+  filterEvents(event) {
+    return !event.authorization.granted
+  }
+})
+```
+
+## Enabling and disabling
+
+You may optionally provide the `disabled` option to disable the plugin.
+
+```ts
+AuditPlugin({
+  ...,
+  disabled: true
+})
+```
+
+To dynamically enable or disable the plugin, you can use the `Kilpi.audit.enable()` and `Kilpi.audit.disable()` methods.
+
+## Manual flushing
+
+For more precise control on when the current batch is flushed, you may call the `Kilpi.audit.flush()` method to force an immediate flush.
+
+This works with all strategies except the immediate strategy as it does not do batching.
+
+## Logging
+
+You may be tempted to use the AuditPlugin for logging, and it can be done. However, logging authorization decisions using a hook is much easier. See example below.
+
+```diff lang="ts"
+// kilpi.ts
+  const Kilpi = createKilpi({
+    ...,
+-   // Logging using AuditPlugin
+-   plugins: [
+-     AuditPlugin({
+-       strategy: "immediate",
+-       async onFlushEvents(events) {
+-         for (const event of events) {
+-           console.log(`...`)
+-         }
+-       }
+-     }),
+-   ]
+  });
+  
++ // Logging using hooks
++ Kilpi.hooks.onAfterAuthorization((event) => {
++   console.log(`...`)
++ })
+```

@@ -14,37 +14,33 @@ export type PeriodicalAuditFlushStrategyOptions<T extends AnyKilpiCore> = {
  * Flush strategy that flushes events every `flushPeriodSeconds`.
  */
 export class PeriodicalAuditFlushStrategy<T extends AnyKilpiCore> implements AuditFlushStrategy<T> {
-  /**
-   * Callback for when events are flushed.
-   */
-  private onFlushEvents: AuditFlushStrategyOptions<T>["onFlushEvents"];
+  private options: PeriodicalAuditFlushStrategyOptions<T>;
 
-  /**
-   * Events that have been collected since the last flush.
-   */
-  private events: KilpiAuditEvent<T>[] = [];
+  // Event batch
+  private events: KilpiAuditEvent<T>[];
 
   constructor(options: PeriodicalAuditFlushStrategyOptions<T>) {
-    this.onFlushEvents = options.onFlushEvents;
+    this.options = options;
+
+    // Initialize empty event batch
+    this.events = [];
 
     // Start flushing events every `flushPeriodSeconds`
-    setInterval(this.triggerFlush, options.flushPeriodSeconds);
+    setInterval(() => this.triggerFlush(), options.flushPeriodSeconds * 1000);
   }
 
-  /**
-   * On event received, store it until next flush.
-   */
   onAuditEvent(event: KilpiAuditEvent<T>): void {
     this.events.push(event);
   }
 
-  /**
-   * Trigger a flush of all stored events. Immediately empty events array to prevent
-   * double-flushing any events.
-   */
-  triggerFlush(): void {
-    const poppedEvents = this.events;
+  async triggerFlush(): Promise<void> {
+    // Clear event batch
+    const events = this.events;
     this.events = [];
-    this.onFlushEvents(poppedEvents);
+
+    // Flush events, apply waitUntil
+    const promise = this.options.onFlushEvents(events);
+    this.options.waitUntil?.(promise);
+    await promise;
   }
 }

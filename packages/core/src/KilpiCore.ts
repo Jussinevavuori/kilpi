@@ -216,11 +216,6 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
       // Resolve the policy function by key
       const policy = getPolicyByKey(this.policies, key);
 
-      // Run `onBeforeAuthorization` hooks
-      this.hooks.registeredHooks.onBeforeAuthorization.forEach((hook) => {
-        hook({ source: options.source, policy: key, subject });
-      });
-
       // Evaluate the policy
       const authorization = await policy(subject, ...[...inputs]);
 
@@ -418,11 +413,6 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     await KilpiCore.CallStackSizeProtector.run(async () =>
       Promise.all(
         resources.map(async (resource) => {
-          // Run `onBeforeAuthorization` hooks
-          this.hooks.registeredHooks.onBeforeAuthorization.forEach((hook) => {
-            hook({ source: "filter", policy: key, subject });
-          });
-
           const authorization = await policy(subject, resource);
 
           // Run `onAfterAuthorization` hooks
