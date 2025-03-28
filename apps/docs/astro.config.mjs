@@ -33,30 +33,12 @@ export default defineConfig({
        * Configure sidebar
        */
       sidebar: [
-        {
-          label: "Getting started",
-          autogenerate: { directory: "getting-started" },
-        },
-        {
-          label: "Installation",
-          autogenerate: { directory: "installation" },
-        },
-        {
-          label: "Concepts",
-          autogenerate: { directory: "concepts" },
-        },
-        {
-          label: "Guides",
-          autogenerate: { directory: "guides" },
-        },
-        {
-          label: "Plugins",
-          autogenerate: { directory: "plugins" },
-        },
-        {
-          label: "Advanced",
-          autogenerate: { directory: "advanced" },
-        },
+        { label: "Getting started", autogenerate: { directory: "getting-started" } },
+        { label: "Installation", autogenerate: { directory: "installation" } },
+        { label: "Concepts", autogenerate: { directory: "concepts" } },
+        { label: "Guides", autogenerate: { directory: "guides" } },
+        { label: "Plugins", autogenerate: { directory: "plugins" } },
+        { label: "Advanced", autogenerate: { directory: "advanced" } },
       ],
 
       /**
@@ -69,22 +51,61 @@ export default defineConfig({
           attrs: { id: "posthog" },
           content: POSTHOG_SCRIPT_TAG_CONTENT,
         },
+
+        // OG tags
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:title",
+            content: "Kilpi - The modern authorization framework for TypeScript",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:site_name",
+            content: "Kilpi - The modern authorization framework for TypeScript",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image",
+            content: "/og-image.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:url",
+            content: "https://kilpi.vercel.app/",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:type",
+            content: "website",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:description",
+            content:
+              "Kilpi is an modern open-source authorization framework for TypeScript applications.",
+          },
+        },
       ],
 
       /**
-       * Custom theme
+       * Custom theme (Starlight Black)
        */
       plugins: [
         starlightThemeBlack({
           navLinks: [
-            {
-              label: "Docs",
-              link: "/getting-started/introduction",
-            },
-            {
-              label: "Articles",
-              link: "/blog",
-            },
+            { label: "Docs", link: "/getting-started/introduction" },
+            { label: "Articles", link: "/blog" },
           ],
           footerText: [
             "Designed & created with ❤️ by [Jussi Nevavuori](https://www.jussinevavuori.com) in Brisbane & Helsinki",
