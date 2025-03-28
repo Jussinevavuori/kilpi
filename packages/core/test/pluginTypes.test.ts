@@ -1,4 +1,4 @@
-import { AuditPlugin, createKilpi } from "src";
+import { AuditPlugin, createKilpi, EndpointPlugin } from "src";
 import { describe, expect, it } from "vitest";
 
 describe("plugin types", () => {
@@ -11,8 +11,14 @@ describe("plugin types", () => {
           strategy: "immediate",
           async onFlushEvents() {},
         }),
+        EndpointPlugin({
+          secret: "",
+        }),
       ],
     });
+
+    Kilpi.audit.flush();
+    Kilpi.createPostEndpoint();
 
     expect(true).toBe(true);
   });

@@ -26,10 +26,7 @@ const policies = {
 const Kilpi = createKilpi({
   getSubject: () => Promise.resolve(sub),
   policies,
-  plugins: [
-    // Should not require type arguments
-    ReactServerComponentPlugin(),
-  ],
+  plugins: [ReactServerComponentPlugin()],
 });
 
 describe("types", () => {
