@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.12.0
+
+### Minor Changes
+
+- 5821dc7: introduce Kilpi.scoped for wrapping functions with Kilpi.runInScope with improved API
+
 ## 0.11.0
 
 ### Minor Changes
