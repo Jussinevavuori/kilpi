@@ -37,6 +37,7 @@ export default defineConfig({
         { label: "Installation", autogenerate: { directory: "installation" } },
         { label: "Concepts", autogenerate: { directory: "concepts" } },
         { label: "Guides", autogenerate: { directory: "guides" } },
+        { label: "Reference", autogenerate: { directory: "reference" } },
         { label: "Plugins", autogenerate: { directory: "plugins" } },
         { label: "Advanced", autogenerate: { directory: "advanced" } },
       ],

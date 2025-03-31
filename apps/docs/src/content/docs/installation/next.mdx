@@ -8,23 +8,22 @@ import { Steps } from "@astrojs/starlight/components";
 
 Ensure you have setup Kilpi using the [quickstart guide](/getting-started/quickstart) before proceeding.
 
-### React Server Components Plugin
+### Install plugins
 
-Install the [React Server Components Plugin](/installation/react-server-components) first to start using Kilpi in your Next.js application.
+Install the [React Server Components Plugin](/plugins/react-server-components) (`@kilpi/react-server`) to use Kilpi with React Server Components.
 
-### React Client Components Plugin
 
-Upcoming: React Client Components Plugin for component and hook bindings into `@react/client`. For now, see [this guide](/getting-started/usage-on-client) to see how to use the `KilpiClient` instance directly on the client.
+**Optional:** Install the [React Client Components Plugin](/plugins/react-client) (`@kilpi/react-client`) for component and hook bindings into `@react/client` on the client.
 
 ### Provide a scope for server actions and endpoints
 
-The React Server Components Plugin can't automatically provide a scope for server actions or endpoints as there is no global request-scoped API. You have to do this manually with `Kilpi.runInScope` to use all Kilpi features, such as `Kilpi.onUnauthorized`.
+The React Server Components Plugin can't automatically [provide a scope](/concepts/scope) for server actions or endpoints as there is no global request-scoped API. You have to do this manually with `Kilpi.runInScope` to use all Kilpi features, such as `Kilpi.onUnauthorized`.
 
-:::tip
-If you are wrapping your server actions or endpoints with anything that supports middleware, you can automatically provide a scope within the middleware. See the `next-safe-action` example below.
-:::
 
 <Tabs>
+  <TabItem label="RSCs">
+    The [`ReactServerComponentPlugin` from `@kilpi/react-server`](/plugins/react-server) automatically provides a scope for react server components.
+  </TabItem>
   <TabItem label="Server actions">
     Wrap each server action with `Kilpi.runInScope` as follows.
 
@@ -38,21 +37,8 @@ If you are wrapping your server actions or endpoints with anything that supports
       });
     }
     ```
-  </TabItem>
-  <TabItem label="Endpoints">
-    Wrap each endpoint with `Kilpi.runInScope` as follows.
 
-    ```ts
-    // route.ts
-    export const POST = async function handle(request: Request) {
-      return await Kilpi.runInScope(async () => {
-        return new Response();
-      });
-    }
-    ```
-  </TabItem>
-  <TabItem label="next-safe-action (or similar)">
-    Automatically provide a scope for all server actions using a middleware for your ActionClient as follows.
+    Or better, when using `next-safe-action` or similar framework for authoring server actions, you can use the middleware approach as follows.
 
     ```ts
     export const ActionClient = createSafeActionClient({})
@@ -67,4 +53,19 @@ If you are wrapping your server actions or endpoints with anything that supports
       });
     ```
   </TabItem>
+  <TabItem label="Endpoints">
+    Wrap each endpoint with `Kilpi.runInScope` as follows.
+
+    ```ts
+    // route.ts
+    export const POST = async function handle(request: Request) {
+      return await Kilpi.runInScope(async () => {
+        // Your endpoint...
+        return new Response();
+      });
+    }
+    ```
+  </TabItem>
 </Tabs>
+
+

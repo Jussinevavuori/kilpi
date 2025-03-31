@@ -20,37 +20,35 @@ Kilpi is an opinionated library designed based on certain principles. Read throu
 
 - **Server-first authorization**
 
-  All authorization checks are evaluated on the server.
-
-  This means Kilpi is very well suited for modern server-first approaches, such as server-rendered applications (e.g. Next.js and other RSC frameworks) or server-side applications (e.g. Express, Koa, Hono).
+  All authorization checks are evaluated on the server for security, making Kilpi well suited for server-side applications (Express, Next.js, ...).
 
 - **Centralized authorization layer**
 
-  Kilpi is designed around a centralized authorization layer, which defines all policies for all authorizable actions in your application. They are always referred to via their auto-generated keys, e.g. `documents:update`. This approach makes maintaining authorization trivial.
+  Kilpi is designed around a centralized authorization layer consisting of a set of policies, referred to by their keys, such as `documents:update`. 
 
 - **Declarative**
 
-  In most cases, declarative APIs are easier to understand and maintain. All Kilpi APIs are designed to be declarative, from [Policies](/concepts/policy) to [Protected Queries](/concepts/protected-query).
+  All Kilpi APIs are designed to be declarative, from [Policies](/concepts/policy) to [Protected Queries](/concepts/protected-query) making for a simpler authorization model.
 
 - **Policies as code**
 
-  Policies are defined as code instead of using a no-code interface or a domain-specific language. This ensures an easy learning curve, full typesafety and enables you to version control your policies.
+  Policies are defined as code instead of using a no-code interface or a domain-specific language. This ensures type safety, an easy learning curve, and version controlled policies.
 
 - **Asynchronous policies**
 
-  As a consequence of the design principle of _server-first authorization_, all policies have been made asynchronous. This allows for more possibilities in creating complex policies, such as fetching data from a database or an external service during policy evaluation. Making all policies asynchronous also makes for a simpler API.
+  Policies can be asynchronous and fetch data during evaluation. This makes them more flexible and powerful, and reduces data fetching boilerplate in your code.
 
 - **Framework agnostic**
 
-  Kilpi is designed to be framework agnostic and can be applied to any technology, even without plugins. See the installation guides for how to make Kilpi work with your framework of choice.
+  Kilpi is designed to be framework agnostic and can be applied to any technology (with or without plugins). See the installation guides for how to make Kilpi work with your framework of choice.
 
-- **Auth-provider agnostic wrapper**
+- **Authentication provider agnostic**
 
-  Kilpi is designed around the concept of a **subject**. The subject can be provided by any auth provider, or even from a combination of data sources. Kilpi wraps the authentication provider with a custom `getSubject` function.
+  Kilpi is designed around the concept of a **subject**, which can be used to wrap any auth provider or data source. This means you can even change authentication providers without changing your authorization layer.
 
 - **Authorization model agnostic**
 
-  Kilpi does **not** implement any advanced authorization concepts (roles, permissions, organizations, memberships, ...). Nor does it enforce any single implementation. Instead, Kilpi is designed to be flexible enough to facilitate any authorization model. We do however offer best practices on implementing [custom permissions](/advanced/permissions), [ABAC](/advanced/abac), [RBAC](/advanced/rbac) and [ReBAC](/advanced/rebac) using Kilpi.
+  Kilpi does **not** implement any advanced authorization concepts (roles, permissions, organizations, memberships, ...), nor does it enforce any single implementation. Instead, Kilpi is designed to be flexible enough to facilitate any authorization model, such as [custom permissions](/advanced/permissions), [ABAC](/advanced/abac), [RBAC](/advanced/rbac) and [ReBAC](/advanced/rebac) using Kilpi.
 
 ---
 
@@ -62,6 +60,7 @@ Kilpi may not suit you, if you...
 - Do not require authorization.
 - Do not want a centralized authorization layer.
 - Require a ready-made no-code interface or a domain-specific language for policies.
+- Require an authorization model that provides its own implementation for roles, permissions, etc.
 
 :::note
 If you are building a **client-only** application with TypeScript, Kilpi does not yet provide client-only authorization.
@@ -71,28 +70,36 @@ If you are building a **client-only** application with TypeScript, Kilpi does no
 
 ## Motivation
 
-I've built over a dozen applications throughout my career. And I've built authorization into them time after time. And I've created half-baked abstractions for authorization way too often trying to refactor countless `if (user.role === "admin" && ...)` statements littered throughout my pages, mutations, queries and UI components. And I know I'm not alone.
+I've built over a dozen applications throughout my career. And I've built authorization into them time after time. And I've created half-baked abstractions for authorization way too often trying to refactor countless `if (user.role === "admin" && ...)` statements littered throughout my pages, mutations, queries and UI components.
 
-Kilpi is an attempt to solve this problem once and for all. It aims to be a generic enough solution to suit all use cases, no matter your authorization needs.
+This has made maintenance troublesome, bug-prone and time-consuming, when new features are added or the authorization logic requires changing.
+
+I knew I wasn't alone.
+
+Kilpi is an attempt to solve this problem once and for all. It aims to be a generic solution to suit all use cases, no matter your authorization needs.b
 
 ### No expensive lock-in
 
-Many paid auth services (Clerk, Auth0, Kinde, ...) offer their own fine-grained authorization solutions. However, they are problematic as they lock you in to their system and their implementation, moving out of which can be difficult and expensive. They have proprietary APIs for creating and managing roles, permissions and policies, which may or may not be compatible with your needs.
+Many paid authentication services (Clerk, Auth0, Kinde, ...) also offer their own fine-grained authorization solutions.
 
-Using Kilpi, you can still use these services for authentication, and even implement your authorization via their services, but you are not locked in to their implementation.
+However, they can be problematic as they lock you in to their product, migrating out of which can be difficult and expensive.
 
-### Addressing OWASP security issues
+The benefit of using an explicit authorization layer, such as Kilpi, is that you are not locked in. You can use any of these authentication providers and even implement policies using their products, but you are much less locked in.
+
+### Addressing OWASP top ten security risks
 
 The [OWASP Top Ten](https://owasp.org/www-project-top-ten/) lists the top 10 security risks for web applications. This library helps you address two of them related to authorization.
 
 - **`OWASP A01:2021`**: Broken Access Control (Listed at #1)
 - **`OWASP A04:2021`**: Insecure Design (Listed at #4)
 
+Kilpi offers you a **secure design** for your authorization and by centralizing and making your policies explicit, it helps you avoid **broken access control**, especially when policies change. 
+
 ---
 
 ## Show me the code
 
-Ok, here are simple examples of how you would use Kilpi in a Next.js application. These examples skip the details of setting up the Kilpi instance.
+Setting up Kilpi and defining your first policy.
 
 ```ts
 // Kilpi.ts
@@ -109,7 +116,7 @@ export const Kilpi = createKilpi({
 })
 ```
 
-### Protecting actions, mutations and functions
+Protecting actions, mutations and functions
 
 ```ts
 // update-document.ts
@@ -121,7 +128,7 @@ function updateDocument(id: string) {
 }
 ```
 
-### Protecting queries
+Protecting queries
 
 ```ts
 const getDocument = Kilpi.query(
@@ -140,7 +147,7 @@ const unauthorizedDocument = await getDocument.unsafe("2"); // Skips protector
 getDocument("1") // Error -- must use protect or unsafe
 ```
 
-### Protecing pages and UI
+Protecting pages and UI
 
 ```tsx
 export default async function Page(props) {

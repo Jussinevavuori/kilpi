@@ -176,6 +176,29 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   }
 
   /**
+   * Utility to wrap a function with `Kilpi.runInScope()`.
+   *
+   * ## Example
+   *
+   * @example
+   * ```ts
+   * export const POST = Kilpi.scoped(async (request) => {
+   *   // ...
+   *   await Kilpi.authorize("resource:update", resource);
+   *   return new Response(...);
+   * })
+   * ```
+   */
+  public scoped<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends (...args: any[]) => Promise<any>,
+  >(fn: T): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+    return (...args: Parameters<T>) => {
+      return this.runInScope(() => fn(...args));
+    };
+  }
+
+  /**
    * Utility to set the new on unauthorized handler in the current scope
    *
    * ## Example

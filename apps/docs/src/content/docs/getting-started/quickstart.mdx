@@ -56,6 +56,8 @@ Get started quickly with Kilpi using this guide.
 
     </FileTree>
 
+    This is only a suggestion.
+
     See [project structure](/getting-started/project-structure) for more information on the recommended project structure.
 
 
@@ -64,14 +66,16 @@ Get started quickly with Kilpi using this guide.
 
     Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider.
 
+    This function will automatically be called (and [cached](/concepts/subject#subject-caching)) by Kilpi while authorizing.
+
     ```ts
     // src/kilpi/subject.ts
-    export type Subject = { id: string };
+    export type Subject = { id: string, email: string, name: string };
 
     export async function getSubject(): Promise<Subject | null> {
       const session = await getSession(); // From your auth provider
       if (!session) return null;
-      return { id: session.id };
+      return { id: session.id, email: session.email, name: session.name };
     }
     ```
 
@@ -81,10 +85,12 @@ Get started quickly with Kilpi using this guide.
 
     Create `policies.ts` where you define all policies. This will be the main place to define your authorization logic.
 
+    For improved typesafety, add `as const satisfies Policyset<YourSubjectType>`. It type-checks your return types and automatically infers the `user` type.
+
     ```ts
     // src/kilpi/policies.ts
-    import { Policy } from "@kilpi/core";
-    import { Subject } from "./subject";
+    import { type Policyset, deny, grant } from "@kilpi/core";
+    import type { Subject } from "./subject";
 
     const policies = {
       documents: {
@@ -104,14 +110,14 @@ Get started quickly with Kilpi using this guide.
           return deny();
         },
       },
-    } satisfies Policyset<Subject | null>
+    } as const satisfies Policyset<Subject | null>
     ```
 
     [Read more about policies](/concepts/policy).
 
 5.  ### Create your Kilpi instance
 
-    Create `kilpi.ts` where you create your Kilpi instance.
+    Create `kilpi.ts` where you create your Kilpi instance from your subject and policies. The `Kilpi` object will be used primarily for authorization.
 
     ```ts
     // src/kilpi/kilpi.ts
@@ -126,19 +132,19 @@ Get started quickly with Kilpi using this guide.
 
 6.  ### Protect your first function
 
-    Create a function that you want to protect with Kilpi.
+    Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method.
 
     ```ts
     // myFunction.ts
-    export function myFunction() {
+    export async function myFunction() {
       await Kilpi.authorize("documents:create");
-      // Your logic here
+      // Your logic here ...
     }
     ```
 </Steps>
 
 ## Next steps
 
-- Start using Kilpi [on the client](/getting-started/usage-on-client).
 - Follow the installation guide for your framework of choice.
--	Read up on [Kilpi concepts and guides](/concepts/authorization).
+-	Read up on [Kilpi concepts and guides](/concepts/authorization-object).
+- Start using Kilpi [on the client](/getting-started/usage-on-client).

@@ -1,0 +1,130 @@
+---
+title: React Client Plugin
+sidebar:
+  label: React Client Plugin 
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The **React Client Plugin** provides a set of React components and hooks for working with the Kilpi client in a React application.
+
+Ensure you have [setup Kilpi on the client](/getting-started/usage-on-client).
+
+## Installation
+
+Install the plugin with your package manager of choice.
+
+<Tabs syncKey="package-manager">
+  <TabItem label="npm">
+    ```bash
+    npm install @kilpi/react-client
+    ```
+  </TabItem>
+
+  <TabItem label="yarn">
+    ```bash
+    yarn add @kilpi/react-client
+    ```
+  </TabItem>
+
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add @kilpi/react-client
+    ```
+  </TabItem>
+
+  
+  <TabItem label="bun">
+    ```bash
+    bun add @kilpi/react-client
+    ```
+  </TabItem>
+</Tabs>
+
+Apply the plugin in your Kilpi configuration as follows.
+
+```diff lang="ts"
+// kilpi.ts
+export const Kilpi = createKilpiClient({
+  // ...
++  plugins: [ReactClientComponentPlugin()]
+})
+```
+
+## Components and hooks
+
+Use the `Kilpi.ReactClient.createComponents` function (provided by the plugin) to create React client component and hook bindings for working with the Kilpi client.
+
+```ts
+// kilpi.components.ts
+export const { 
+  useIsAuthorized,
+  useSubject, 
+  ClientAccess
+} = Kilpi.ReactClient.createComponents();
+```
+
+### `useIsAuthorized()`
+
+`useIsAuthorized()` is a hook that checks if the user is authorized to perform a specific action. It wraps the `KilpiClient.fetchIsAuthorized()` method.
+
+```tsx
+export function DeleteCommentButton({ comment, onDelete }) {
+  const {
+    isAuthorized, // boolean (when "success"), null (otherwise)
+    status, // "idle" | "loading" | "error" | "success"
+    error, // unknown (when "error"), null (otherwise)
+
+    isLoading, // boolean, true when status is "loading"
+    isError, // boolean, true when status is "error"
+    isSuccess, // boolean, true when status is "success"
+    isIdle, // boolean, true when status is "idle"
+  } = useIsAuthorized("comments:delete", comment);
+
+  return <button disabled={!isAuthorized} onClick={onDelete}>
+    Delete comment
+  </button>
+}
+```
+
+### `useSubject()`
+
+```tsx
+export function User() {
+  const {
+    subject, // Inferred subject type (when "success"), null (otherwise)
+    status, // "idle" | "loading" | "error" | "success"
+    error, // unknown (when "error"), null (otherwise)
+    
+    isLoading, // boolean, true when status is "loading"
+    isError, // boolean, true when status is "error"
+    isSuccess, // boolean, true when status is "success"
+    isIdle, // boolean, true when status is "idle"
+  } = useSubject();
+
+  return <p>Signed in as {subject?.name}</p>
+}
+```
+
+### `<ClientAccess />`
+
+Similar to the [`<Access />` React Server Component](/plugins/react-server-components#access), `<ClientAccess />` is used to show or hide components based on the user's authorizations.
+
+Access uses the `useIsAuthorized()` hook under the hood.
+
+```tsx
+async function Component({ comment }) {
+  return <div>
+    <p>{comment.content}</p>
+    <Access
+      to="comments:delete" // Required
+      on={comment} // Required only if policy takes in a resource
+      Loading={<p>Loading...</p>} // Optional fallback
+      Unauthorized={<p>Unauthorized</p>} // Optional fallback
+      Error={<p>Error</p>} // Optional fallback
+    >
+      <button>Delete</button>
+    </Access>
+  </div>
+}
+```
