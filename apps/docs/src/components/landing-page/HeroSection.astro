@@ -1,0 +1,64 @@
+---
+import { ArrowRightIcon, GithubIcon } from "lucide-react";
+import Section from "../layout/Section.astro";
+import Button from "../ui/Button.astro";
+---
+
+<Section id="hero" class="py-32 items-center text-center gap-16">
+  {/* Header text */}
+  <div class="flex flex-col gap-8">
+    <h1 class="text-4xl relative font-bold tracking-tight sm:text-5xl md:text-6xl">
+      Authorization made simple
+      {/* Position turtle on top of text */}
+      <img
+        class={[
+          "absolute left-1/2",
+          "size-7 -top-[15px] -translate-x-[30px]",
+          "sm:size-9 sm:-top-[20px] sm:-translate-x-[42px]",
+          "md:size-11 md:-top-[23px] md:-translate-x-[52px]",
+        ].join(" ")}
+        src="/turtle-emoji.png"
+        alt="Turtle Emoji"
+      />
+    </h1>
+    <p class="mx-auto max-w-[700px] text-muted-fg md:text-xl">
+      Kilpi is the open-source TypeScript authorization library designed for developers who need
+      flexible, powerful, and intuitive authorization.
+    </p>
+  </div>
+
+  {/* Buttons */}
+  <div class="flex flex-col sm:flex-row gap-4">
+    <Button as="a" size="lg" variant="default" href="/docs/getting-started/introduction">
+      Get started
+      <ArrowRightIcon />
+    </Button>
+    <Button
+      as="a"
+      href="https://github.com/jussinevavuori/kilpi"
+      target="_blank"
+      rel="noopener noreferrer"
+      size="lg"
+      variant="outline"
+      class="gap-2"
+    >
+      <GithubIcon />
+      Star on GitHub
+    </Button>
+  </div>
+
+  <div class="flex flex-col gap-4 items-center">
+    <p class="text-sm text-muted-fg">
+      Designed and created by{" "}
+      <a
+        href="https://jussinevavuori.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline"
+      >
+        Jussi Nevavuori
+      </a>{" "}
+      with ❤️ in Brisbane & Helsinki
+    </p>
+  </div>
+</Section>

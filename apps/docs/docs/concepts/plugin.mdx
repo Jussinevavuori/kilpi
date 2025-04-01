@@ -1,0 +1,65 @@
+---
+title: Plugin
+---
+
+Plugins are used to extend the functionality of Kilpi. They are implemented using the same public [hooks APIs](/docs/docs/concepts/hooks) as available to you.
+
+In addition, plugins can extend the `KilpiCore` instance by providing custom functions.
+
+## Extending the Kilpi instance
+
+Take for example the `ReactServerComponentsPlugin`, which not only automatically provides a scope for RSCs, but also provides components via `Kilpi.ReactServer.createComponents`.
+
+```ts
+const Kilpi = await createKilpi({
+  ...,
+  plugins: [ReactServerComponentsPlugin()],
+});
+
+const { Access } = Kilpi.ReactServer.createComponents();
+```
+
+## Creating custom plugins
+
+Creating custom plugins is easy with the `createKilpiPlugin` method. For improved typesafety and customizability, you should wrap your plugin in a generic function. The `createKilpiPlugin` method will take in the `Kilpi` instance and return the public interface for the plugin (or `{}` if no public interface).
+
+Let's create an utility plugin for counting the total number of authorizations.
+
+```ts
+export function AuthorizationCounterPlugin<T extends AnyKilpiCore>(
+  options: { initialValue: number }
+) {
+  return createKilpiPlugin<T>((Kilpi: T) => {
+    let count = options.initialValue;
+
+    // Your plugin logic here: Call hooks, etc.
+    Kilpi.hooks.onAfterAuthorization(() => {
+      count += 1;
+    });
+
+    // Return the instance (optionally add your custom methods)
+    return {
+      authorizationCounter: {
+        get() {
+          return value;
+        },
+      }
+    }
+  });
+}
+
+// Apply and use
+const Kilpi = createKilpi({
+  ...,
+  plugins: [AuthorizationCounterPlugin({ initialValue: 10 })],
+});
+
+Kilpi.authorizationCounter.get();
+```
+---
+
+<LinkCard 
+  title="Learn more about hooks" 
+  description="Learn how to use hooks to extend Kilpi and create custom, advanced functionality."
+  href="/docs/concepts/hooks"
+/>

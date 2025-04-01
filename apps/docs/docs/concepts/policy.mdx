@@ -1,0 +1,179 @@
+---
+title: Policy
+---
+
+**A policy** is a function that receives a [**subject**](/docs/concepts/subject) and optionally a **resource** and returns an [**authorization object**](/docs/concepts/authorization-object), either granted or denied.
+
+A policy defines an **action** that can be taken in your application, optionally **on a resource**, such as `documents:read`, `users:update`, `comments:delete`.
+
+In a nutshell...
+
+- Policies can be nested as deep as you want, forming a hierarchy.
+- Policies always take the subject as the first argument.
+- Policies can optionally take in a resource as the second argument.
+- Policies can be asynchronous functions and fetch data from external sources for deciding access.
+- A policy must explicitly either grant (with `return grant(subject)`) or deny (with `return deny(reason?)`) access.
+
+## Defining policies
+
+Define policies by constructing a `policies` object (with `as const satisfies Policyset<MySubjectType>` for improved type-safety).
+
+:::note
+The subject type must match the subject type returned by `getSubject` exactly.
+:::
+
+```ts
+import { deny, grant, type Policyset } from "@kilpi/core";
+
+export const policies = {
+  // Example hierarchy
+  documents: {
+
+    // Allow all authed members to read docs
+    read(user) {
+      if (!user) return deny("Unauthenticated");
+      return grant(user);
+    },
+
+  }
+} as const satisfies Policyset<MySubjectType>;
+```
+
+### Defining a basic policy
+
+A basic policy takes in a `subject` (often aliased as `user`) and returns an authorization with `return grant(user)` or `return deny(reason?)`.
+
+> The subject is automatically typed by `satisfies Policyset<MySubjectType>`. 
+
+```ts
+export const policies = {
+  comments: {
+    create(user) {
+      if (!user) return deny("Unauthenticated");
+      return grant(user);
+    }
+  }
+} as const satisfies Policyset<MySubjectType>;
+
+await Kilpi.authorize("comments:create");
+```
+
+### Defining a policy with a resource
+
+A policy can optionally receive a **resource** as the second argument.
+
+```ts {3,5,10}
+export const policies = {
+  comments: {
+    delete(user, comment: Comment) {
+      if (!user) return deny("Unauthenticated");
+      return comment.userId === user.id ? grant(user) : deny();
+    }
+  }
+} as const satisfies Policyset<MySubjectType>;
+
+await Kilpi.authorize("comments:delete", myComment);
+```
+
+### Defining an asynchronous data-fetching policy
+
+Policies can even fetch data during evaluation, as they are by design always asynchronous.
+
+```ts {5}
+export const policies = {
+  comments: {
+    async archive(user, comment: Comment) {
+      if (!user) return deny("Unauthenticated");
+      const response = await getAiResponse("Allow deleting comment: Yes or no?");
+      return response.includes("Yes") ? grant(user) : deny();
+    }
+  }
+} as const satisfies Policyset<MySubjectType>;
+
+await Kilpi.authorize("comments:delete", myComment);
+```
+
+:::caution
+If using [protected queries](/docs/guides/protected-queries), do not call them via `.protect()`. Instead use `.unsafe()` to avoid infinite loops. This is safe, as the policy never returns the data to the user.
+:::
+
+### Tip: Utility functions
+
+Almost always, your policies will be more readable when using utility functions. See below for examples on how to use utility functions for e.g. data fetching, common denials and more.
+
+```diff lang="ts"
++ const unauthed = () => deny("Unauthenticated");
+
++ const isAdmin = (subject: Subject) => subject.role === "admin";
+
++ const isMember = async (subject: Subject, orgId: string) => {
++   const memberships = await db.getMembershipsForUser(subject.id);
++   return memberships.some(m => m.orgId === orgId && m.role === role);
++ };
+
+  export const policies = {
+    documents: {
+-     async create(user, orgId: string) {
+-       if (!user) return deny("Unauthenticated");
+-       if (user.role === "admin") return grant(user);
+-       const memberships = await db.getMembershipsForUser(user.id);
+-       return memberships.some(m => m.orgId === orgId && m.role === "manager") ? grant(user) : deny();
+-     }
++     async create(user, orgId: string) {
++       if (!user) return unauthed();
++       return isAdmin(user) || (await isMember(user, orgId)) ? grant(user) : deny();
+    }
+  } as const satisfies Policyset<MySubjectType>;
+```
+
+## Narrowed down subject type
+
+Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript.
+
+
+```ts {4-5,11}
+export const policies = {
+  documents: {
+    read(user) {
+      if (!user) return deny("Unauthenticated");
+      return grant(user);
+    },
+  }
+} as const satisfies Policyset<{ userId: string } | null>;
+
+// User is inferred to be non-null
+const user = await Kilpi.authorize("documents:read");
+//    ^? { userId: string } | null
+```
+
+## Structuring policies
+
+Initially, you can start off with a simple policies object containing all your application's policies. However, as your application grows, so will the `policies` object. At some point, it might be beneficial to split your policies into separate files.
+
+See [project structure](/docs/getting-started/project-structure) for more information on how to structure your project when splitting policies into multiple files.
+
+```ts
+// policies/documents.ts
+export const documentPolicies = {
+  read(subject, document) { ... },
+  create(subject, document) { ... },
+  delete(subject, document) { ... },
+} as const satisfies Policyset<MySubjectType>;
+```
+
+```ts
+// policies/organizations.ts
+export const organizationPolicies = {
+  read(subject, document) { ... },
+  create(subject, document) { ... },
+  delete(subject, document) { ... },
+} as const satisfies Policyset<MySubjectType>;
+```
+
+```ts
+// policies/index.ts
+export const policies = {
+  documents: documentPolicies,
+  organizations: organizationPolicies,
+} as const satisfies Policyset<MySubjectType>;
+```

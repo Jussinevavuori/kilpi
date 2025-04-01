@@ -1,0 +1,73 @@
+---
+title: Next
+description: Install Kilpi for Next
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Steps } from "@astrojs/starlight/components";
+
+Ensure you have setup Kilpi using the [quickstart guide](/docs/getting-started/quickstart) before proceeding.
+
+### Install plugins
+
+Install the [React Server Components Plugin](/docs/plugins/react-server-components) (`@kilpi/react-server`) to use Kilpi with React Server Components.
+
+
+**Optional:** Install the [React Client Components Plugin](/docs/plugins/react-client) (`@kilpi/react-client`) for component and hook bindings into `@react/client` on the client.
+
+### Provide a scope for server actions and endpoints
+
+The React Server Components Plugin can't automatically [provide a scope](/docs/concepts/scope) for server actions or endpoints as there is no global request-scoped API. You have to do this manually with `Kilpi.runInScope` to use all Kilpi features, such as `Kilpi.onUnauthorized`.
+
+
+<Tabs>
+  <TabItem label="RSCs">
+    The [`ReactServerComponentPlugin` from `@kilpi/react-server`](/docs/plugins/react-server) automatically provides a scope for react server components.
+  </TabItem>
+  <TabItem label="Server actions">
+    Wrap each server action with `Kilpi.scoped` as follows.
+
+    ```ts
+    // action.ts
+    "use server"
+
+    export const myServerAction = Kilpi.scoped(async () => {
+      // Works due to Kilpi.scoped
+      await Kilpi.onUnauthorized(() => { ... });
+      await Kilpi.authorize(...); 
+      // ...
+    });
+    ```
+
+    Or better, when using `next-safe-action` or similar framework for authoring server actions, you can use the middleware approach as follows with `Kilpi.runInScope`.
+
+    ```ts
+    export const ActionClient = createSafeActionClient({})
+      .use(async ({ next }) => {
+        return await Kilpi.runInScope(async () => {
+          // Tip: This is a great place to setup a
+          // global error handler for server actions
+
+          // Run the action within the scope
+          return await next();
+        });
+      });
+    ```
+  </TabItem>
+  <TabItem label="Endpoints">
+    Wrap each endpoint with `Kilpi.scoped` as follows.
+
+    ```ts
+    // route.ts
+    export const POST = Kilpi.scoped(async (request: Request) => {
+      // Works due to Kilpi.scoped
+      await Kilpi.onUnauthorized(() => { ... });
+      await Kilpi.authorize(...); 
+      // ...
+      return new Response();
+    });
+    ```
+  </TabItem>
+</Tabs>
+
+

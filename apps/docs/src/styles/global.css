@@ -1,87 +1,77 @@
+/* Lucide icon default settings (size, shrink-0 and loader animations). At top for lower specificity. */
+@layer base {
+  :where(.lucide) {
+    @apply size-4 shrink-0;
+  }
+  :where(.lucide-loader-circle) {
+    @apply text-muted-fg animate-spin;
+  }
+  :where(.lucide-loader) {
+    @apply text-muted-fg animate-spin;
+  }
+}
+
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "tailwindcss-animate";
-@plugin "@astrojs/starlight-tailwind";
 
+@custom-variant dark (&:where(.dark, .dark *));
 
+body {
+  --color-bg: #ffffff;
+  --color-fg: var(--color-slate-800);
+  --color-border: var(--color-slate-100);
+  --color-muted-bg: var(--color-slate-50);
+  --color-muted-fg: var(--color-slate-500);
+  --color-accent: var(--color-emerald-600);
+}
+body.dark {
+  --color-bg: var(--color-slate-900);
+  --color-fg: #ffffff;
+  --color-border: var(--color-slate-700);
+  --color-muted-bg: var(--color-slate-800);
+  --color-muted-fg: var(--color-slate-400);
+  --color-accent: var(--color-emerald-600);
+}
 
 @theme inline {
-  /* Customize palette: Slate as gray */
-  --color-gray-50: oklch(0.984 0.003 247.858);
-  --color-gray-100: oklch(0.968 0.007 247.896);
-  --color-gray-200: oklch(0.929 0.013 255.508);
-  --color-gray-300: oklch(0.869 0.022 252.894);
-  --color-gray-400: oklch(0.704 0.04 256.788);
-  --color-gray-500: oklch(0.554 0.046 257.417);
-  --color-gray-600: oklch(0.446 0.043 257.281);
-  --color-gray-700: oklch(0.372 0.044 257.287);
-  --color-gray-800: oklch(0.279 0.041 260.031);
-  --color-gray-900: oklch(0.208 0.042 265.755);
-  --color-gray-950: oklch(0.129 0.042 264.695);
+  --spacing-site: var(--site-width);
 
-  /* Customize palette: Emerald accent */
-  --color-accent-50: oklch(0.979 0.021 166.113);
-  --color-accent-100: oklch(0.95 0.052 163.051);
-  --color-accent-200: oklch(0.905 0.093 164.15);
-  --color-accent-300: oklch(0.845 0.143 164.978);
-  --color-accent-400: oklch(0.765 0.177 163.223);
-  --color-accent-500: oklch(0.696 0.17 162.48);
-  --color-accent-600: oklch(0.596 0.145 163.225);
-  --color-accent-700: oklch(0.508 0.118 165.612);
-  --color-accent-800: oklch(0.432 0.095 166.913);
-  --color-accent-900: oklch(0.378 0.077 168.94);
-  --color-accent-950: oklch(0.262 0.051 172.552);
+  --color-bg: var(--color-bg);
+  --color-fg: var(--color-fg);
+  --color-muted-bg: var(--color-muted-bg);
+  --color-muted-fg: var(--color-muted-fg);
+  --color-border: var(--color-border);
 
-	/** Apply starlight theme to CSS */
-	--color-sl-accent-low: var(--sl-color-accent-low);
-	--color-sl-accent: var(--sl-color-accent);
-	--color-sl-accent-high: var(--sl-color-accent-high);
-	--color-sl-white: var(--sl-color-white);
-	--color-sl-black: var(--sl-color-black);
-	--color-sl-gray-1: var(--sl-color-gray-1);
-	--color-sl-gray-2: var(--sl-color-gray-2);
-	--color-sl-gray-3: var(--sl-color-gray-3);
-	--color-sl-gray-4: var(--sl-color-gray-4);
-	--color-sl-gray-5: var(--sl-color-gray-5);
-	--color-sl-gray-6: var(--sl-color-gray-6);
-	--color-sl-gray-7: var(--sl-color-gray-7);
+  --color-accent-50: var(--color-emerald-50);
+  --color-accent-100: var(--color-emerald-100);
+  --color-accent-200: var(--color-emerald-200);
+  --color-accent-300: var(--color-emerald-300);
+  --color-accent-400: var(--color-emerald-400);
+  --color-accent-500: var(--color-emerald-500);
+  --color-accent-600: var(--color-emerald-600);
+  --color-accent-700: var(--color-emerald-700);
+  --color-accent-800: var(--color-emerald-800);
+  --color-accent-900: var(--color-emerald-900);
+  --color-accent-950: var(--color-emerald-950);
+
+  --color-accent: var(--color-accent);
+
+  --color-accent-dark: --font-sans: "Geist Sans", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+  --font-display: "Days One", sans-serif;
 }
 
-:root {
-	--sl-color-accent-low: var(--color-accent-50);
-	--sl-color-accent: var(--color-accent-500);
-	--sl-color-accent-high: var(--color-accent-600);
-
-	--sl-color-white: #ffffff;
-	--sl-color-black: var(--color-gray-950);
-
-	--sl-color-gray-1: var(--color-gray-100);
-	--sl-color-gray-2: var(--color-gray-300);
-	--sl-color-gray-3: var(--color-gray-400);
-	--sl-color-gray-4: var(--color-gray-500);
-	--sl-color-gray-5: var(--color-gray-600);
-	--sl-color-gray-6: var(--color-gray-800);
-	--sl-color-gray-7: var(--color-gray-900);
+/** Basic styles */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 }
 
-:root[data-theme="light"] {
-	--sl-color-accent-low: var(--color-accent-200);
-	--sl-color-accent: var(--color-accent-500) ;
-	--sl-color-accent-high: var(--color-accent-800);
-
-	--sl-color-white: var(--color-gray-950);
-	--sl-color-black: #ffffff;
-
-	--sl-color-gray-1: var(--color-gray-900);
-	--sl-color-gray-2: var(--color-gray-700);
-	--sl-color-gray-3: var(--color-gray-600);
-	--sl-color-gray-4: var(--color-gray-500);
-	--sl-color-gray-5: var(--color-gray-300);
-	--sl-color-gray-6: var(--color-gray-200);
-	--sl-color-gray-7: var(--color-gray-50);
-}
-
-/* Adjust logo position */
-header a[href="/"] img {
-	transform: translateY(-4px);
+/* Typography */
+@layer {
+  pre.astro-code {
+    @apply p-4 rounded-xl !bg-slate-900 border-2 border-slate-800 !shadow-xl;
+  }
 }

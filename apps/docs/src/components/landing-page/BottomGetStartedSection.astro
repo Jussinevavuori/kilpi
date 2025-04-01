@@ -1,0 +1,26 @@
+---
+import { ArrowRightIcon } from "lucide-react";
+import FullBleed from "../layout/FullBleed.astro";
+import Section from "../layout/Section.astro";
+import Button from "../ui/Button.astro";
+---
+
+<FullBleed>
+  <Section id="bottom-get-started">
+    <div class="flex flex-col gap-4">
+      <h2 class="text-3xl text-center font-bold tracking-tight sm:text-4xl">
+        Ready to Get Started?
+      </h2>
+
+      <p class="max-w-xl text-center mx-auto text-muted-fg">
+        Dive into our comprehensive documentation and start implementing Kilpi in your project
+        today.
+      </p>
+    </div>
+
+    <Button as="a" href="/docs/getting-started/introduction" size="lg" class="gap-2 w-fit mx-auto">
+      Read the Docs
+      <ArrowRightIcon />
+    </Button>
+  </Section>
+</FullBleed>

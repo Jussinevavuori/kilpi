@@ -1,0 +1,48 @@
+---
+import logoPng from "@/assets/logo.png";
+import { Image } from "astro:assets";
+---
+
+<footer class="py-32 flex items-center">
+  <div class="flex flex-col gap-16 mx-auto max-w-site px-4 w-full">
+    <div class="flex items-center justify-center">
+      <a href="/">
+        <Image src={logoPng} alt="Kilpi Logo" class="h-6 w-auto" />
+      </a>
+    </div>
+
+    <div class="text-sm text-muted-fg flex text-center items-center justify-center flex-wrap gap-4">
+      <p>
+        Designed & created with ❤️ by <a
+          href="https://jussinevavuori.com"
+          rel="noopener noreferrer"
+          target="_blank"
+          class="underline">Jussi Nevavuori</a
+        > in Brisbane & Helsinki
+      </p>
+
+      <p class="hidden sm:block">·</p>
+
+      <p>
+        Source code available on <a
+          href="https://github.com/jussinevavuori/kilpi"
+          rel="noopener noreferrer"
+          target="_blank"
+          class="underline">Github</a
+        >
+      </p>
+
+      <p class="hidden sm:block">·</p>
+
+      <p>
+        Powered by
+        <a href="https://astro.build" class="underline" rel="noopener noreferrer" target="_blank">
+          Astro</a
+        > &
+        <a href="https://vercel.com/" class="underline" rel="noopener noreferrer" target="_blank">
+          Vercel</a
+        >
+      </p>
+    </div>
+  </div>
+</footer>

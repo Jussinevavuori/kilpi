@@ -1,4 +1,0 @@
-/* Hide hero and other default components on custom pages (landing page, blog, ...) with CSS */
-.content-panel:has(h1#_top) {
-  display: none !important;
-}

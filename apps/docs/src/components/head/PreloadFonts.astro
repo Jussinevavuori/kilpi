@@ -1,0 +1,18 @@
+---
+/**
+ * Preload fonts from fontsource
+ */
+import daysOne400 from "@fontsource/days-one/files/days-one-latin-400-normal.woff2?url";
+import fontGeistMono400 from "@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2?url";
+import fontGeistSans400 from "@fontsource/geist-sans/files/geist-sans-latin-400-normal.woff2?url";
+import fontGeistSans500 from "@fontsource/geist-sans/files/geist-sans-latin-500-normal.woff2?url";
+import fontGeistSans600 from "@fontsource/geist-sans/files/geist-sans-latin-600-normal.woff2?url";
+import fontGeistSans700 from "@fontsource/geist-sans/files/geist-sans-latin-700-normal.woff2?url";
+---
+
+<link rel="preload" as="font" type="font/woff2" href={fontGeistSans400} crossorigin="anonymous" />
+<link rel="preload" as="font" type="font/woff2" href={fontGeistSans500} crossorigin="anonymous" />
+<link rel="preload" as="font" type="font/woff2" href={fontGeistSans600} crossorigin="anonymous" />
+<link rel="preload" as="font" type="font/woff2" href={fontGeistSans700} crossorigin="anonymous" />
+<link rel="preload" as="font" type="font/woff2" href={fontGeistMono400} crossorigin="anonymous" />
+<link rel="preload" as="font" type="font/woff2" href={daysOne400} crossorigin="anonymous" />

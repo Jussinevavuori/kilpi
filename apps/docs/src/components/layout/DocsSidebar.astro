@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+
+const docs = await getCollection("docs", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
+---
+
+<aside class="flex flex-col flex-shrink-0 w-52">
+  {
+    docs.map((doc) => {
+      return <a href={"/docs/" + doc.id}>{doc.data.sidebar?.label || doc.data.title}</a>;
+    })
+  }
+</aside>

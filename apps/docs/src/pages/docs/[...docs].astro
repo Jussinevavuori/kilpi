@@ -1,0 +1,54 @@
+---
+import { mdxComponents } from "@/components/content/mdxComponents.astro";
+import DocsLayout from "@/components/layout/DocsLayout.astro";
+import Layout from "@/components/layout/Layout.astro";
+import { getCollection, render } from "astro:content";
+import { ChevronRightIcon, ExternalLinkIcon } from "lucide-react";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs", ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+  return docs.map((doc) => ({ props: { doc }, params: { docs: doc.id } }));
+}
+
+const { doc } = Astro.props;
+const { Content } = await render(doc);
+---
+
+<Layout>
+  <DocsLayout>
+    <!-- Todo: Breadcrumbs -->
+    <div class="flex items-center gap-2 text-sm text-muted-fg">
+      <a href="#">Docs</a>
+      <ChevronRightIcon />
+      <a href="#">Example</a>
+      <ChevronRightIcon />
+      <a href="#">Article</a>
+    </div>
+
+    <h1 class="text-4xl tracking-tight font-bold">
+      {doc.data.title}
+    </h1>
+
+    {doc.data.description && <p class="text-muted-fg text-sm">{doc.data.description}</p>}
+
+    <hr />
+
+    <!-- Todo: Style content -->
+    <Content components={mdxComponents} />
+
+    <!-- Todo: Create article sidebar -->
+    <nav slot="sidebar" class="flex flex-col gap-2">
+      <p class="text-sm font-semibold">On this page</p>
+      <a href="#" class="flex items-center gap-2 text-sm">Heading 2</a>
+      <a href="#" class="flex items-center gap-2 text-sm">Heading 3</a>
+      <a href="#" class="flex items-center gap-2 text-sm">Heading 4</a>
+      <hr />
+      <a href="#" class="flex items-center gap-2 text-sm">
+        Edit this page on Github
+        <ExternalLinkIcon />
+      </a>
+    </nav>
+  </DocsLayout>
+</Layout>

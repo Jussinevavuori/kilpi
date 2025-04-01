@@ -1,0 +1,48 @@
+---
+import logoPng from "@/assets/logo.png";
+import { Image } from "astro:assets";
+
+type Props = {};
+
+const HEADER_LINKS = [
+  {
+    href: "/docs",
+    label: "Docs",
+  },
+  {
+    href: "/blog",
+    label: "Blog",
+  },
+] as const;
+---
+
+<header class="h-14 border-b sticky top-0 flex items-center bg-bg/90 backdrop-blur-sm z-30">
+  <div class="max-w-site mx-auto flex px-4 items-center justify-between w-full">
+    <nav class="flex items-center gap-8">
+      <a href="/">
+        <Image src={logoPng} alt="Kilpi Logo" class="h-8 w-auto -mt-1" />
+      </a>
+      {
+        HEADER_LINKS.map((link) => (
+          <a
+            class="text-sm text-muted-fg hover:text-fg data-[active]:text-accent data-[active]:[text-shadow:0_0_.7px_var(--color-fg)]"
+            href={link.href}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<!-- Add data-active to currently active link -->
+<script>
+  document.querySelectorAll("nav a").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    if (window.location.pathname.startsWith(href)) {
+      link.setAttribute("data-active", "true");
+    }
+  });
+</script>

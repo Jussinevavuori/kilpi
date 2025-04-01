@@ -1,0 +1,67 @@
+
+---
+title: Protected query
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { LinkCard } from '@astrojs/starlight/components';
+
+**Protected queries** are a new authorization concept introduced with Kilpi. They are an optional but recommended approach to securing your data.
+
+Wrap your **pure query function** in a protected query. Call the query via `.protect(...)` to run your data through a protector function and to ensure no data is ever leaked. Protected queries offer the following benefits.
+
+- Caller doesn't have to remember to authorize data.
+- Centralized data authorization logic (DRY).
+- Enables filtering and redacting data after the query based on the user.
+- Wrapping a pure function enables e.g. caching the inner function.
+
+```diff lang="ts"
+export async default function Component({ id }) {
+-  const user = await getUser();
+-  const document = await getDocument(id);
+-  if (!user || data.userId !== user.id) redirect("/");
+
++  const data = await getData.protect(id);
+
+  return <Example data={data} />
+}
+```
+
+You can also call protected queries via `.unsafe(...)` to skip the protector function and call the inner query directly.
+
+:::caution
+Do not call `myQuery.protect()` inside of a policy as this will cause an infinite loop. Use `.unsafe()` instead.
+:::
+
+---
+
+## Defining a protected query
+
+You define protected queries with `Kilpi.query`. This is a simple example and you can [learn more about protecting queries](/docs/guides/protecting-queries) here to see how to **protect and redact data**.
+
+```ts
+export const getDocument = Kilpi.query(
+  // Pure query function
+  async (id: string) => {
+    return await db.getDocument(id);
+  },
+
+  // Protector applied when called via .protect()
+  {
+    async protector({ input, output: document, subject }) {
+      if (!document) return null;
+      await Kilpi.authorize("document:read", document);
+      return data;
+    }
+  }
+)
+
+const authorizedDoc = await getDocument.protect(id); // Runs protector
+const unauthorizedDoc = await getDocument.unsafe(id); // Skips protector
+```
+
+<LinkCard 
+  title="Protecting your queries" 
+  description="Learn more about protecting your queries with Kilpi."
+  href="/docs/guides/protecting-queries"
+/>

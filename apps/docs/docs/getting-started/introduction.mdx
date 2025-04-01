@@ -1,0 +1,177 @@
+---
+title: Introduction
+sidebar:
+  order: 1
+---
+
+
+> **Kilpi** _[/ˈkilpi/]_ is the **Finnish** word for **shield**.
+
+
+## What is Kilpi
+
+Kilpi is an authorization framework for implementing a robust authorization layer in your application.
+
+---
+
+## Philosophy and design principles
+
+Kilpi is an opinionated library designed based on certain principles. Read through these decisions to see, whether Kilpi suits your authorization requirements.
+
+- **Server-first authorization**
+
+  All authorization checks are evaluated on the server for security, making Kilpi well suited for server-side applications (Express, Next.js, ...).
+
+- **Centralized authorization layer**
+
+  Kilpi is designed around a centralized authorization layer consisting of a set of policies, referred to by their keys, such as `documents:update`. 
+
+- **Declarative**
+
+  All Kilpi APIs are designed to be declarative, from [Policies](/docs/concepts/policy) to [Protected Queries](/docs/concepts/protected-query) making for a simpler authorization model.
+
+- **Policies as code**
+
+  Policies are defined as code instead of using a no-code interface or a domain-specific language. This ensures type safety, an easy learning curve, and version controlled policies.
+
+- **Asynchronous policies**
+
+  Policies can be asynchronous and fetch data during evaluation. This makes them more flexible and powerful, and reduces data fetching boilerplate in your code.
+
+- **Framework agnostic**
+
+  Kilpi is designed to be framework agnostic and can be applied to any technology (with or without plugins). See the installation guides for how to make Kilpi work with your framework of choice.
+
+- **Authentication provider agnostic**
+
+  Kilpi is designed around the concept of a **subject**, which can be used to wrap any auth provider or data source. This means you can even change authentication providers without changing your authorization layer.
+
+- **Authorization model agnostic**
+
+  Kilpi does **not** implement any advanced authorization concepts (roles, permissions, organizations, memberships, ...), nor does it enforce any single implementation. Instead, Kilpi is designed to be flexible enough to facilitate any authorization model, such as [custom permissions](/docs/advanced/permissions), [ABAC](/docs/advanced/abac), [RBAC](/docs/advanced/rbac) and [ReBAC](/docs/advanced/rebac) using Kilpi.
+
+---
+
+## Who is Kilpi not designed for?
+
+Kilpi may not suit you, if you...
+
+- Do not work in a full TypeScript (or JavaScript) project.
+- Do not require authorization.
+- Do not want a centralized authorization layer.
+- Require a ready-made no-code interface or a domain-specific language for policies.
+- Require an authorization model that provides its own implementation for roles, permissions, etc.
+
+:::note
+If you are building a **client-only** application with TypeScript, Kilpi does not yet provide client-only authorization.
+:::
+
+---
+
+## Motivation
+
+I've built over a dozen applications throughout my career. And I've built authorization into them time after time. And I've created half-baked abstractions for authorization way too often trying to refactor countless `if (user.role === "admin" && ...)` statements littered throughout my pages, mutations, queries and UI components.
+
+This has made maintenance troublesome, bug-prone and time-consuming, when new features are added or the authorization logic requires changing.
+
+I knew I wasn't alone.
+
+Kilpi is an attempt to solve this problem once and for all. It aims to be a generic solution to suit all use cases, no matter your authorization needs.b
+
+### No expensive lock-in
+
+Many paid authentication services (Clerk, Auth0, Kinde, ...) also offer their own fine-grained authorization solutions.
+
+However, they can be problematic as they lock you in to their product, migrating out of which can be difficult and expensive.
+
+The benefit of using an explicit authorization layer, such as Kilpi, is that you are not locked in. You can use any of these authentication providers and even implement policies using their products, but you are much less locked in.
+
+### Addressing OWASP top ten security risks
+
+The [OWASP Top Ten](https://owasp.org/www-project-top-ten/) lists the top 10 security risks for web applications. This library helps you address two of them related to authorization.
+
+- **`OWASP A01:2021`**: Broken Access Control (Listed at #1)
+- **`OWASP A04:2021`**: Insecure Design (Listed at #4)
+
+Kilpi offers you a **secure design** for your authorization and by centralizing and making your policies explicit, it helps you avoid **broken access control**, especially when policies change. 
+
+---
+
+## Show me the code
+
+Setting up Kilpi and defining your first policy.
+
+```ts
+// Kilpi.ts
+export const Kilpi = createKilpi({ 
+  getSubject, 
+  policies: {
+    documents: {
+      update(user, doc: Document) {
+        if (!user) return deny("Unauthenticated");
+        return user.id === doc.ownerId ? grant(user) : deny();
+      }
+    }
+  }
+})
+```
+
+Protecting actions, mutations and functions
+
+```ts
+// update-document.ts
+// Protect an action, mutation or function
+function updateDocument(id: string) {
+	const doc = await db.getDocument(id);
+	await Kilpi.authorize("documents:update", doc); // Throws if fails
+	await db.updateDocument(doc);
+}
+```
+
+Protecting queries
+
+```ts
+const getDocument = Kilpi.query(
+	async (id: string) => await db.getDocument(id),
+	{
+		// When calling via `protect`, the output is passed through the protector
+		async protector({ output: doc }) {
+			if (doc) await Kilpi.authorize("documents:read", doc);
+			return doc;
+		}
+	}
+)
+
+const authorizedDocument = await getDocument.protect("1");
+const unauthorizedDocument = await getDocument.unsafe("2"); // Skips protector
+getDocument("1") // Error -- must use protect or unsafe
+```
+
+Protecting pages and UI
+
+```tsx
+export default async function Page(props) {
+	// Handle what happens when any auth check fails and throws
+	Kilpi.onUnauthorized(() => redirect("/")); 
+
+  // Ensure user is authed AND has access to the document
+  await Kilpi.authorize("authed");
+	const doc = await getDocument.protect(props.id);
+
+	return (
+		<main>
+			<h1>{doc.title}</h1>
+			
+			<Access
+				to="documents:update"
+				on={doc}
+				Unauthorized={<p>Not allowed to edit this document</p>}
+				Loading={<p>Loading...</p>}
+			>
+				<button>Edit document</button>
+			</Access>
+		</main>
+	);
+}
+```
+

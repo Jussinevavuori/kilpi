@@ -1,18 +1,18 @@
 ---
-import "@/styles/custom.css";
-
-import { BlogHeroSection } from "@/components/BlogHeroSection.tsx";
-import { BlogsSection } from "@/components/BlogsSection.tsx";
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import BlogHeroSection from "@/components/blog/BlogHeroSection.astro";
+import BlogsSection from "@/components/blog/BlogsSection.astro";
+import Layout from "@/components/layout/Layout.astro";
 import { getCollection } from "astro:content";
 
 // Get all blogs from blog collection (newest first)
-const blogs = await getCollection("blog");
+const blogs = await getCollection("blog", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
 blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<StarlightPage frontmatter={{ title: "Blog", template: "splash" }}>
+<Layout>
   <BlogHeroSection />
   <BlogsSection blogs={blogs} />
   <div class="h-32"></div>
-</StarlightPage>
+</Layout>

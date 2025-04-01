@@ -1,6 +1,6 @@
 import { createKilpi, deny, grant, type Policyset } from "@kilpi/core";
 import { describe } from "node:test";
-import { ReactServerComponentPlugin } from "src/plugins/ReactServerComponentPlugin";
+import { ReactServerComponentPlugin } from "src/docs/plugins/ReactServerComponentPlugin";
 import { expect, it } from "vitest";
 
 type Sub = { id: number };

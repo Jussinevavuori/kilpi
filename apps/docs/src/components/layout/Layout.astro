@@ -1,0 +1,40 @@
+---
+import "@/styles/global.css";
+
+import "@fontsource/days-one";
+import "@fontsource/geist-mono";
+import "@fontsource/geist-sans/400.css";
+import "@fontsource/geist-sans/500.css";
+import "@fontsource/geist-sans/600.css";
+import "@fontsource/geist-sans/700.css";
+
+import Head from "../head/Head.astro";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
+
+type Props = {
+  title?: string;
+  siteWidthPx?: number;
+};
+
+const { title, siteWidthPx = 1280 } = Astro.props;
+---
+
+<html lang="en" class="scroll-smooth">
+  <Head title={title} />
+  <body
+    class="min-h-screen font-sans bg-bg text-fg antialiased"
+    style={{
+      "--site-width": `${siteWidthPx}px`,
+    }}
+    data-site-width={siteWidthPx}
+  >
+    <Header />
+
+    <main class="max-w-site mx-auto px-4">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

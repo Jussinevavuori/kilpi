@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from "astro:content";
+import BlogPost from "../blog/BlogPost.astro";
+import Section from "../layout/Section.astro";
+
+const N_LATEST_BLOGS = 3;
+
+type Props = {
+  blogs: Array<CollectionEntry<"blog">>;
+};
+
+const { blogs } = Astro.props;
+---
+
+<Section class="py-32" id="latest-blogs">
+  <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Latest articles</h2>
+
+  <div class="flex flex-col gap-16">
+    {blogs.slice(0, N_LATEST_BLOGS).map((blog) => <BlogPost blog={blog} />)}
+  </div>
+
+  <a href="/blog" class="underline font-medium"> View all articles </a>
+</Section>

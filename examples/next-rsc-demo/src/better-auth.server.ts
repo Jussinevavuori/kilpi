@@ -1,13 +1,13 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/docs/plugins";
 import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins";
 import { BunSqliteDialect } from "kysely-bun-sqlite";
 import { db } from "./db";
 
 /**
  * Better-auth configuration
  *
- * https://www.better-auth.com/docs/installation
+ * https://www.better-auth.com/docs/docs/installation
  */
 export const auth = betterAuth({
   // Connect to Bun in-memory SQL database. It is seeded in the `seed` function

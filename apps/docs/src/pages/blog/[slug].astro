@@ -1,8 +1,6 @@
 ---
-import "@/styles/custom.css";
-
-import { DefaultSection } from "@/components/DefaultSection";
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import Layout from "@/components/layout/Layout.astro";
+import Section from "@/components/layout/Section.astro";
 import { getCollection } from "astro:content";
 import { formatDate } from "date-fns/format";
 
@@ -10,18 +8,19 @@ import { formatDate } from "date-fns/format";
 
 // Statically prerender all blog pages
 export async function getStaticPaths() {
-  const blogs = await getCollection("blog");
+  const blogs = await getCollection("blog", ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
   return blogs.map((blog) => ({ params: { slug: blog.id }, props: { blog } }));
 }
 
 const { blog } = Astro.props;
 ---
 
-<StarlightPage frontmatter={{ title: blog.data.title, template: "splash" }}>
-  <!-- Header section -->
-  <DefaultSection className="py-10 max-w-prose flex flex-col gap-8">
+<Layout>
+  <Section class="py-10 !max-w-prose flex flex-col gap-8">
     <!-- Date -->
-    <p class="text-sl-gray-4">
+    <p class="text-muted-fg">
       {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
     </p>
 
@@ -46,7 +45,7 @@ const { blog } = Astro.props;
       }
 
       <div>
-        <p class="leading-tight text-sl-gray-4">Written by</p>
+        <p class="leading-tight text-muted-fg">Written by</p>
         <a
           class="leading-tight underline text-foreground font-medium"
           href={blog.data.authorUrl ?? "#"}
@@ -57,10 +56,9 @@ const { blog } = Astro.props;
         </a>
       </div>
     </div>
-  </DefaultSection>
 
-  <!-- Content section -->
-  <DefaultSection enableDefaultStyles className="pb-64 max-w-prose">
-    <article set:html={blog.rendered?.html} />
-  </DefaultSection>
-</StarlightPage>
+    <hr class="my-4" />
+
+    <article class="prose" set:html={blog.rendered?.html} />
+  </Section>
+</Layout>
