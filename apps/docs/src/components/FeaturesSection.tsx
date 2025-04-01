@@ -97,7 +97,7 @@ export function FeaturesSection() {
           Your authorization layer with everything your need.
         </h2>
 
-        <p className="max-w-xl text-center !mx-auto text-muted-foreground">
+        <p className="max-w-xl text-center !mx-auto text-sl-gray-4">
           Designed to solve real problems for real applications, Kilpi was born after solving the
           same problem time after time, for client after client.
         </p>
@@ -113,7 +113,7 @@ export function FeaturesSection() {
           <div key={index} className="flex flex-col gap-2">
             <feature.Icon className="size-5 text-accent-500" />
             <h3 className="text-2xl font-bold tracking-tight">{feature.title}</h3>
-            <p className="text-sm text-muted-foreground">{feature.description}</p>
+            <p className="text-sm text-sl-gray-4">{feature.description}</p>
           </div>
         ))}
       </div>

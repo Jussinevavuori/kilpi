@@ -1,6 +1,5 @@
 ---
-import "../styles/custom.css";
-import "../styles/global.css";
+import "@/styles/custom.css";
 
 import { BottomGetStartedSection } from "@/components/BottomGetStartedSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
@@ -32,7 +31,7 @@ blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
     },
   }}
 >
-  <main class="not-content text-foreground max-w-screen overflow-hidden">
+  <main class="not-content">
     <HeroSection />
     <SupportSection />
     <FeaturesSection />

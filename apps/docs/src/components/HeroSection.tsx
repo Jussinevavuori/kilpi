@@ -27,7 +27,7 @@ export function HeroSection() {
               alt="Turtle Emoji"
             />
           </h1>
-          <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+          <p className="mx-auto max-w-[700px] text-sl-gray-4 md:text-xl">
             Kilpi is the open-source TypeScript authorization library designed for developers who
             need flexible, powerful, and intuitive authorization.
           </p>
@@ -55,7 +55,7 @@ export function HeroSection() {
 
         {/* Code examples */}
         <div className="flex flex-col gap-4">
-          <p className="text-muted-foreground">Make your authorization a one-liner.</p>
+          <p className="text-sl-gray-4">Make your authorization a one-liner.</p>
           <CodeBlock language="tsx" content={`await Kilpi.authorize("docs:update", doc);`} />
           <CodeBlock
             language="tsx"
@@ -70,7 +70,7 @@ export function HeroSection() {
         </div>
 
         {/* Credits */}
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-sl-gray-4">
           Designed and created by{" "}
           <a
             href="https://jussinevavuori.com"

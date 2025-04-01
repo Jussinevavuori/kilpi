@@ -13,7 +13,7 @@ export function FullWidthSection({
   return (
     <section
       className={cn(
-        "py-32 bg-muted/50 relative w-screen left-1/2 -translate-x-1/2",
+        "py-32 bg-sl-gray-7 relative w-screen left-1/2 -translate-x-1/2",
         className,
       )}
       {...sectionProps}

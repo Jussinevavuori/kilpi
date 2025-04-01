@@ -16,7 +16,7 @@ This list contains the types of different hooks you can use to use with Kilpi or
 
 ### `onRequestScope`
 
-When there is no explicit scope available via `Kilpi.runInScope`, Kilpi attempts to resolve the scope from plugins using the `onRequestScope` hook. It must return a scope object if possible.
+When there is no explicit scope available via `Kilpi.runInScope` (or `Kilpi.scoped`), Kilpi attempts to resolve the scope from plugins using the `onRequestScope` hook. It must return a scope object if possible.
 
 ```ts
 const unregister = Kilpi.hooks.onRequestScope(() => {

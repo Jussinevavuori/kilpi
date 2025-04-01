@@ -96,7 +96,7 @@ export function PluginsSection() {
         <div className="flex flex-col gap-4" key={categoryIndex}>
           <div className="flex flex-col gap-1">
             <h3 className="text-xl font-semibold">{category.title}</h3>
-            <p className="text-muted-foreground">{category.description}</p>
+            <p className="text-sl-gray-4">{category.description}</p>
           </div>
 
           <div
@@ -107,7 +107,7 @@ export function PluginsSection() {
           >
             {category.items.map((item, itemIndex) => (
               <a
-                className="flex flex-col gap-2 rounded-lg border bg-card p-4 shadow-sm"
+                className="flex flex-col gap-2 rounded-lg border border-sl-gray-6 bg-card p-4 shadow-sm"
                 key={itemIndex}
                 href={item.link}
               >
@@ -120,11 +120,11 @@ export function PluginsSection() {
                   <p className="font-semibold">{item.title}</p>
                 </div>
                 {item.description && (
-                  <p className="text-muted-foreground text-sm">{item.description}</p>
+                  <p className="text-sl-gray-4 text-sm">{item.description}</p>
                 )}
               </a>
             ))}
-            <div className="flex flex-col bg-muted/50 justify-center items-center gap-2 rounded-lg p-4 text-muted-foreground">
+            <div className="flex flex-col bg-sl-gray-7 justify-center items-center gap-2 rounded-lg p-4 text-sl-gray-4">
               And more to come...
             </div>
           </div>
@@ -133,7 +133,7 @@ export function PluginsSection() {
 
       <div className="flex flex-col gap-1">
         <h3 className="text-xl font-semibold">Couldn't find yours?</h3>
-        <p className="text-muted-foreground max-w-xl">
+        <p className="text-sl-gray-4 max-w-xl">
           Kilpi is framework agnostic and can always be used without any plugins or component
           libraries. You may also{" "}
           <a href="https://github.com/Jussinevavuor/kilpi/issues/new" className="underline">

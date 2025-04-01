@@ -10,7 +10,7 @@ export function BottomGetStartedSection() {
           Ready to Get Started?
         </h2>
 
-        <p className="max-w-xl text-center !mx-auto text-muted-foreground">
+        <p className="max-w-xl text-center !mx-auto text-sl-gray-4">
           Dive into our comprehensive documentation and start implementing Kilpi
           in your project today.
         </p>

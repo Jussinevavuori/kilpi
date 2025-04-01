@@ -12,15 +12,16 @@ export function SupportSection() {
           className="h-[60px] w-[217px]"
         />
       </a>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-sl-gray-4">
         Help{" "}
         <a className="underline" href={HREF}>
           support development
         </a>{" "}
         for the price of a coffee.{" "}
         <a href="/getting-started/support" className="underline">
-          Read more.
+          Read more here
         </a>
+        .
       </p>
     </DefaultSection>
   );

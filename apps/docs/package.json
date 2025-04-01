@@ -17,7 +17,7 @@
     "@fontsource/geist-sans": "^5.2.5",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.0.14",
+    "@tailwindcss/vite": "^4.0.17",
     "@types/react": "^19.0.11",
     "@types/react-dom": "^19.0.4",
     "@types/react-syntax-highlighter": "^15.5.13",
@@ -33,7 +33,7 @@
     "sharp": "^0.33.5",
     "starlight-theme-black": "^0.3.0",
     "tailwind-merge": "^3.0.2",
-    "tailwindcss": "^4.0.14",
+    "tailwindcss": "^4.0.17",
     "tailwindcss-animate": "^1.0.7"
   },
   "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",

@@ -25,9 +25,9 @@ export function BlogPost(props: BlogPostProps) {
             className="rounded-full size-6"
           />
         )}
-        <span className="text-muted-foreground text-sm">By {props.blog.data.author}</span>
-        <span className="text-muted-foreground text-sm">·</span>
-        <span className="text-muted-foreground text-sm">
+        <span className="text-sl-gray-4 text-sm">By {props.blog.data.author}</span>
+        <span className="text-sl-gray-4 text-sm">·</span>
+        <span className="text-sl-gray-4 text-sm">
           {formatDate(props.blog.data.date, "EEEE, MMMM do yyyy")}
         </span>
       </div>

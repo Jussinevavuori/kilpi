@@ -1,7 +1,5 @@
 ---
-import "../../styles/blog.css";
-import "../../styles/custom.css";
-import "../../styles/global.css";
+import "@/styles/custom.css";
 
 import { DefaultSection } from "@/components/DefaultSection";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
@@ -23,7 +21,7 @@ const { blog } = Astro.props;
   <!-- Header section -->
   <DefaultSection className="py-10 max-w-prose flex flex-col gap-8">
     <!-- Date -->
-    <p class="text-muted-foreground">
+    <p class="text-sl-gray-4">
       {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
     </p>
 
@@ -48,7 +46,7 @@ const { blog } = Astro.props;
       }
 
       <div>
-        <p class="leading-tight text-muted-foreground">Written by</p>
+        <p class="leading-tight text-sl-gray-4">Written by</p>
         <a
           class="leading-tight underline text-foreground font-medium"
           href={blog.data.authorUrl ?? "#"}
