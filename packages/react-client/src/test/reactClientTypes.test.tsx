@@ -1,7 +1,7 @@
 import { createKilpiClient } from "@kilpi/client";
 import { createKilpi, deny, EndpointPlugin, grant, type Policyset } from "@kilpi/core";
 import { describe } from "node:test";
-import { ReactClientComponentPlugin } from "src/docs/plugins/ReactClientComponentPlugin";
+import { ReactClientComponentPlugin } from "src/plugins/ReactClientComponentPlugin";
 import { expect, it } from "vitest";
 
 type Sub = { id: number };
