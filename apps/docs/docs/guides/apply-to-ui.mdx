@@ -3,14 +3,12 @@ title: Apply to UI
 description: Apply to UI
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-
 A common authorization challenge is ensuring your UI matches your authorization policies.
 
 Depending on your UI framework of choice, Kilpi offers you the primitives to do just that with a simple, declarative API.
 
 <Tabs syncKey="framework">
-  <TabItem label="React (RSC)">
+  <Tab label="React (RSC)">
     Make your UI match your policies with the `<Access />` component.
 
     ```tsx
@@ -47,10 +45,10 @@ Depending on your UI framework of choice, Kilpi offers you the primitives to do 
     }
     ```
 
-  </TabItem>
-  <TabItem label="Other frameworks">
+  </Tab>
+  <Tab label="Other frameworks">
 
     There does not yet exist bindings for other frameworks, but you can create your own using the Kilpi API.
 
-  </TabItem>
+  </Tab>
 </Tabs>

@@ -1,16 +1,17 @@
 ---
 /**
+ * Custom theme by toggling the `dark` class on the `html` element, storing the value in
+ * `localStorage` and automatically listening for changes in the `localStorage` value.
+ *
  * @see https://tailwindcss.com/docs/dark-mode#with-system-theme-support
  */
 ---
 
 <script>
+  // @ts-nocheck
   document.documentElement.classList.toggle(
     "dark",
     localStorage.theme === "dark" ||
       (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
-  localStorage.theme = "light";
-  localStorage.theme = "dark";
-  localStorage.removeItem("theme");
 </script>

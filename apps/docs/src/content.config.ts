@@ -16,6 +16,7 @@ export const collections = {
       draft: z.boolean().optional(),
       sidebar: z
         .object({
+          order: z.number().optional(),
           badge: z.string().optional(),
           label: z.string().optional(),
           order: z.number().optional(),

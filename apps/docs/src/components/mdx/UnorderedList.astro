@@ -1,0 +1,12 @@
+---
+import { cn } from "@/utils/cn";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"ul">;
+
+const { class: className, ...props } = Astro.props;
+---
+
+<ul class={cn("pl-6 list-disc", className)} {...props}>
+  <slot />
+</ul>

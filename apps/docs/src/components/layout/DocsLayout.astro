@@ -1,17 +1,13 @@
----
-import DocsSidebar from "./DocsSidebar.astro";
----
-
-<div class="grid gap-16 py-16 grid-cols-1 sm:grid-cols-[1fr_260px] lg:grid-cols-[260px_1fr_260px]">
-  <aside class="flex-shrink-0 hidden lg:block sticky top-0">
-    <DocsSidebar />
+<div class="grid gap-16 py-8 grid-cols-1 sm:grid-cols-[1fr_260px] lg:grid-cols-[260px_1fr_260px]">
+  <aside class="flex-shrink-0 self-start hidden lg:block sticky top-22">
+    <slot name="left" />
   </aside>
 
   <article class="min-w-0 flex flex-col gap-4 flex-1">
     <slot />
   </article>
 
-  <aside class="flex-shrink-0 sticky top-0">
-    <slot name="sidebar" />
+  <aside class="flex-shrink-0 self-start sticky top-22">
+    <slot name="right" />
   </aside>
 </div>

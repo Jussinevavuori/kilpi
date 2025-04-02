@@ -1,8 +1,18 @@
 ---
+import DocBreadcrumbs from "@/components/docs/DocBreadcrumbs.astro";
 import DocsLayout from "@/components/layout/DocsLayout.astro";
+import DocsNavigation from "@/components/layout/DocsNavigation.astro";
 import Layout from "@/components/layout/Layout.astro";
 ---
 
 <Layout>
-  <DocsLayout> Welcome to docs </DocsLayout>
+  <DocsLayout>
+    <DocsNavigation slot="left" />
+
+    <DocBreadcrumbs />
+
+    <h1 class="text-4xl tracking-tight font-bold">Kilpi documentation</h1>
+
+    <hr />
+  </DocsLayout>
 </Layout>

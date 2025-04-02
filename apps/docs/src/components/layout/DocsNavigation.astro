@@ -1,0 +1,17 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { DocsSidebarFolder } from "./DocsSidebarFolder";
+import { getSidebar } from "./getSidebar";
+
+type Props = {
+  doc?: CollectionEntry<"docs">;
+};
+
+const sidebar = await getSidebar();
+
+const { doc } = Astro.props as Props;
+---
+
+<aside class="flex flex-col flex-shrink-0 w-52">
+  <DocsSidebarFolder currentDoc={doc} folder={sidebar} client:only />
+</aside>

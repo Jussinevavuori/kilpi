@@ -2,10 +2,6 @@
 title: Usage on client
 ---
 
-import { Steps } from "@astrojs/starlight/components";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { FileTree } from '@astrojs/starlight/components';
-
 You can also use Kilpi on the client-side, as long as you have a server-side instance of Kilpi you can connect to using the [endpoint plugin](https://kilpi.dev/docs/docs/plugins/endpoint).
 
 This works especially well with frameworks like Next.js, where you can import the type of the server-side instance on the client and use it for type inference, similarly as with [tRPC](https://trpc.io/).
@@ -19,30 +15,30 @@ By design, **all authorization is performed on the server**. The `@kilpi/client`
 1.  ### Install the `@kilpi/client` package
 
     <Tabs syncKey="package-manager">
-      <TabItem label="npm">
+      <Tab label="npm">
         ```bash
         npm install @kilpi/client
         ```
-      </TabItem>
+      </Tab>
 
-      <TabItem label="yarn">
+      <Tab label="yarn">
         ```bash
         yarn add @kilpi/client
         ```
-      </TabItem>
+      </Tab>
 
-      <TabItem label="pnpm">
+      <Tab label="pnpm">
         ```bash
         pnpm add @kilpi/client
         ```
-      </TabItem>
+      </Tab>
 
       
-      <TabItem label="bun">
+      <Tab label="bun">
         ```bash
         bun add @kilpi/client
         ```
-      </TabItem>
+      </Tab>
     </Tabs>
 
 
@@ -72,19 +68,19 @@ By design, **all authorization is performed on the server**. The `@kilpi/client`
     Expose the endpoint using your framework of choice.
 
     <Tabs syncKey="backend">
-      <TabItem label="Next.js (App router)">
+      <Tab label="Next.js (App router)">
         ```ts
         // app/api/kilpi/route.ts
         export const POST = Kilpi.createPostEndpoint();
         ```
-      </TabItem>
-      <TabItem label="Hono">
+      </Tab>
+      <Tab label="Hono">
         ```ts
         const endpoint = Kilpi.createPostEndpoint();
 
         app.post('/api/kilpi', async (c) => await endpoint(c.req.raw));
         ```
-      </TabItem>
+      </Tab>
     </Tabs>
 
     More guides are coming, but as the `Kilpi.createPostEndpoint()` returns a web-standard request-response function, you can use it with any framework that supports web standards, or create a wrapper around it to support web standards yourself.
@@ -134,11 +130,11 @@ By design, **all authorization is performed on the server**. The `@kilpi/client`
     Use `@kilpi/client` directly with your frontend framework of choice or use one of the provided plugins.
 
     <Tabs syncKey="frontend">
-      <TabItem label="React">
+      <Tab label="React">
         The `@kilpi/react-client` package provides hooks and components for using Kilpi with React on the client.
 
         View [the documentation](/docs/plugins/react-client) for the React Client plugin to start using it.
-      </TabItem>
+      </Tab>
     </Tabs>
 
 </Steps>

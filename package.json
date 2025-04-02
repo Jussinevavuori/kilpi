@@ -35,5 +35,8 @@
     "authorization",
     "abac",
     "rbac"
-  ]
+  ],
+  "dependencies": {
+    "prettier-plugin-tailwindcss": "^0.6.11"
+  }
 }

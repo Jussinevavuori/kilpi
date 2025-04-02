@@ -1,0 +1,8 @@
+<script defer>
+  if (!window.pagefind) {
+    import("/pagefind/pagefind.js").then((pagefind) => {
+      window.pagefind = pagefind;
+      pagefind.init();
+    });
+  }
+</script>

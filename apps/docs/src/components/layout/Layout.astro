@@ -9,6 +9,7 @@ import "@fontsource/geist-sans/600.css";
 import "@fontsource/geist-sans/700.css";
 
 import Head from "../head/Head.astro";
+import InitPagefind from "../pagefind/InitPagefind.astro";
 import Footer from "./Footer.astro";
 import Header from "./Header.astro";
 
@@ -36,5 +37,5 @@ const { title, siteWidthPx = 1280 } = Astro.props;
     </main>
 
     <Footer />
-  </body>
+  </body><InitPagefind />
 </html>

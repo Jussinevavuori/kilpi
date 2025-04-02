@@ -1,10 +1,7 @@
 ---
-title: Next
+title: Next.js
 description: Install Kilpi for Next
 ---
-
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { Steps } from "@astrojs/starlight/components";
 
 Ensure you have setup Kilpi using the [quickstart guide](/docs/getting-started/quickstart) before proceeding.
 
@@ -21,10 +18,10 @@ The React Server Components Plugin can't automatically [provide a scope](/docs/c
 
 
 <Tabs>
-  <TabItem label="RSCs">
+  <Tab label="RSCs">
     The [`ReactServerComponentPlugin` from `@kilpi/react-server`](/docs/plugins/react-server) automatically provides a scope for react server components.
-  </TabItem>
-  <TabItem label="Server actions">
+  </Tab>
+  <Tab label="Server actions">
     Wrap each server action with `Kilpi.scoped` as follows.
 
     ```ts
@@ -53,8 +50,8 @@ The React Server Components Plugin can't automatically [provide a scope](/docs/c
         });
       });
     ```
-  </TabItem>
-  <TabItem label="Endpoints">
+  </Tab>
+  <Tab label="Endpoints">
     Wrap each endpoint with `Kilpi.scoped` as follows.
 
     ```ts
@@ -67,7 +64,7 @@ The React Server Components Plugin can't automatically [provide a scope](/docs/c
       return new Response();
     });
     ```
-  </TabItem>
+  </Tab>
 </Tabs>
 
 

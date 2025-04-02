@@ -3,9 +3,6 @@
 title: Protected query
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { LinkCard } from '@astrojs/starlight/components';
-
 **Protected queries** are a new authorization concept introduced with Kilpi. They are an optional but recommended approach to securing your data.
 
 Wrap your **pure query function** in a protected query. Call the query via `.protect(...)` to run your data through a protector function and to ensure no data is ever leaked. Protected queries offer the following benefits.

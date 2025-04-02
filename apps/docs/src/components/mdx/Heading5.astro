@@ -1,0 +1,12 @@
+---
+import { cn } from "@/utils/cn";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"h5">;
+
+const { class: className, ...props } = Astro.props;
+---
+
+<h5 class={cn("text-2xl font-bold tracking-tight scroll-m-24", className)} {...props}>
+  <slot />
+</h5>

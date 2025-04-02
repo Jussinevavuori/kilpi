@@ -144,7 +144,7 @@ Kilpi is based on several design philosophies that have proved themselves to be 
 - **Policies as code**: Policies use a type-safe, flexible and familiar language and are included in your version control.
 - **Async policies**: Policies may fetch data from external sources to make decisions.
 - **100% Type safety**: Everything in Kilpi is type-safe to the maximum for the best developer experience.
-- **Framework agnostic**: You can use Kilpi with any server-side technology (e.g. [Next](/docs/installation/next), [React RSC](/docs/plugins/react-server-components), [Express](/docs/installation/express), [Koa](/docs/installation/koa), [Oak](/docs/installation/oak), [NestJS](/docs/installation/nest-js), [Hono](/docs/installation/hono), and soon even on the client).
+- **Framework agnostic**: You can use Kilpi with any server-side technology (e.g. [Next.js](/docs/installation/next-js), [React RSC](/docs/plugins/react-server-components), [Express](/docs/installation/express), [Koa](/docs/installation/koa), [Oak](/docs/installation/oak), [NestJS](/docs/installation/nest-js), [Hono](/docs/installation/hono), and soon even on the client).
 - **Authentication provider agnostic**: With the subject pattern, Kilpi encapsulates any authentication provider and ensures your authorization is not tied to your authentication.
 - **Authorization model agnostic**: Kilpi supports all authorization models such as [ABAC](/docs/advanced/abac), [RBAC](/docs/advanced/rbac), [ReBAC](/docs/advanced/rebac), [dynamic permissions](/docs/advanced/permissions) or any custom model you can think of.
 

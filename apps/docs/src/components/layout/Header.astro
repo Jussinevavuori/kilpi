@@ -1,19 +1,28 @@
 ---
 import logoPng from "@/assets/logo.png";
 import { Image } from "astro:assets";
+import ThemeToggle from "./ThemeToggle.tsx";
+import { SvgLogos } from "@/components/ui/SvgLogos.tsx";
+import Button from "../ui/Button.astro";
+import { PagefindSearch } from "../pagefind/PagefindSearch.tsx";
 
 type Props = {};
 
-const HEADER_LINKS = [
-  {
-    href: "/docs",
-    label: "Docs",
-  },
-  {
-    href: "/blog",
-    label: "Blog",
-  },
+const SITE_LINKS = [
+  { href: "/docs", label: "Docs" },
+  { href: "/blog", label: "Blog" },
 ] as const;
+
+const SOCIAL_LINKS = [
+  {
+    Icon: SvgLogos.Github,
+    href: "https://github.com/jussinevavuori/kilpi",
+  },
+  {
+    Icon: SvgLogos.BlueSky,
+    href: "https://bsky.app/profile/jussinevavuori.com",
+  },
+];
 ---
 
 <header class="h-14 border-b sticky top-0 flex items-center bg-bg/90 backdrop-blur-sm z-30">
@@ -23,7 +32,7 @@ const HEADER_LINKS = [
         <Image src={logoPng} alt="Kilpi Logo" class="h-8 w-auto -mt-1" />
       </a>
       {
-        HEADER_LINKS.map((link) => (
+        SITE_LINKS.map((link) => (
           <a
             class="text-sm text-muted-fg hover:text-fg data-[active]:text-accent data-[active]:[text-shadow:0_0_.7px_var(--color-fg)]"
             href={link.href}
@@ -33,6 +42,26 @@ const HEADER_LINKS = [
         ))
       }
     </nav>
+
+    <div class="flex items-center">
+      <PagefindSearch client:load />
+      <ThemeToggle client:load />
+      {
+        SOCIAL_LINKS.map((link) => (
+          <Button
+            as="a"
+            size="icon"
+            variant="ghost"
+            href={link.href}
+            class="text-sm text-muted-fg hover:text-fg"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <link.Icon className="size-4 [&_*]:!fill-fg" />
+          </Button>
+        ))
+      }
+    </div>
   </div>
 </header>
 

@@ -1,7 +1,7 @@
 ---
 import Layout from "@/components/layout/Layout.astro";
 import Section from "@/components/layout/Section.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { formatDate } from "date-fns/format";
 
 // Get all blogs from blog collection
@@ -15,10 +15,11 @@ export async function getStaticPaths() {
 }
 
 const { blog } = Astro.props;
+const { Content } = await render(blog);
 ---
 
 <Layout>
-  <Section class="py-10 !max-w-prose flex flex-col gap-8">
+  <Section class="py-10 max-w-2xl flex flex-col gap-8">
     <!-- Date -->
     <p class="text-muted-fg">
       {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
@@ -59,6 +60,8 @@ const { blog } = Astro.props;
 
     <hr class="my-4" />
 
-    <article class="prose" set:html={blog.rendered?.html} />
+    <article>
+      <Content />
+    </article>
   </Section>
 </Layout>

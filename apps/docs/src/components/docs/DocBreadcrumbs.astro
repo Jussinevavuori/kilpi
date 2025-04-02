@@ -1,0 +1,47 @@
+---
+import { SIDEBAR_FOLDER_CONFIG } from "@/consts";
+import type { CollectionEntry } from "astro:content";
+import { ChevronRightIcon } from "lucide-react";
+
+type Props = {
+  doc?: CollectionEntry<"docs">;
+};
+
+const { doc } = Astro.props;
+
+type Breadcrumb = { href: string; label: string };
+
+// Construct breadcrumbs:
+// 1. Start with static `docs` link
+const breadcrumbs: Breadcrumb[] = [{ href: "/docs", label: "Docs" }];
+
+if (doc) {
+  // 2. Add each folder in the path to the breadcrumbs
+  doc.id
+    .split("/")
+    .slice(0, -1)
+    .forEach((folderId) => {
+      breadcrumbs.push({
+        href: breadcrumbs[breadcrumbs.length - 1]?.href + "/" + folderId,
+        label: SIDEBAR_FOLDER_CONFIG.find((_) => _.id === folderId)?.name ?? folderId,
+      });
+    });
+
+  // 3. Add the current document to the breadcrumbs
+  breadcrumbs.push({
+    href: `/docs/${doc.id}`,
+    label: doc.data.sidebar?.label ?? doc.data.title,
+  });
+}
+---
+
+<div class="flex items-center gap-2 text-sm text-muted-fg">
+  {
+    breadcrumbs.map((crumb, i) => (
+      <>
+        {i > 0 && <ChevronRightIcon />}
+        <a href={crumb.href}>{crumb.label}</a>
+      </>
+    ))
+  }
+</div>
