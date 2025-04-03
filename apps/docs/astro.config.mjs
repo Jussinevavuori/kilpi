@@ -32,6 +32,8 @@ export default defineConfig({
       // Styling with TailwindCSS
       tailwindcss(),
     ],
+    // External dependencies (fixing errors)
+    build: { rollupOptions: { external: ["tslib"] } },
   },
 
   // Configure redirects
