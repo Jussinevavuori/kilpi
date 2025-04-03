@@ -3,9 +3,9 @@ title: Permissions
 description: Design a flexible permission system for your application.
 ---
 
-:::caution
+<Aside type="warning">
 This guide is full of opinions. This is not the only way to implement permissions, but a suggestion of one implementation that has worked well in the past. Feel free to adapt it to your needs.
-:::
+</Aside>
 
 This guide will show you how to design a very flexible authorization system based on organizations, roles, and dynamic permissions. It will not show you how to implement the data model, but will give you guidance on designing it.
 
@@ -19,9 +19,9 @@ A good starting point is to design memberships table to define which users belon
 
 ![Suggested simplistic datamodel](/docs-assets/permissions-data-schema.png)
 
-:::tip
+<Aside type="tip">
 Instead of having a separate permissions table, you may store permissions as an array directly in the memberships table if your database or ORM makes it easier than managing a separate table. This also reduces the number of joins needed to check permissions.
-:::
+</Aside>
 
 Note how this schema does not include the concept of roles.
 
@@ -59,9 +59,9 @@ export async function getSubject(userId: string): Promise<Subject> {
 }
 ```
 
-:::tip
+<Aside type="tip">
 For better typesafety, make your permissions strongly typed by e.g. using database enums and a `Permission` type, or by validating them runtime with `z.enum` using [Zod](https://zod.dev).
-:::
+</Aside>
 
 ## Define policies
 

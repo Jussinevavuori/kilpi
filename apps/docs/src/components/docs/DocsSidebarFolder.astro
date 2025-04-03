@@ -14,6 +14,7 @@ const { folder, currentDoc } = Astro.props;
 
 <div
   class={cn(
+    "border-border-light",
     // Indent nested folders
     folder.level === 0 ? "pl-4 border-l" : "",
     folder.level === 2 ? "pl-4 border-l pt-2" : ""

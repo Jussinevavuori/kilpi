@@ -9,7 +9,7 @@ type Props = {
 const { blog } = Astro.props as Props;
 ---
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-3">
   {/* Recommended badge */}
   {
     blog.data.recommended && (
@@ -19,20 +19,6 @@ const { blog } = Astro.props as Props;
       </span>
     )
   }
-
-  {/* Author and date */}
-  <div class="flex items-center gap-2 flex-row">
-    {
-      blog.data.authorImage && (
-        <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-6" />
-      )
-    }
-    <span class="text-muted-fg text-sm">By {blog.data.author}</span>
-    <span class="text-muted-fg text-sm">·</span>
-    <span class="text-muted-fg text-sm">
-      {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
-    </span>
-  </div>
 
   {/* Title */}
   <div class="max-w-lg flex flex-col gap-2">
@@ -48,6 +34,17 @@ const { blog } = Astro.props as Props;
     }
   </div>
 
-  {/* Summary */}
-  <p class="text-sm max-w-lg">{blog.data.summary}</p>
+  {/* Author and date */}
+  <div class="flex items-center gap-2 flex-row">
+    {
+      blog.data.authorImage && (
+        <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-6" />
+      )
+    }
+    <span class="text-muted-fg text-sm">By {blog.data.author}</span>
+    <span class="text-muted-fg text-sm">·</span>
+    <span class="text-muted-fg text-sm">
+      {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
+    </span>
+  </div>
 </div>

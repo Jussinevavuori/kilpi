@@ -1,7 +1,7 @@
 ---
-import BlogHeroSection from "@/components/blog/BlogHeroSection.astro";
-import BlogsSection from "@/components/blog/BlogsSection.astro";
+import BlogPost from "@/components/blog/BlogPost.astro";
 import Layout from "@/components/layout/Layout.astro";
+import Section from "@/components/layout/Section.astro";
 import { getCollection } from "astro:content";
 
 // Get all blogs from blog collection (newest first)
@@ -12,7 +12,21 @@ blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
 <Layout>
-  <BlogHeroSection />
-  <BlogsSection blogs={blogs} />
+  <Section id="blog-hero" class="py-24" style={{ maxWidth: "660px" }}>
+    <div class="flex flex-col gap-8 items-start">
+      {/* Header text */}
+      <div class="flex flex-col gap-4">
+        <h1 class="text-4xl font-bold tracking-tight">Articles</h1>
+        <p class="mx-auto max-w-[700px] text-muted-fg md:text-xl">
+          Latest news, updates, and tutorials from Kilpi.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section class="py-0" style={{ maxWidth: "660px" }}>
+    {blogs.map((blog) => <BlogPost blog={blog} />)}
+  </Section>
+
   <div class="h-32"></div>
 </Layout>

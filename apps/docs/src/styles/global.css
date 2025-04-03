@@ -19,7 +19,8 @@
 html {
   --color-bg: var(--color-white);
   --color-fg: var(--color-slate-800);
-  --color-border: var(--color-slate-100);
+  --color-border-light: var(--color-slate-100);
+  --color-border: var(--color-slate-200);
   --color-muted-bg: var(--color-slate-50);
   --color-muted-fg: var(--color-slate-500);
   --color-accent: var(--color-emerald-600);
@@ -27,7 +28,8 @@ html {
 html.dark {
   --color-bg: var(--color-slate-950);
   --color-fg: var(--color-slate-100);
-  --color-border: var(--color-slate-800);
+  --color-border-light: var(--color-slate-800);
+  --color-border: var(--color-slate-700);
   --color-muted-bg: var(--color-slate-900);
   --color-muted-fg: var(--color-slate-400);
   --color-accent: var(--color-emerald-600);
@@ -41,6 +43,7 @@ html.dark {
   --color-muted-bg: var(--color-muted-bg);
   --color-muted-fg: var(--color-muted-fg);
   --color-border: var(--color-border);
+  --color-border-light: var(--color-border-light);
 
   --color-accent-50: var(--color-emerald-50);
   --color-accent-100: var(--color-emerald-100);

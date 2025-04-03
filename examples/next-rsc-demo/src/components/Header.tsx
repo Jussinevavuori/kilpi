@@ -7,8 +7,8 @@ import { Button } from "./ui/button";
 
 export function Header_Unauthenticated() {
   return (
-    <header className="sticky top-0 z-50 bg-white border-b">
-      <div className="max-w-5xl mx-auto flex items-center h-full justify-between px-4 py-2">
+    <header className="sticky top-0 z-50 border-b bg-white">
+      <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-4 py-2">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-2xl font-bold tracking-tight">
             Kilpi News
@@ -30,10 +30,10 @@ export function Header_Unauthenticated() {
 
 export function Header_Authenticated({ user }: { user: NonNullable<Subject> }) {
   return (
-    <header className="sticky top-0 z-50 bg-white border-b">
+    <header className="sticky top-0 z-50 border-b bg-white">
       {/* Super header for signed in users */}
       <div className="bg-black text-white">
-        <div className="max-w-5xl mx-auto gap-2 flex items-center h-full px-4 py-1">
+        <div className="mx-auto flex h-full max-w-5xl items-center gap-2 px-4 py-1">
           <p className="text-sm font-medium">Signed in as {user.name}</p>
 
           <div className="flex-1" />
@@ -42,13 +42,13 @@ export function Header_Authenticated({ user }: { user: NonNullable<Subject> }) {
           <p className="text-sm font-medium">·</p>
           <p className="text-sm font-medium">{user.role || "no role"}</p>
           <p className="text-sm font-medium">·</p>
-          <ChangeRoleButton className="cursor-pointer hover:opacity-80 underline text-sm font-medium" />
+          <ChangeRoleButton className="cursor-pointer text-sm font-medium underline hover:opacity-80" />
           <p className="text-sm font-medium">·</p>
-          <SignOutButton className="cursor-pointer hover:opacity-80 underline text-sm font-medium" />
+          <SignOutButton className="cursor-pointer text-sm font-medium underline hover:opacity-80" />
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto flex items-center h-full justify-between px-4 py-2">
+      <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-4 py-2">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-2xl font-bold tracking-tight">
             Kilpi News

@@ -7,8 +7,13 @@
   document.querySelectorAll("a").forEach((link) => {
     const href = link.getAttribute("href");
     if (!href) return;
-    if (window.location.pathname.startsWith(href)) {
-      link.setAttribute("data-active", "true");
-    }
+
+    const isExact = link.hasAttribute("data-exact");
+
+    const isActive = isExact
+      ? window.location.pathname === href
+      : window.location.pathname.startsWith(href);
+
+    if (isActive) link.setAttribute("data-active", "true");
   });
 </script>

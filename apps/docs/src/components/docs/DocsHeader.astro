@@ -1,0 +1,17 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+type Props = {
+  doc: CollectionEntry<"docs">;
+};
+
+const { doc } = Astro.props;
+---
+
+<h1 class="text-4xl tracking-tight font-bold">
+  {doc.data.title}
+</h1>
+
+{doc.data.description && <p class="text-muted-fg text-sm">{doc.data.description}</p>}
+
+<hr />

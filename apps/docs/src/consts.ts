@@ -32,11 +32,11 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     name: "Reference",
   },
   {
-    id: "kilpi-core",
+    id: "core",
     name: "@kilpi/core",
   },
   {
-    id: "kilpi-client",
+    id: "client",
     name: "@kilpi/client",
   },
 ];

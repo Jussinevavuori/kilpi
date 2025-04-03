@@ -18,9 +18,9 @@ In a nutshell...
 
 Define policies by constructing a `policies` object (with `as const satisfies Policyset<MySubjectType>` for improved type-safety).
 
-:::note
+<Aside>
 The subject type must match the subject type returned by `getSubject` exactly.
-:::
+</Aside>
 
 ```ts
 import { deny, grant, type Policyset } from "@kilpi/core";
@@ -93,9 +93,9 @@ export const policies = {
 await Kilpi.authorize("comments:delete", myComment);
 ```
 
-:::caution
+<Aside type="warning">
 If using [protected queries](/docs/guides/protected-queries), do not call them via `.protect()`. Instead use `.unsafe()` to avoid infinite loops. This is safe, as the policy never returns the data to the user.
-:::
+</Aside>
 
 ### Tip: Utility functions
 

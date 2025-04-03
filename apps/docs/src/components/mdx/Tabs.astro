@@ -1,82 +1,43 @@
 ---
+import * as cheerio from "cheerio";
+import { customAlphabet } from "nanoid";
+import { TabButtons } from "./TabButtons";
+
+type Tab = {
+  name: string;
+};
+
 type Props = {
   syncKey?: string;
 };
 
 const { syncKey } = Astro.props;
+
+// Custom ID for just this tabs instance
+const id = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10)();
+
+// Render the default slot content as HTML
+const html = await Astro.slots.render("default");
+
+// Load the HTML into Cheerio for parsing
+const $ = await cheerio.load(html);
+
+// Find all tabs
+const tabs = $("div[data-tab]")
+  .map((_, el) => String($(el).data("tab")))
+  .get();
 ---
 
-<div data-sync-key={syncKey} class="Tabs flex flex-col gap-4">
-  <div
-    class:list={[
-      "flex flex-wrap border-b Tabs_buttons",
-      "[&>button]:relative [&>button]:py-2 [&>button]:px-2 [&>button]:text-sm [&>button]:font-medium",
-      "[&>button[aria-selected]]:text-accent",
-      "[&>button[aria-selected]]:[text-shadow:0_0_.4px_var(--color-fg)]",
-      "[&>button[aria-selected]]:after:absolute",
-      "[&>button[aria-selected]]:after:inset-x-0",
-      "[&>button[aria-selected]]:after:top-full",
-      "[&>button[aria-selected]]:after:border-b",
-      "[&>button[aria-selected]]:after:border-accent",
-    ]}
-  >
-  </div>
-  <div>
-    <slot />
+<div id={id} class="Tabs flex flex-col gap-4">
+  <TabButtons tabs={tabs} id={id} syncKey={syncKey} client:load />
+  <div class="Tabs_tabItems">
+    <Fragment set:html={html} />
   </div>
 </div>
 
+<!-- Initially reveal first tab item -->
 <script is:inline>
-  (() => {
-    const tabContainers = document.querySelectorAll(".Tabs");
-
-    tabContainers.forEach((tabContainer) => {
-      // Query elements
-      const tabEls = [...tabContainer.querySelectorAll("[data-tab]")];
-      const buttonsContainerEl = tabContainer.querySelector(".Tabs_buttons");
-      if (!buttonsContainerEl) return;
-
-      // Button for each tab
-      const tabButtonEls = tabEls.map((tabEl) => {
-        const tab = tabEl.dataset.tab;
-
-        // Create buttons:
-        // <button data-tab={tab}>{tab}</button>
-        const buttonEl = document.createElement("button");
-        buttonEl.innerHTML = tab;
-        buttonEl.dataset.tab = tab;
-
-        // Add button to DOM
-        buttonsContainerEl.append(buttonEl);
-
-        // Open tab on click
-        buttonEl.addEventListener("click", () => openTab(tab));
-        return buttonEl;
-      });
-
-      // Function to open a tab
-      function openTab(tab) {
-        // Hide all tabs except the one we want to show
-        for (const tabEl of tabEls) {
-          if (tabEl.dataset.tab === tab) {
-            tabEl.classList.remove("hidden");
-          } else {
-            tabEl.classList.add("hidden");
-          }
-        }
-
-        // Hide all buttons except the one we want to show
-        for (const buttonEl of tabButtonEls) {
-          if (buttonEl.dataset.tab === tab) {
-            buttonEl.setAttribute("aria-selected", "");
-          } else {
-            buttonEl.removeAttribute("aria-selected");
-          }
-        }
-      }
-
-      // Open first tab by default
-      openTab(tabEls[0].dataset.tab);
-    });
-  })();
+  document
+    .querySelectorAll(`.Tabs`)
+    .forEach((el) => el.querySelectorAll("[data-tab]")[0]?.classList.remove("hidden"));
 </script>

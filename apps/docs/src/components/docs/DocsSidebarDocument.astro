@@ -11,6 +11,7 @@ const { item } = Astro.props;
 
 <a
   href={`/docs/${item.doc.id}`}
+  data-exact
   class={cn(
     "group/dsd relative flex h-8 items-center text-sm",
     "data-[active]:text-accent data-[active]:[text-shadow:0_0_.4px_var(--color-fg)]"
@@ -22,7 +23,22 @@ const { item } = Astro.props;
       "group-data-[active]/dsd:opacity-100 group-hover/dsd:opacity-100 group-hover/dsd:duration-0"
     )}></span>
 
-  <span class={cn(item.doc.id.includes("reference/") ? "font-mono" : "")}>
+  <span
+    class={cn(
+      "flex w-full items-center justify-between gap-2",
+      "opacity-80 group-hover/dsd:opacity-100",
+      item.doc.id.includes("reference/") ? "font-mono" : ""
+    )}
+  >
     {item.doc.data.sidebar?.label || item.doc.data.title}
+
+    <!-- Badge -->
+    {
+      item.doc.data.sidebar?.badge && (
+        <span class="border border-accent text-accent px-1 rounded text-xs font-semibold py-0.5">
+          {item.doc.data.sidebar.badge}
+        </span>
+      )
+    }
   </span>
 </a>

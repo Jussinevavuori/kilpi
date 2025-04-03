@@ -37,116 +37,115 @@ Get started quickly with Kilpi using this guide.
     ```
   </Tab>
 </Tabs>
+
 </Step>
+  <Step>
+    ### Create a `kilpi` directory
 
+    In your `src` folder (or equivalent), create a `kilpi` directory with the following file structure.
 
-<Step>
-### Create a `kilpi` directory
+    <FileTree>
 
-In your `src` folder (or equivalent), create a `kilpi` directory with the following file structure.
+    - src
+      - kilpi
+        - policies.ts // Define your policies here
+        - subject.ts // Define your subject here
+        - kilpi.ts // Define your Kilpi instance here
 
-<FileTree>
+    </FileTree>
 
-- src
-  - kilpi
-    - policies.ts // Define your policies here
-    - subject.ts // Define your subject here
-    - kilpi.ts // Define your Kilpi instance here
+    This is only a suggestion.
 
-</FileTree>
+    See [project structure](/docs/getting-started/project-structure) for more information on the recommended project structure.
+  </Step>
 
-This is only a suggestion.
+  <Step>
+    ### Create your subject
 
-See [project structure](/docs/getting-started/project-structure) for more information on the recommended project structure.
-</Step>
+    Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider.
 
-<Step>
-### Create your subject
+    This function will automatically be called (and [cached](/docs/concepts/subject#subject-caching)) by Kilpi while authorizing.
 
-Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider.
+    ```ts
+    // src/kilpi/subject.ts
+    export type Subject = { id: string, email: string, name: string };
 
-This function will automatically be called (and [cached](/docs/concepts/subject#subject-caching)) by Kilpi while authorizing.
-
-```ts
-// src/kilpi/subject.ts
-export type Subject = { id: string, email: string, name: string };
-
-export async function getSubject(): Promise<Subject | null> {
-  const session = await getSession(); // From your auth provider
-  if (!session) return null;
-  return { id: session.id, email: session.email, name: session.name };
-}
-```
-
-[Read more about subjects](/docs/concepts/subject).
-</Step>
-
-<Step>
-### Create your policies
-
-Create `policies.ts` where you define all policies. This will be the main place to define your authorization logic.
-
-For improved typesafety, add `as const satisfies Policyset<YourSubjectType>`. It type-checks your return types and automatically infers the `user` type.
-
-```ts
-// src/kilpi/policies.ts
-import { type Policyset, deny, grant } from "@kilpi/core";
-import type { Subject } from "./subject";
-
-const policies = {
-  documents: {
-    // Create a policy that does not take in a resource:
-    // All authed users can create documents
-    create(user) {
-      if (!user) return deny("Unauthenticated");
-      return grant(user);
+    export async function getSubject(): Promise<Subject | null> {
+      const session = await getSession(); // From your auth provider
+      if (!session) return null;
+      return { id: session.id, email: session.email, name: session.name };
     }
+    ```
 
-    // Create a policy that takes in a resource:
-    // All authed users can read documents they own or public documents
-    read(user, document: Document) {
-      if (!user) return deny("Unauthenticated");
-      if (document.isPublic) return grant(user);
-      if (user.id === document.ownerId) return grant(user);
-      return deny();
-    },
-  },
-} as const satisfies Policyset<Subject | null>
-```
+    [Read more about subjects](/docs/concepts/subject).
+  </Step>
 
-[Read more about policies](/docs/concepts/policy).
-</Step>
+  <Step>
+    ### Create your policies
 
-<Step>
-### Create your Kilpi instance
+    Create `policies.ts` where you define all policies. This will be the main place to define your authorization logic.
 
-Create `kilpi.ts` where you create your Kilpi instance from your subject and policies. The `Kilpi` object will be used primarily for authorization.
+    For improved typesafety, add `as const satisfies Policyset<YourSubjectType>`. It type-checks your return types and automatically infers the `user` type.
 
-```ts
-// src/kilpi/kilpi.ts
-import { createKilpi } from "@kilpi/core";
-import { getSubject } from "./subject";
-import { policies } from "./policies";
+    ```ts
+    // src/kilpi/policies.ts
+    import { type Policyset, deny, grant } from "@kilpi/core";
+    import type { Subject } from "./subject";
 
-export const Kilpi = createKilpi({ getSubject, policies });
-```
+    const policies = {
+      documents: {
+        // Create a policy that does not take in a resource:
+        // All authed users can create documents
+        create(user) {
+          if (!user) return deny("Unauthenticated");
+          return grant(user);
+        }
 
-> Also list any plugins, default behaviours and other configuration here.
-</Step>
+        // Create a policy that takes in a resource:
+        // All authed users can read documents they own or public documents
+        read(user, document: Document) {
+          if (!user) return deny("Unauthenticated");
+          if (document.isPublic) return grant(user);
+          if (user.id === document.ownerId) return grant(user);
+          return deny();
+        },
+      },
+    } as const satisfies Policyset<Subject | null>
+    ```
 
-<Step>
-### Protect your first function
+    [Read more about policies](/docs/concepts/policy).
+  </Step>
 
-Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method.
+  <Step>
+    ### Create your Kilpi instance
 
-```ts
-// myFunction.ts
-export async function myFunction() {
-  await Kilpi.authorize("documents:create");
-  // Your logic here ...
-}
-```
-</Step>
+    Create `kilpi.ts` where you create your Kilpi instance from your subject and policies. The `Kilpi` object will be used primarily for authorization.
+
+    ```ts
+    // src/kilpi/kilpi.ts
+    import { createKilpi } from "@kilpi/core";
+    import { getSubject } from "./subject";
+    import { policies } from "./policies";
+
+    export const Kilpi = createKilpi({ getSubject, policies });
+    ```
+
+    > Also list any plugins, default behaviours and other configuration here.
+  </Step>
+
+  <Step>
+    ### Protect your first function
+
+    Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method.
+
+    ```ts
+    // myFunction.ts
+    export async function myFunction() {
+      await Kilpi.authorize("documents:create");
+      // Your logic here ...
+    }
+    ```
+  </Step>
 </Steps>
 
 ## Next steps

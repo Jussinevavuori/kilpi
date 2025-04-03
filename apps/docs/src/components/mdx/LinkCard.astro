@@ -1,8 +1,22 @@
 ---
+import { ArrowRightIcon } from "lucide-react";
 
+type Props = {
+  title: string;
+  description: string;
+  href: string;
+};
+
+const { title, description, href } = Astro.props;
 ---
 
-<div class="bg-red-500/30">
-  This is a LinkCard
+<a class="p-4 border rounded shadow-lg shadow-fg/5" href={href}>
+  <p class="text-lg font-semibold flex items-center justify-between gap-2">
+    {title}
+    <ArrowRightIcon />
+  </p>
+  <p class="text-sm text-muted-fg">
+    {description}
+  </p>
   <slot />
-</div>
+</a>

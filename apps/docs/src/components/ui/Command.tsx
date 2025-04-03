@@ -61,7 +61,7 @@ export function CommandList({ className, ref, ...props }: CommandListProps) {
   return (
     <CommandPrimitive.List
       ref={ref}
-      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+      className={cn("max-h-[min(600px,_70vh)] overflow-y-auto overflow-x-hidden", className)}
       {...props}
     />
   );

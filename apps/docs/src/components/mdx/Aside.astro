@@ -1,0 +1,66 @@
+---
+import { cn } from "@/utils/cn";
+import { CheckIcon, CircleAlertIcon, InfoIcon, LightbulbIcon } from "lucide-react";
+
+type Props = {
+  type?: "note" | "warning" | "tip" | "success";
+};
+
+const { type = "note" } = Astro.props;
+
+const Icon = {
+  note: InfoIcon,
+  warning: CircleAlertIcon,
+  tip: LightbulbIcon,
+  success: CheckIcon,
+}[type];
+---
+
+<aside
+  class={cn(
+    "flex rounded border gap-1 flex-col p-2",
+    {
+      warning: "border-orange-100 bg-orange-50",
+      tip: "border-purple-100 bg-purple-50",
+      success: "border-green-100 bg-green-50",
+      note: "border-blue-100 bg-blue-50",
+    }[type]
+  )}
+>
+  <div class="flex items-center gap-2">
+    <Icon
+      className={cn(
+        "size-4",
+        {
+          warning: "text-orange-700",
+          tip: "text-purple-700",
+          success: "text-green-700",
+          note: "text-blue-700",
+        }[type]
+      )}
+    />
+    <p
+      class={cn(
+        "text-sm font-semibold",
+        {
+          warning: "text-orange-700",
+          tip: "text-purple-700",
+          success: "text-green-700",
+          note: "text-blue-700",
+        }[type]
+      )}
+    >
+      {
+        {
+          note: "Note",
+          warning: "Warning",
+          tip: "Tip",
+          success: "Success",
+        }[type]
+      }
+    </p>
+  </div>
+  <div class="flex pl-6 flex-col gap-2 [&_p]:leading-normal [&_p]:text-sm">
+    <slot />
+  </div>
+</aside>

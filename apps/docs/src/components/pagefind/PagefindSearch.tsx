@@ -1,6 +1,7 @@
 import { usePagefind } from "@/hooks/usePagefind";
 import { useShortcut } from "@/hooks/useShortcut";
-import { useCallback, useState } from "react";
+import { CornerDownRightIcon } from "lucide-react";
+import { Fragment, useCallback, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,6 +23,13 @@ export function PagefindSearch() {
   const [query, setQuery] = useState("");
   const pagefind = usePagefind(query);
 
+  // Navigate function
+  function navigate(url: string) {
+    window.location.href = url;
+    setIsOpen(false);
+    setQuery("");
+  }
+
   return (
     <>
       <button
@@ -41,26 +49,58 @@ export function PagefindSearch() {
           value={query}
           onValueChange={setQuery}
         />
-        <CommandList>
+        <CommandList className="[&_mark]:text-accent [&_mark]:bg-accent/10 [&_mark]:rounded [&_mark]:px-1 [&_mark]:font-semibold">
           {pagefind.searchResults.length === 0 ? (
-            <CommandEmpty>No results found for {pagefind.debouncedQuery}</CommandEmpty>
+            <CommandEmpty>
+              {pagefind.debouncedQuery.trim() ? (
+                <span>No results found for {pagefind.debouncedQuery}</span>
+              ) : (
+                <span>Type something to search the docs...</span>
+              )}
+            </CommandEmpty>
           ) : (
             <CommandGroup
               heading={`${pagefind.searchResults.length} search results found for ${pagefind.debouncedQuery}`}
             >
-              {pagefind.searchResults.map((result) => {
+              {pagefind.searchResults.map((result, resultIndex) => {
                 return (
-                  <CommandItem
-                    key={result.url}
-                    onSelect={() => {
-                      window.location.pathname = result.url;
-                    }}
-                    value={result.url}
-                    className="flex flex-col items-start gap-1"
-                  >
-                    <p className="text-muted-fg font-mono text-xs">{result.url}</p>
-                    <p>{result.meta.title}</p>
-                  </CommandItem>
+                  <Fragment key={result.id}>
+                    {resultIndex > 0 && <hr />}
+
+                    <CommandItem
+                      onSelect={() => navigate(result.url)}
+                      value={result.url}
+                      className="flex flex-col items-start gap-1 !py-2"
+                    >
+                      <p className="font-semibold">{result.meta.title}</p>
+                      <p
+                        className="text-muted-fg text-sm"
+                        dangerouslySetInnerHTML={{ __html: result.excerpt }}
+                      />
+                    </CommandItem>
+
+                    {result.sub_results
+                      .filter((_) => _.url !== result.url)
+                      .map((subResult) => {
+                        return (
+                          <CommandItem
+                            key={subResult.url}
+                            onSelect={() => navigate(subResult.url)}
+                            value={subResult.url}
+                            className="relative flex flex-col items-start gap-1 !pl-4"
+                          >
+                            <p className="flex items-center gap-2 font-medium">
+                              <CornerDownRightIcon />
+                              {subResult.title}
+                            </p>
+                            <p
+                              className="text-muted-fg pl-7 text-sm"
+                              dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                  </Fragment>
                 );
               })}
             </CommandGroup>

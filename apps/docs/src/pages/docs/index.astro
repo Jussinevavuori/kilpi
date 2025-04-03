@@ -1,18 +1,18 @@
 ---
 import DocBreadcrumbs from "@/components/docs/DocBreadcrumbs.astro";
+import DocsNavigation from "@/components/docs/DocsNavigation.astro";
+import { getSidebar } from "@/components/docs/getSidebar";
 import DocsLayout from "@/components/layout/DocsLayout.astro";
-import DocsNavigation from "@/components/layout/DocsNavigation.astro";
 import Layout from "@/components/layout/Layout.astro";
+
+const sidebar = await getSidebar();
 ---
 
 <Layout>
   <DocsLayout>
-    <DocsNavigation slot="left" />
-
+    <DocsNavigation {sidebar} slot="left" />
     <DocBreadcrumbs />
-
     <h1 class="text-4xl tracking-tight font-bold">Kilpi documentation</h1>
-
     <hr />
   </DocsLayout>
 </Layout>

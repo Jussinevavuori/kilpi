@@ -19,7 +19,6 @@ export const collections = {
           order: z.number().optional(),
           badge: z.string().optional(),
           label: z.string().optional(),
-          order: z.number().optional(),
         })
         .optional(),
     }),

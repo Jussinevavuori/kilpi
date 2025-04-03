@@ -26,9 +26,9 @@ export async default function Component({ id }) {
 
 You can also call protected queries via `.unsafe(...)` to skip the protector function and call the inner query directly.
 
-:::caution
+<Aside type="warning">
 Do not call `myQuery.protect()` inside of a policy as this will cause an infinite loop. Use `.unsafe()` instead.
-:::
+</Aside>
 
 ---
 

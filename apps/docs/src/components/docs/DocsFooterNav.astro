@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { getAdjacentDocs } from "./getAdjacentDocs";
+import type { SidebarFolder } from "./getSidebar";
+
+type Props = {
+  sidebar: SidebarFolder;
+  doc: CollectionEntry<"docs">;
+};
+
+const { sidebar, doc } = Astro.props;
+
+const adjacentDocs = getAdjacentDocs(sidebar, doc);
+---
+
+<footer class="flex flex-row items-center border-t pt-8 mt-16 justify-between gap-4">
+  {
+    adjacentDocs.prev ? (
+      <a
+        class="flex flex-row items-center gap-2 hover:bg-muted-bg p-2 w-fit rounded"
+        href={`/docs/${adjacentDocs.prev.id}`}
+      >
+        <ArrowLeftIcon />
+        <span class="font-semibold">{adjacentDocs.prev.data.title}</span>
+      </a>
+    ) : (
+      <div />
+    )
+  }
+  {
+    adjacentDocs.next ? (
+      <a
+        class="flex flex-row items-center gap-2 hover:bg-muted-bg p-2 w-fit rounded"
+        href={`/docs/${adjacentDocs.next.id}`}
+      >
+        <span class="font-semibold">{adjacentDocs.next.data.title}</span>
+        <ArrowRightIcon />
+      </a>
+    ) : (
+      <div />
+    )
+  }
+</footer>
