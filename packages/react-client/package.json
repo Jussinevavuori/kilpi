@@ -1,6 +1,7 @@
 {
   "name": "@kilpi/react-client",
   "description": "Kilpi React Client Components · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
+<<<<<<< HEAD
   "version": "0.3.3",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -9,6 +10,22 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+=======
+  "version": "0.3.5",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+>>>>>>> 0f514a024d61ede1d8876fd23206efcd69b5e1b1
     }
   },
   "type": "module",

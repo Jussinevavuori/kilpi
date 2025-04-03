@@ -1,5 +1,24 @@
 # @kilpi/react-client
 
+## 0.3.5
+
+### Patch Changes
+
+- 4f3c484: add "exports" field to package.json for vite
+- 29d6148: fix package.json exports
+- Updated dependencies [4f3c484]
+- Updated dependencies [29d6148]
+  - @kilpi/client@0.13.1
+  - @kilpi/core@0.12.1
+
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [5821dc7]
+  - @kilpi/core@0.12.0
+  - @kilpi/client@0.13.0
+
 ## 0.3.3
 
 ### Patch Changes

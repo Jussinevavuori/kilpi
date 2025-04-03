@@ -1,5 +1,22 @@
 # @kilpi/react
 
+## 0.9.5
+
+### Patch Changes
+
+- 4f3c484: add "exports" field to package.json for vite
+- 29d6148: fix package.json exports
+- Updated dependencies [4f3c484]
+- Updated dependencies [29d6148]
+  - @kilpi/core@0.12.1
+
+## 0.9.4
+
+### Patch Changes
+
+- Updated dependencies [5821dc7]
+  - @kilpi/core@0.12.0
+
 ## 0.9.3
 
 ### Patch Changes

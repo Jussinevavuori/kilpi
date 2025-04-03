@@ -1,8 +1,9 @@
 {
   "name": "@kilpi/core",
   "description": "Kilpi Core · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
-  "version": "0.11.0",
+  "version": "0.12.1",
   "license": "MIT",
+<<<<<<< HEAD
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -10,6 +11,21 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+=======
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+>>>>>>> 0f514a024d61ede1d8876fd23206efcd69b5e1b1
     }
   },
   "type": "module",

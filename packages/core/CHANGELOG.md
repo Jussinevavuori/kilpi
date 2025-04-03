@@ -1,5 +1,18 @@
 # @kilpi/core
 
+## 0.12.1
+
+### Patch Changes
+
+- 4f3c484: add "exports" field to package.json for vite
+- 29d6148: fix package.json exports
+
+## 0.12.0
+
+### Minor Changes
+
+- 5821dc7: introduce Kilpi.scoped for wrapping functions with Kilpi.runInScope with improved API
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @kilpi/client
 
+## 0.13.1
+
+### Patch Changes
+
+- 4f3c484: add "exports" field to package.json for vite
+- 29d6148: fix package.json exports
+
 ## 0.13.0
 
 ### Minor Changes
