@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import DocsSidebarFolder from "./DocsSidebarFolder.astro";
-import { getSidebar, type SidebarFolder } from "./getSidebar";
+import { type SidebarFolder } from "./getSidebar";
 
 type Props = {
   doc?: CollectionEntry<"docs">;
@@ -11,7 +11,7 @@ type Props = {
 const { doc, sidebar } = Astro.props as Props;
 ---
 
-<DocsSidebarFolder currentDoc={doc} folder={sidebar} client:load />
+<DocsSidebarFolder currentDoc={doc} folder={sidebar} />
 
 <script is:inline>
   (() => {

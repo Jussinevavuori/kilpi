@@ -46,7 +46,7 @@ export async function getSidebar() {
           id: folderId,
           level: currentFolder.level + 1,
           name,
-          path: currentFolder.path + "/" + folderId,
+          path: currentFolder.path + folderId + "/",
         };
         currentFolder.children.push(foundFolder);
       }
