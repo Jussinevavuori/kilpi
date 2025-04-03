@@ -9,7 +9,7 @@ import ThemeToggle from "./ThemeToggle.tsx";
 type Props = {};
 
 const SITE_LINKS = [
-  { href: "/docs", label: "Docs" },
+  { href: "/docs/getting-started/introduction", activeHref: "/docs", label: "Docs" },
   { href: "/blog", label: "Blog" },
 ] as const;
 
@@ -38,6 +38,7 @@ const SOCIAL_LINKS = [
         SITE_LINKS.map((link) => (
           <a
             class="text-sm text-muted-fg hover:text-fg data-[active]:text-accent data-[active]:[text-shadow:0_0_.7px_var(--color-fg)]"
+            data-active-href={"activeHref" in link ? link.activeHref : undefined}
             href={link.href}
           >
             {link.label}
@@ -48,6 +49,7 @@ const SOCIAL_LINKS = [
 
     <div class="flex items-center">
       <PagefindSearch client:load />
+      <div class="w-2"></div>
       <ThemeToggle client:load />
       {
         SOCIAL_LINKS.map((link) => (

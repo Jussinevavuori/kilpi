@@ -2,11 +2,9 @@
 import { cn } from "@/utils/cn";
 import type { HTMLAttributes } from "astro/types";
 
-type Props = HTMLAttributes<"h3">;
+type Props = HTMLAttributes<"hr">;
 
 const { class: className, ...props } = Astro.props;
 ---
 
-<h3 class={cn("text-xl font-bold mt-6 tracking-tight scroll-m-24", className)} {...props}>
-  <slot />
-</h3>
+<hr class={cn("my-8", className)} {...props} />

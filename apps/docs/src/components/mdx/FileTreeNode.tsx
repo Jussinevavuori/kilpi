@@ -23,15 +23,17 @@ export function FileTreeNode({ node }: FileTreeNodeProps) {
   return (
     <div>
       {isFile ? (
-        <div className="hover:bg-muted-fg/10 flex items-center gap-2 text-nowrap rounded px-1 font-mono">
+        // File
+        <div className="hover:bg-muted-fg/10 flex items-center gap-2 text-nowrap rounded px-1 font-mono text-sm">
           <FileIcon />
           <span>{name}</span>
-          {comment ? <span className="opacity-50">{comment}</span> : null}
+          {comment ? <span className="ml-8 italic opacity-40">{comment}</span> : null}
         </div>
       ) : (
+        // Folder
         <div className="flex flex-col gap-1">
           <button
-            className="hover:bg-muted-fg/10 flex items-center gap-2 rounded px-1 font-mono"
+            className="hover:bg-muted-fg/10 flex cursor-pointer items-center gap-2 rounded px-1 font-mono text-sm"
             onClick={() => setOpen((prev) => !prev)}
           >
             <ChevronRightIcon

@@ -8,10 +8,12 @@ type Props = {
 const { doc } = Astro.props;
 ---
 
-<h1 class="text-4xl tracking-tight font-bold">
-  {doc.data.title}
-</h1>
+<div class="flex flex-col gap-4 pb-8">
+  <h1 class="text-4xl tracking-tight font-bold">
+    {doc.data.title}
+  </h1>
 
-{doc.data.description && <p class="text-muted-fg text-sm">{doc.data.description}</p>}
+  {doc.data.description && <p class="text-muted-fg text-sm">{doc.data.description}</p>}
 
-<hr />
+  <hr />
+</div>

@@ -14,7 +14,7 @@ const { sidebar, doc } = Astro.props;
 const adjacentDocs = getAdjacentDocs(sidebar, doc);
 ---
 
-<footer class="flex flex-row items-center border-t pt-8 mt-16 justify-between gap-4">
+<footer class="flex flex-row items-center border-t pt-8 mt-12 justify-between gap-4">
   {
     adjacentDocs.prev ? (
       <a

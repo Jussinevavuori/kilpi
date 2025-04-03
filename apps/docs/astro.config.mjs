@@ -33,4 +33,20 @@ export default defineConfig({
       tailwindcss(),
     ],
   },
+
+  // Configure redirects
+  redirects: {
+    // Docs -> Introduction
+    "/docs": "/docs/getting-started/introduction",
+    // All [...docs] without /docs/ prefix to /docs/[...docs]
+    ...Object.fromEntries(
+      // Load all `.mdx` files from the `docs` directory
+      Object.keys(await import.meta.glob("./docs/**/*.mdx")).map((path) => [
+        // The path is e.g. `./docs/getting-started/introduction.mdx`
+        // Map to: "/getting-started/introduction" -> "docs/getting-started/introduction"
+        path.replace(".mdx", "").replace("./docs/", ""),
+        path.replace(".mdx", "").replace("./docs/", "/docs/"),
+      ]),
+    ),
+  },
 });

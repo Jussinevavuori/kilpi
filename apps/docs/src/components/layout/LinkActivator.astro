@@ -1,11 +1,17 @@
 ---
-
+/**
+ * Adds data-active attribute to all active links based on their HREF and the current
+ * window.location.pathname.
+ *
+ * - Add `data-active-href` to use another `href` for the comparison than the one in the `href` attribute.
+ * - Add `data-exact` to match the exact path instead of using `startsWith`.
+ */
 ---
 
-<!-- Add data-active to currently active link -->
 <script is:inline>
   document.querySelectorAll("a").forEach((link) => {
-    const href = link.getAttribute("href");
+    const href = link.getAttribute("data-active-href") ?? link.getAttribute("href");
+
     if (!href) return;
 
     const isExact = link.hasAttribute("data-exact");

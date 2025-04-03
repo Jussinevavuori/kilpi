@@ -18,7 +18,7 @@ const { Content } = await render(blog);
 
 <Layout>
   <Section class="py-36 flex flex-col gap-8 mx-auto" style={{ maxWidth: "660px" }}>
-    <article class="flex flex-col gap-4">
+    <article class="space-y-4">
       <BlogArticleHeader {blog} />
       <Content {components} />
     </article>

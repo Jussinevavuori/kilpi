@@ -7,6 +7,6 @@ type Props = HTMLAttributes<"h4">;
 const { class: className, ...props } = Astro.props;
 ---
 
-<h4 class={cn("text-2xl font-bold mt-4 tracking-tight scroll-m-24", className)} {...props}>
+<h4 class={cn("text-lg font-semibold mt-4 tracking-tight scroll-m-24", className)} {...props}>
   <slot />
 </h4>

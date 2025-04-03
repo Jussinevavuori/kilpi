@@ -28,7 +28,9 @@ const { Content, headings } = await render(doc);
     <DocsNavigation {sidebar} {doc} slot="left" />
     <DocBreadcrumbs {doc} />
     <DocsHeader {doc} />
-    <Content {components} />
+    <article class="space-y-4">
+      <Content {components} />
+    </article>
     <DocsFooterNav {sidebar} {doc} />
     <DocSidebar {doc} {headings} slot="right" />
   </DocsLayout>

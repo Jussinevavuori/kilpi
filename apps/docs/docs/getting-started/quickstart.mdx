@@ -6,63 +6,102 @@ sidebar:
 
 Get started quickly with Kilpi using this guide.
 
+<Collapsible title="Incremental adoption for existing projects">
+**You can adopt Kilpi incrementally into an existing project.**
+
+Kilpi does not require a rewrite of your codebase to start using. Instead, you can test Kilpi out by moving one policy at a time and by protecting one mutation, query, or page at a time. Get started by following this guide.
+
+If you run into issues migrating any existing applications, you are welcome to [file a new issue on GitHub](https://github.com/Jussinevavuori/kilpi/issues/new).
+</Collapsible>
+
+---
+
 <Steps>
 
-<Step>
-### Install Kilpi
-
-<Tabs syncKey="package-manager">
-  <Tab label="npm">
-    ```bash
-    npm install @kilpi/core
-    ```
-  </Tab>
-
-  <Tab label="yarn">
-    ```bash
-    yarn add @kilpi/core
-    ```
-  </Tab>
-
-  <Tab label="pnpm">
-    ```bash
-    pnpm add @kilpi/core
-    ```
-  </Tab>
-
-  
-  <Tab label="bun">
-    ```bash
-    bun add @kilpi/core
-    ```
-  </Tab>
-</Tabs>
-
-</Step>
   <Step>
-    ### Create a `kilpi` directory
+  ### Install Kilpi
 
-    In your `src` folder (or equivalent), create a `kilpi` directory with the following file structure.
+  <Tabs syncKey="package-manager">
+    <Tab label="npm">
+      ```bash
+      npm install @kilpi/core
+      ```
+    </Tab>
 
-    <FileTree>
+    <Tab label="yarn">
+      ```bash
+      yarn add @kilpi/core
+      ```
+    </Tab>
 
+    <Tab label="pnpm">
+      ```bash
+      pnpm add @kilpi/core
+      ```
+    </Tab>
+
+    
+    <Tab label="bun">
+      ```bash
+      bun add @kilpi/core
+      ```
+    </Tab>
+  </Tabs>
+
+  </Step>
+  <Step>
+    ### Project structure
+
+    Create a `kilpi` directory (e.g. directly under your `/src` folder) with the following file structure.
+    
+  <FileTree>
     - src
       - kilpi
-        - policies.ts // Define your policies here
-        - subject.ts // Define your subject here
-        - kilpi.ts // Define your Kilpi instance here
+        - policies.ts Define your policies here
+        - subject.ts Define your subject here
+        - kilpi.ts Define your Kilpi instance here
+  </FileTree>
 
-    </FileTree>
+  <Collapsible title="Project structure for larger projects">
+    As your project grows, you may start extracting policies into their own files by domain, using e.g. a `policies` directory (below) or feature-based architecture.
 
-    This is only a suggestion.
+      
+  <FileTree>
+    - src
+      - kilpi
+        - policies
+          - organizations.policies.ts
+          - documents.policies.ts
+          - media.policies.ts
+        - subject.ts
+        - kilpi.ts        
+  </FileTree>
 
-    See [project structure](/docs/getting-started/project-structure) for more information on the recommended project structure.
+    You would then import these policies in a `policies.ts` file or directly in your `kilpi.ts` file.
+
+    ```ts
+    // kilpi.ts
+    import { createKilpi } from '@kilpi/core';
+    import { organizationPolicies } from './policies/organizations.policies';
+    import { documentPolicies } from './policies/documents.policies';
+    import { mediaPolicies } from './policies/media.policies';
+
+    export const Kilpi = createKilpi({
+      policies: {
+        organizations: organizationPolicies,
+        documents: documentPolicies,
+        media: mediaPolicies,
+      },
+      // ...
+    })
+    ```
+  </Collapsible>
   </Step>
 
   <Step>
     ### Create your subject
 
-    Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider.
+    Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider and return the current user (and optionally any other data about the caller for the policies).
 
     This function will automatically be called (and [cached](/docs/concepts/subject#subject-caching)) by Kilpi while authorizing.
 
@@ -77,15 +116,23 @@ Get started quickly with Kilpi using this guide.
     }
     ```
 
+    <Aside>
+      The term **user** can be used interchangeably with **subject**.
+    </Aside>
+
     [Read more about subjects](/docs/concepts/subject).
   </Step>
 
   <Step>
     ### Create your policies
 
-    Create `policies.ts` where you define all policies. This will be the main place to define your authorization logic.
+    Create `policies.ts` where you define all your policies as functions that take in the `user` and optionally a resource, and return `grant(user)` or `deny()`.
 
-    For improved typesafety, add `as const satisfies Policyset<YourSubjectType>`. It type-checks your return types and automatically infers the `user` type.
+    [Read more about policies](/docs/concepts/policy).
+
+    <Aside type="tip">
+      Add `as const satisfies Policyset<YourSubjectType>` to type-check your return types and automatically infer the `user` parameter.
+    </Aside>
 
     ```ts
     // src/kilpi/policies.ts
@@ -94,14 +141,6 @@ Get started quickly with Kilpi using this guide.
 
     const policies = {
       documents: {
-        // Create a policy that does not take in a resource:
-        // All authed users can create documents
-        create(user) {
-          if (!user) return deny("Unauthenticated");
-          return grant(user);
-        }
-
-        // Create a policy that takes in a resource:
         // All authed users can read documents they own or public documents
         read(user, document: Document) {
           if (!user) return deny("Unauthenticated");
@@ -112,8 +151,6 @@ Get started quickly with Kilpi using this guide.
       },
     } as const satisfies Policyset<Subject | null>
     ```
-
-    [Read more about policies](/docs/concepts/policy).
   </Step>
 
   <Step>
@@ -127,16 +164,19 @@ Get started quickly with Kilpi using this guide.
     import { getSubject } from "./subject";
     import { policies } from "./policies";
 
-    export const Kilpi = createKilpi({ getSubject, policies });
+    export const Kilpi = createKilpi({ 
+      getSubject, 
+      policies,
+    });
     ```
 
-    > Also list any plugins, default behaviours and other configuration here.
+    Also list any plugins, default behaviours and other configuration here.
   </Step>
 
   <Step>
     ### Protect your first function
 
-    Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method.
+    Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method. Read more about [authorizing](/docs/concepts/authorizing).
 
     ```ts
     // myFunction.ts
@@ -147,9 +187,3 @@ Get started quickly with Kilpi using this guide.
     ```
   </Step>
 </Steps>
-
-## Next steps
-
-- Follow the installation guide for your framework of choice.
--	Read up on [Kilpi concepts and guides](/docs/concepts/authorization-object).
-- Start using Kilpi [on the client](/docs/getting-started/usage-on-client).

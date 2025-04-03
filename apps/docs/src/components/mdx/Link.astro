@@ -5,8 +5,16 @@ import type { HTMLAttributes } from "astro/types";
 type Props = HTMLAttributes<"a">;
 
 const { class: className, ...props } = Astro.props;
+
+const isExternalLink =
+  "href" in props &&
+  typeof props.href === "string" &&
+  (props.href.startsWith("http") || props.href.startsWith("mailto:"));
 ---
 
-<a class={cn("underline", className)} {...props}>
-  <slot />
-</a>
+<a
+  class={cn("underline", className)}
+  {...props}
+  target={isExternalLink ? "_blank" : undefined}
+  rel={isExternalLink ? "noopener noreferrer" : undefined}><slot /></a
+>

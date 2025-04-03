@@ -18,6 +18,8 @@ import Steps from "@/components/mdx/Steps.astro";
 import Tab from "@/components/mdx/Tab.astro";
 import Tabs from "@/components/mdx/Tabs.astro";
 import UnorderedList from "@/components/mdx/UnorderedList.astro";
+import Collapsible from "./Collapsible.astro";
+import Hr from "./Hr.astro";
 
 /**
  * All custom components to use in MDX files.
@@ -31,6 +33,7 @@ export const components = {
   h5: Heading5,
   h6: Heading6,
   p: Paragraph,
+  hr: Hr,
   a: Link,
   code: Code,
   li: ListItem,
@@ -39,11 +42,12 @@ export const components = {
   blockquote: Blockquote,
 
   // Custom elements
+  Tab: Tab,
+  Tabs: Tabs,
+  Step: Step,
+  Steps: Steps,
+  Aside: Aside,
   LinkCard: LinkCard,
   FileTree: FileTree,
-  Tabs: Tabs,
-  Tab: Tab,
-  Steps: Steps,
-  Step: Step,
-  Aside: Aside,
+  Collapsible: Collapsible,
 };
