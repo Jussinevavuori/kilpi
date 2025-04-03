@@ -1,5 +1,7 @@
 ---
 title: Policy
+sidebar:
+  order: 2
 ---
 
 **A policy** is a function that receives a [**subject**](/docs/concepts/subject) and optionally a **resource** and returns an [**authorization object**](/docs/concepts/authorization-object), either granted or denied.
@@ -128,8 +130,7 @@ Almost always, your policies will be more readable when using utility functions.
 
 ## Narrowed down subject type
 
-Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript.
-
+Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript. You can receive the narrowed down subject type using `Kilpi.authorize` or `Kilpi.getAuthorization`.
 
 ```ts {4-5,11}
 export const policies = {
@@ -143,14 +144,12 @@ export const policies = {
 
 // User is inferred to be non-null
 const user = await Kilpi.authorize("documents:read");
-//    ^? { userId: string } | null
+//    ^? { userId: string }
 ```
 
 ## Structuring policies
 
 Initially, you can start off with a simple policies object containing all your application's policies. However, as your application grows, so will the `policies` object. At some point, it might be beneficial to split your policies into separate files.
-
-See [project structure](/docs/getting-started/project-structure) for more information on how to structure your project when splitting policies into multiple files.
 
 ```ts
 // policies/documents.ts

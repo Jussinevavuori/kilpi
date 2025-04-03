@@ -1,17 +1,19 @@
-<div class="grid gap-16 grid-cols-1 sm:grid-cols-[1fr_240px] lg:grid-cols-[240px_1fr_240px]">
-  <aside
-    class="flex-shrink-0 self-start overflow-y-auto my-8 overflow-x-visible hidden lg:block sticky top-22"
-    style={{ maxHeight: `calc(100vh - 7.5rem)` }}
-    id="DocsLayout_left"
-  >
-    <slot name="left" />
-  </aside>
+<div>
+  <div class="grid gap-16 grid-cols-1 sm:grid-cols-[1fr_240px] lg:grid-cols-[240px_1fr_240px]">
+    <aside
+      class="flex-shrink-0 self-start overflow-y-auto my-8 overflow-x-visible hidden lg:block sticky top-22"
+      style={{ maxHeight: `calc(100vh - 7.5rem)` }}
+      id="DocsLayout_left"
+    >
+      <slot name="left" />
+    </aside>
 
-  <div class="min-w-0 flex-1 py-8 flex flex-col gap-2">
-    <slot />
+    <div class="min-w-0 flex-1 py-8 flex flex-col gap-2">
+      <slot />
+    </div>
+
+    <aside class="flex-shrink-0 self-start sticky top-22 pb-20">
+      <slot name="right" />
+    </aside>
   </div>
-
-  <aside class="flex-shrink-0 self-start sticky top-22 pb-20">
-    <slot name="right" />
-  </aside>
 </div>

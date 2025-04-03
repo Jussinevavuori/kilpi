@@ -1,43 +1,53 @@
 ---
 import logoPng from "@/assets/logo.png";
+import logoIconPng from "@/assets/turtle-emoji.png";
+import { MobileNav } from "@/components/layout/MobileNav.tsx";
 import { SvgLogos } from "@/components/ui/SvgLogos.tsx";
 import { Image } from "astro:assets";
+import { getSidebar } from "../docs/getSidebar";
 import { PagefindSearch } from "../pagefind/PagefindSearch.tsx";
 import Button from "../ui/Button.astro";
 import ThemeToggle from "./ThemeToggle.tsx";
 
 type Props = {};
 
-const SITE_LINKS = [
+const siteLinks = [
   { href: "/docs/getting-started/introduction", activeHref: "/docs", label: "Docs" },
   { href: "/blog", label: "Blog" },
-] as const;
+];
 
-const SOCIAL_LINKS = [
+const socialLinks = [
   {
-    Icon: SvgLogos.Github,
+    name: "GitHub",
+    username: "jussinevavuori",
+    type: "github",
     href: "https://github.com/jussinevavuori/kilpi",
   },
   {
-    Icon: SvgLogos.BlueSky,
+    name: "BlueSky",
+    username: "@jussinevavuori.com",
+    type: "bluesky",
     href: "https://bsky.app/profile/jussinevavuori.com",
   },
 ];
+
+const docsSidebar = await getSidebar();
 ---
 
 <header
   class="h-14 border-border-light border-b sticky top-0 flex items-center bg-bg/90 backdrop-blur-sm z-30"
   id="Header"
 >
-  <div class="max-w-site mx-auto flex px-4 items-center justify-between w-full">
+  <div class="max-w-site mx-auto flex px-4 gap-4 items-center justify-between w-full">
     <nav class="flex items-center gap-8">
       <a href="/">
-        <Image src={logoPng} alt="Kilpi Logo" class="h-8 w-auto -mt-1" />
+        <Image src={logoIconPng} alt="Kilpi Logo" class="sm:hidden h-8 w-auto -mt-1" />
+        <Image src={logoPng} alt="Kilpi Logo" class="hidden sm:block h-8 w-auto -mt-1" />
       </a>
       {
-        SITE_LINKS.map((link) => (
+        siteLinks.map((link) => (
           <a
-            class="text-sm text-muted-fg hover:text-fg data-[active]:text-accent data-[active]:[text-shadow:0_0_.7px_var(--color-fg)]"
+            class="text-sm text-muted-fg hidden md:block hover:text-fg data-[active]:text-accent data-[active]:[text-shadow:0_0_.7px_var(--color-fg)]"
             data-active-href={"activeHref" in link ? link.activeHref : undefined}
             href={link.href}
           >
@@ -47,25 +57,31 @@ const SOCIAL_LINKS = [
       }
     </nav>
 
-    <div class="flex items-center">
+    <div class="flex items-center justify-end flex-1">
       <PagefindSearch client:load />
       <div class="w-2"></div>
       <ThemeToggle client:load />
       {
-        SOCIAL_LINKS.map((link) => (
+        socialLinks.map((link) => (
           <Button
             as="a"
             size="icon"
             variant="ghost"
             href={link.href}
-            class="text-sm text-muted-fg hover:text-fg"
+            class="md:flex hidden text-sm text-muted-fg hover:text-fg"
             rel="noopener noreferrer"
             target="_blank"
           >
-            <link.Icon className="size-4 [&_*]:!fill-fg" />
+            {
+              {
+                github: <SvgLogos.Github className="[&_*]:!fill-fg" />,
+                bluesky: <SvgLogos.BlueSky className="[&_*]:!fill-fg" />,
+              }[link.type]
+            }
           </Button>
         ))
       }
+      <MobileNav client:load {docsSidebar} {socialLinks} />
     </div>
   </div>
 </header>

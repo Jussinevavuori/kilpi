@@ -34,7 +34,7 @@ export function PagefindSearch() {
     <>
       <button
         onClick={handleSearch}
-        className="bg-muted text-muted-fg relative h-8 cursor-pointer rounded-lg border px-2 text-left text-sm sm:w-[240px]"
+        className="bg-muted text-muted-fg relative h-8 flex-1 cursor-pointer rounded-lg border px-2 text-left text-sm md:max-w-[320px]"
       >
         Search...
         <span className="bg-muted-bg text-muted-fg pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded px-1 text-xs font-semibold">
