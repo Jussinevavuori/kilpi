@@ -28,12 +28,7 @@ export default defineConfig({
 
   // Vite plugins
   vite: {
-    plugins: [
-      // Styling with TailwindCSS
-      tailwindcss(),
-    ],
-    // External dependencies (fixing errors)
-    build: { rollupOptions: { external: ["tslib"] } },
+    plugins: [tailwindcss()],
   },
 
   // Configure redirects
