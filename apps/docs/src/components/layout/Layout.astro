@@ -12,6 +12,7 @@ import Head from "../head/Head.astro";
 import InitPagefind from "../pagefind/InitPagefind.astro";
 import Footer from "./Footer.astro";
 import Header from "./Header.astro";
+import LinkActivator from "./LinkActivator.astro";
 
 type Props = {
   title?: string;
@@ -39,3 +40,5 @@ const { title, siteWidthPx = 1280 } = Astro.props;
     <Footer />
   </body><InitPagefind />
 </html>
+
+<LinkActivator />

@@ -1,0 +1,14 @@
+---
+
+---
+
+<!-- Add data-active to currently active link -->
+<script is:inline>
+  document.querySelectorAll("a").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    if (window.location.pathname.startsWith(href)) {
+      link.setAttribute("data-active", "true");
+    }
+  });
+</script>

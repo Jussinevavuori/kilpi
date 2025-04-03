@@ -1,8 +1,82 @@
 ---
+type Props = {
+  syncKey?: string;
+};
 
+const { syncKey } = Astro.props;
 ---
 
-<div class="bg-red-500/30">
-  This is a Tabs
-  <slot />
+<div data-sync-key={syncKey} class="Tabs flex flex-col gap-4">
+  <div
+    class:list={[
+      "flex flex-wrap border-b Tabs_buttons",
+      "[&>button]:relative [&>button]:py-2 [&>button]:px-2 [&>button]:text-sm [&>button]:font-medium",
+      "[&>button[aria-selected]]:text-accent",
+      "[&>button[aria-selected]]:[text-shadow:0_0_.4px_var(--color-fg)]",
+      "[&>button[aria-selected]]:after:absolute",
+      "[&>button[aria-selected]]:after:inset-x-0",
+      "[&>button[aria-selected]]:after:top-full",
+      "[&>button[aria-selected]]:after:border-b",
+      "[&>button[aria-selected]]:after:border-accent",
+    ]}
+  >
+  </div>
+  <div>
+    <slot />
+  </div>
 </div>
+
+<script is:inline>
+  (() => {
+    const tabContainers = document.querySelectorAll(".Tabs");
+
+    tabContainers.forEach((tabContainer) => {
+      // Query elements
+      const tabEls = [...tabContainer.querySelectorAll("[data-tab]")];
+      const buttonsContainerEl = tabContainer.querySelector(".Tabs_buttons");
+      if (!buttonsContainerEl) return;
+
+      // Button for each tab
+      const tabButtonEls = tabEls.map((tabEl) => {
+        const tab = tabEl.dataset.tab;
+
+        // Create buttons:
+        // <button data-tab={tab}>{tab}</button>
+        const buttonEl = document.createElement("button");
+        buttonEl.innerHTML = tab;
+        buttonEl.dataset.tab = tab;
+
+        // Add button to DOM
+        buttonsContainerEl.append(buttonEl);
+
+        // Open tab on click
+        buttonEl.addEventListener("click", () => openTab(tab));
+        return buttonEl;
+      });
+
+      // Function to open a tab
+      function openTab(tab) {
+        // Hide all tabs except the one we want to show
+        for (const tabEl of tabEls) {
+          if (tabEl.dataset.tab === tab) {
+            tabEl.classList.remove("hidden");
+          } else {
+            tabEl.classList.add("hidden");
+          }
+        }
+
+        // Hide all buttons except the one we want to show
+        for (const buttonEl of tabButtonEls) {
+          if (buttonEl.dataset.tab === tab) {
+            buttonEl.setAttribute("aria-selected", "");
+          } else {
+            buttonEl.removeAttribute("aria-selected");
+          }
+        }
+      }
+
+      // Open first tab by default
+      openTab(tabEls[0].dataset.tab);
+    });
+  })();
+</script>

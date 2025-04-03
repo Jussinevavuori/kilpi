@@ -1,10 +1,10 @@
 ---
 import logoPng from "@/assets/logo.png";
-import { Image } from "astro:assets";
-import ThemeToggle from "./ThemeToggle.tsx";
 import { SvgLogos } from "@/components/ui/SvgLogos.tsx";
-import Button from "../ui/Button.astro";
+import { Image } from "astro:assets";
 import { PagefindSearch } from "../pagefind/PagefindSearch.tsx";
+import Button from "../ui/Button.astro";
+import ThemeToggle from "./ThemeToggle.tsx";
 
 type Props = {};
 
@@ -25,7 +25,10 @@ const SOCIAL_LINKS = [
 ];
 ---
 
-<header class="h-14 border-b sticky top-0 flex items-center bg-bg/90 backdrop-blur-sm z-30">
+<header
+  class="h-14 border-b sticky top-0 flex items-center bg-bg/90 backdrop-blur-sm z-30"
+  id="Header"
+>
   <div class="max-w-site mx-auto flex px-4 items-center justify-between w-full">
     <nav class="flex items-center gap-8">
       <a href="/">
@@ -64,14 +67,3 @@ const SOCIAL_LINKS = [
     </div>
   </div>
 </header>
-
-<!-- Add data-active to currently active link -->
-<script>
-  document.querySelectorAll("nav a").forEach((link) => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    if (window.location.pathname.startsWith(href)) {
-      link.setAttribute("data-active", "true");
-    }
-  });
-</script>

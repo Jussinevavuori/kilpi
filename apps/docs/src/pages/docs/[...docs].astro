@@ -5,6 +5,7 @@ import DocsLayout from "@/components/layout/DocsLayout.astro";
 import DocsNavigation from "@/components/layout/DocsNavigation.astro";
 import Layout from "@/components/layout/Layout.astro";
 import Blockquote from "@/components/mdx/Blockquote.astro";
+import Code from "@/components/mdx/Code.astro";
 import FileTree from "@/components/mdx/FileTree.astro";
 import Heading1 from "@/components/mdx/Heading1.astro";
 import Heading2 from "@/components/mdx/Heading2.astro";
@@ -62,6 +63,7 @@ const { Content, headings } = await render(doc);
         ol: OrderedList,
         li: ListItem,
         a: Link,
+        code: Code,
         LinkCard: LinkCard,
         FileTree: FileTree,
         Tabs: Tabs,

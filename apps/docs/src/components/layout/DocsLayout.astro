@@ -1,9 +1,13 @@
-<div class="grid gap-16 py-8 grid-cols-1 sm:grid-cols-[1fr_260px] lg:grid-cols-[260px_1fr_260px]">
-  <aside class="flex-shrink-0 self-start hidden lg:block sticky top-22">
+<div class="grid gap-16 grid-cols-1 sm:grid-cols-[1fr_240px] lg:grid-cols-[240px_1fr_240px]">
+  <aside
+    class="flex-shrink-0 self-start overflow-y-auto my-8 overflow-x-visible hidden lg:block sticky top-22"
+    style={{ maxHeight: `calc(100vh - 7.5rem)` }}
+    id="DocsLayout_left"
+  >
     <slot name="left" />
   </aside>
 
-  <article class="min-w-0 flex flex-col gap-4 flex-1">
+  <article class="min-w-0 flex flex-col gap-4 flex-1 py-8">
     <slot />
   </article>
 

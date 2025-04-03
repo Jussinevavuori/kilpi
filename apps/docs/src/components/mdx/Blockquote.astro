@@ -7,6 +7,6 @@ type Props = HTMLAttributes<"blockquote">;
 const { class: className, ...props } = Astro.props;
 ---
 
-<blockquote class={cn("", className)} {...props}>
+<blockquote class={cn("border-l-4 italic pl-4", className)} {...props}>
   <slot />
 </blockquote>

@@ -1,8 +1,58 @@
 ---
+import * as cheerio from "cheerio";
+import { FileTreeNode } from "./FileTreeNode.tsx";
 
+export type FileTreeNode = {
+  name: string;
+  children: FileTreeNode[];
+};
+
+// Render the default slot content as HTML
+const html = await Astro.slots.render("default");
+
+// Load the HTML into Cheerio for parsing
+const $ = await cheerio.load(html);
+
+// Recursive function to traverse the file tree and construct the nodes
+function traverse($li: cheerio.Cheerio<any>): FileTreeNode {
+  let name = "";
+  $li.contents().each((_, node) => {
+    if (node.type === "text") {
+      name += node.data.trim();
+    }
+  });
+
+  const node: FileTreeNode = {
+    name,
+    children: [],
+  };
+
+  $li
+    .children("ul")
+    .children("li")
+    .each((_, li) => {
+      node.children.push(traverse($(li)));
+    });
+
+  return node;
+}
+
+// Traverse starting from all root <li> elements to collect full file tree
+const nodes = $("ul")
+  .first()
+  .children("li")
+  .map((_, li) => traverse($(li)))
+  .get();
 ---
 
-<div class="bg-red-500/30">
-  This is a filetree
-  <slot />
-</div>
+<ul class="flex flex-col gap-1 overflow-x-scroll p-2 bg-muted-bg rounded">
+  {
+    nodes.map((node) => {
+      return (
+        <li>
+          <FileTreeNode node={node} client:visible />
+        </li>
+      );
+    })
+  }
+</ul>

@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { DocsSidebarFolder } from "./DocsSidebarFolder";
+import DocsSidebarFolder from "./DocsSidebarFolder.astro";
 import { getSidebar } from "./getSidebar";
 
 type Props = {
@@ -12,6 +12,26 @@ const sidebar = await getSidebar();
 const { doc } = Astro.props as Props;
 ---
 
-<aside class="flex flex-col flex-shrink-0 w-52">
-  <DocsSidebarFolder currentDoc={doc} folder={sidebar} client:only />
-</aside>
+<DocsSidebarFolder currentDoc={doc} folder={sidebar} client:load />
+
+<script is:inline>
+  (() => {
+    // Key for persisting scroll position to sessionStorage
+    const key = "DocsNavigation_sidebarScrollTop";
+
+    // Element to track & persist scroll position of
+    const nav = document.getElementById("DocsLayout_left");
+    if (!nav) return;
+
+    // Save scroll position on scroll
+    nav.addEventListener("scroll", () => {
+      window.sessionStorage.setItem(key, nav.scrollTop.toString());
+    });
+
+    // Restore the scroll position from sessionStorage on load
+    const savedScrollTop = parseInt(window.sessionStorage.getItem(key));
+    if (savedScrollTop) {
+      nav.scrollTop = savedScrollTop;
+    }
+  })();
+</script>

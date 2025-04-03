@@ -1,0 +1,28 @@
+---
+import { cn } from "@/utils/cn";
+import type { SidebarDocument } from "./getSidebar";
+
+type Props = {
+  item: SidebarDocument;
+};
+
+const { item } = Astro.props;
+---
+
+<a
+  href={`/docs/${item.doc.id}`}
+  class={cn(
+    "group/dsd relative flex h-8 items-center text-sm",
+    "data-[active]:text-accent data-[active]:[text-shadow:0_0_.4px_var(--color-fg)]"
+  )}
+>
+  <span
+    class={cn(
+      "bg-accent/30 absolute inset-y-0 -left-px w-px -translate-x-4 opacity-0 transition",
+      "group-data-[active]/dsd:opacity-100 group-hover/dsd:opacity-100 group-hover/dsd:duration-0"
+    )}></span>
+
+  <span class={cn(item.doc.id.includes("reference/") ? "font-mono" : "")}>
+    {item.doc.data.sidebar?.label || item.doc.data.title}
+  </span>
+</a>

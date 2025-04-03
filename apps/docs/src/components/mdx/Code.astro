@@ -1,0 +1,17 @@
+---
+import { cn } from "@/utils/cn";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"code">;
+
+const { class: className, ...props } = Astro.props;
+---
+
+<code
+  class={cn(
+    "font-mono tracking-tight rounded bg-muted-bg px-1",
+    "[:not(h1,h2,h3,h4,h5,h6>&]:text-sm",
+    className
+  )}
+  {...props}><slot /></code
+>

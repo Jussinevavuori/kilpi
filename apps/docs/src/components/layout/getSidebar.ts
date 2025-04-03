@@ -9,7 +9,8 @@ export type SidebarFolder = {
   children: (SidebarDocument | SidebarFolder)[];
   name?: string;
   id: string;
-  isRoot: boolean;
+  path: string;
+  level: number;
 };
 
 /**
@@ -22,7 +23,7 @@ export async function getSidebar() {
   });
 
   // Sidebar starts from a root node
-  const sidebar: SidebarFolder = { children: [], id: "__root__", isRoot: true };
+  const sidebar: SidebarFolder = { children: [], id: "__root__", level: 0, path: "/" };
 
   // Add each document to the sidebar
   for (const doc of docs) {
@@ -40,7 +41,13 @@ export async function getSidebar() {
       // Create folder if not found
       if (!foundFolder) {
         const name = SIDEBAR_FOLDER_CONFIG.find((_) => _.id === folderId)?.name;
-        foundFolder = { children: [], id: folderId, isRoot: false, name };
+        foundFolder = {
+          children: [],
+          id: folderId,
+          level: currentFolder.level + 1,
+          name,
+          path: currentFolder.path + "/" + folderId,
+        };
         currentFolder.children.push(foundFolder);
       }
 

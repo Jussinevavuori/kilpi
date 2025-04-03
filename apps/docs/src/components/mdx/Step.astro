@@ -2,7 +2,22 @@
 
 ---
 
-<div class="bg-red-500/30">
-  This is a Step
+<div
+  class:list={[
+    "relative flex flex-col gap-4",
+    "[&:not(:last-child)]:!pb-8",
+    "[&>*:first-child]:!mt-0",
+  ]}
+>
   <slot />
+
+  <div class="absolute -left-16">
+    <p
+      data-mdx-step-number
+      class="font-medium size-8 rounded-full border bg-muted-bg items-center justify-center flex"
+    >
+    </p>
+  </div>
+
+  <div class="absolute top-10 bottom-2 border-l -left-12"></div>
 </div>

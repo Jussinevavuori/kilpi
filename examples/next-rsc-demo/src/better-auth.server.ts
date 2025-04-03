@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
-import { admin } from "better-auth/docs/plugins";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 import { BunSqliteDialect } from "kysely-bun-sqlite";
 import { db } from "./db";
 
