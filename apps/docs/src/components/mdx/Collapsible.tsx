@@ -1,5 +1,5 @@
 import { Content, Root, Trigger } from "@radix-ui/react-collapsible";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, EllipsisVerticalIcon } from "lucide-react";
 
 export type CollapsibleProps = {
   children?: React.ReactNode;
@@ -13,9 +13,11 @@ export function Collapsible(props: CollapsibleProps) {
       defaultOpen={props.defaultOpen}
       className="bg-muted-bg/30 shadow-fg/5 rounded border shadow-lg"
     >
-      <Trigger className="group/trigger flex w-full cursor-pointer items-center justify-between p-4">
+      <Trigger className="group/trigger flex w-full cursor-pointer items-center gap-2 p-4">
+        <EllipsisVerticalIcon />
         <p className="text-sm font-semibold">{props.title}</p>
-        <ChevronRightIcon className="ml-auto transition-transform group-data-[state=open]/trigger:rotate-90" />
+
+        <ChevronRightIcon className="ml-auto group-data-[state=open]/trigger:rotate-90" />
       </Trigger>
       <Content>
         <hr />

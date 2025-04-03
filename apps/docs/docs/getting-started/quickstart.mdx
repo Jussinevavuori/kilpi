@@ -4,7 +4,7 @@ sidebar:
   order: 2
 ---
 
-Get started quickly with Kilpi using this guide.
+Follow this guide to get started using Kilpi fast from installation to first protected function.
 
 <Collapsible title="Incremental adoption for existing projects">
 **You can adopt Kilpi incrementally into an existing project.**
@@ -104,6 +104,10 @@ If you run into issues migrating any existing applications, you are welcome to [
     Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider and return the current user (and optionally any other data about the caller for the policies).
 
     This function will automatically be called (and [cached](/docs/concepts/subject#subject-caching)) by Kilpi while authorizing.
+
+    <Aside type="tip">
+      This guide assumes you have setup authentication and have a `getSession()` function or similar available on the server.
+    </Aside>
 
     ```ts
     // src/kilpi/subject.ts

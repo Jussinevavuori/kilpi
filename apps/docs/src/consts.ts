@@ -16,10 +16,6 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     name: "Concepts",
   },
   {
-    id: "guides",
-    name: "Guides",
-  },
-  {
     id: "plugins",
     name: "Plugins",
   },
