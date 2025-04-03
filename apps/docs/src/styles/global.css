@@ -14,7 +14,7 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 html {
   --color-bg: var(--color-white);
@@ -25,7 +25,7 @@ html {
   --color-muted-fg: var(--color-slate-500);
   --color-accent: var(--color-emerald-600);
 }
-html.dark {
+html[data-theme="dark"] {
   --color-bg: var(--color-slate-950);
   --color-fg: var(--color-slate-100);
   --color-border-light: var(--color-slate-800);

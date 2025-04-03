@@ -16,7 +16,7 @@ export default function ThemeToggle() {
   // Update theme
   function handleToggleTheme() {
     localStorage.setItem("theme", isDarkMode ? "light" : "dark");
-    document.documentElement.classList.toggle("dark", !isDarkMode);
+    document.documentElement.setAttribute("data-theme", isDarkMode ? "light" : "dark");
     setIsDarkMode(!isDarkMode);
   }
 

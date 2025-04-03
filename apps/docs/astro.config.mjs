@@ -18,10 +18,13 @@ export default defineConfig({
   integrations: [
     // Use React for interactive UI components
     react(),
+
     // Use expressive code for code blocks and syntax highlighting
-    expressiveCode(),
+    expressiveCode({ themes: ["one-dark-pro"] }),
+
     // Use mdx for authoring content
     mdx(),
+
     // Sitemap
     sitemap(),
   ],

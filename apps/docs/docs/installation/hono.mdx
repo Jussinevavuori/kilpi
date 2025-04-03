@@ -3,18 +3,51 @@ title: Hono
 description: Install Kilpi for Hono
 ---
 
-Ensure you have setup Kilpi using the [quickstart guide](/docs/getting-started/quickstart) before proceeding.
+<Steps>
+<Step>
+### Install & setup Kilpi
 
-Installing Kilpi for Hono is as easy as providing Kilpi scope within a middleware. You do not need any plugins. We also recommend to set an `onUnauthorized` handler to throw an HTTPException with a 403 status code.
+Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
+
+```ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  ...
+})
+```
+</Step>
+
+<Step>
+### [Provide scope](/docs/concepts/scope)
+
+To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
 
 ```ts
 app.use(async (_, next) => {
-  Kilpi.runInScope(async () => {
-    Kilpi.onUnauthorized(({ message }) => {
-      throw new HTTPException(403, { message })
-    })
-    
+  await Kilpi.runInScope(async () => {
     await next();
   })
 })
 ```
+</Step>
+
+<Step>
+### Handle unauthorized errors
+
+Since Hono supports throwing HTTP exceptions, handling errors is straightforward with a middleware.
+
+```diff lang="ts"
+  app.use(async (_, next) => {
++   Kilpi.onUnauthorized(({ message }) => {
++     throw new HTTPException(403, { message })
++   })
+
+    await Kilpi.runInScope(async () => {
+      await next();
+    })
+  })
+```
+</Step>
+</Steps>
+

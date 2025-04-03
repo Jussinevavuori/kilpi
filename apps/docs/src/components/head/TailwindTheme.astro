@@ -9,9 +9,11 @@
 
 <script>
   // @ts-nocheck
-  document.documentElement.classList.toggle(
-    "dark",
+  document.documentElement.setAttribute(
+    "data-theme",
     localStorage.theme === "dark" ||
       (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ? "dark"
+      : "light"
   );
 </script>

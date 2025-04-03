@@ -9,7 +9,7 @@ type Props = {
 
 const { doc } = Astro.props;
 
-type Breadcrumb = { href: string; label: string };
+type Breadcrumb = { href?: string; label: string };
 
 // Construct breadcrumbs:
 // 1. Start with static `docs` link
@@ -22,7 +22,6 @@ if (doc) {
     .slice(0, -1)
     .forEach((folderId) => {
       breadcrumbs.push({
-        href: breadcrumbs[breadcrumbs.length - 1]?.href + "/" + folderId,
         label: SIDEBAR_FOLDER_CONFIG.find((_) => _.id === folderId)?.name ?? folderId,
       });
     });
@@ -40,7 +39,7 @@ if (doc) {
     breadcrumbs.map((crumb, i) => (
       <>
         {i > 0 && <ChevronRightIcon />}
-        <a href={crumb.href}>{crumb.label}</a>
+        <a href={crumb.href || "#"}>{crumb.label}</a>
       </>
     ))
   }
