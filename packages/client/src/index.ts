@@ -1,3 +1,3 @@
-export * from "./createKilpiClient";
-export * from "./KilpiClient";
-export * from "./KilpiClientPlugin";
+export { createKilpiClient } from "./createKilpiClient";
+export { KilpiClient, type KilpiClientOptions } from "./KilpiClient";
+export { createKilpiClientPlugin, type KilpiClientPlugin } from "./KilpiClientPlugin";
