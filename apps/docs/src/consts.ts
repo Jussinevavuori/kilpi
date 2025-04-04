@@ -23,16 +23,4 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     id: "advanced",
     name: "Advanced",
   },
-  {
-    id: "reference",
-    name: "Reference",
-  },
-  {
-    id: "core",
-    name: "@kilpi/core",
-  },
-  {
-    id: "client",
-    name: "@kilpi/client",
-  },
 ];
