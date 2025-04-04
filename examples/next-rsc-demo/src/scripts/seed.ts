@@ -10,7 +10,7 @@ export async function seed() {
   /**
    * Create better-auth user table
    *
-   * https://www.better-auth.com/docs/concepts/database#user
+   * https://www.better-auth.com/docs/docs/concepts/database#user
    */
   await db.exec(`
 		CREATE TABLE IF NOT EXISTS user (
@@ -33,7 +33,7 @@ export async function seed() {
   /**
    * Create better-auth session table
    *
-   * https://www.better-auth.com/docs/concepts/database#session
+   * https://www.better-auth.com/docs/docs/concepts/database#session
    */
   await db.exec(`
 		CREATE TABLE IF NOT EXISTS session (
@@ -54,7 +54,7 @@ export async function seed() {
   /**
    * Create better-auth account table
    *
-   * https://www.better-auth.com/docs/concepts/database#account
+   * https://www.better-auth.com/docs/docs/concepts/database#account
    */
   await db.exec(`
 		CREATE TABLE IF NOT EXISTS account (
@@ -80,7 +80,7 @@ export async function seed() {
   /**
    * Create better-auth verification table
    *
-   * https://www.better-auth.com/docs/concepts/database#verification
+   * https://www.better-auth.com/docs/docs/concepts/database#verification
    */
   await db.exec(`
 		CREATE TABLE IF NOT EXISTS verification (

@@ -1,0 +1,43 @@
+---
+import * as cheerio from "cheerio";
+import { customAlphabet } from "nanoid";
+import { TabButtons } from "./TabButtons";
+
+type Tab = {
+  name: string;
+};
+
+type Props = {
+  syncKey?: string;
+};
+
+const { syncKey } = Astro.props;
+
+// Custom ID for just this tabs instance
+const id = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10)();
+
+// Render the default slot content as HTML
+const html = await Astro.slots.render("default");
+
+// Load the HTML into Cheerio for parsing
+const $ = await cheerio.load(html);
+
+// Find all tabs
+const tabs = $("div[data-tab]")
+  .map((_, el) => String($(el).data("tab")))
+  .get();
+---
+
+<div id={id} class="Tabs flex flex-col gap-4">
+  <TabButtons tabs={tabs} id={id} syncKey={syncKey} client:load />
+  <div class="Tabs_tabItems">
+    <Fragment set:html={html} />
+  </div>
+</div>
+
+<!-- Initially reveal first tab item -->
+<script is:inline>
+  document
+    .querySelectorAll(`.Tabs`)
+    .forEach((el) => el.querySelectorAll("[data-tab]")[0]?.classList.remove("hidden"));
+</script>

@@ -1,0 +1,142 @@
+---
+title: Next.js
+description: Install Kilpi for Next
+---
+
+<Steps>
+<Step>
+### Install & setup Kilpi
+
+Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
+
+```ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  ...
+})
+```
+</Step>
+
+<Step>
+
+### Install React Server Components plugin
+
+To automatically [provide a scope](/docs/concepts/scope) for React Server Components, install the [React Server Components Plugin](/docs/plugins/react-server-components).
+
+<Tabs syncKey="package-manager">
+  <Tab label="npm">
+    ```bash
+    npm install @kilpi/react-server
+    ```
+  </Tab>
+
+  <Tab label="yarn">
+    ```bash
+    yarn add @kilpi/react-server
+    ```
+  </Tab>
+
+  <Tab label="pnpm">
+    ```bash
+    pnpm add @kilpi/react-server
+    ```
+  </Tab>
+
+  
+  <Tab label="bun">
+    ```bash
+    bun add @kilpi/react-server
+    ```
+  </Tab>
+</Tabs>
+
+Apply the plugin in your Kilpi configuration as follows.
+
+```diff lang="ts"
+// kilpi.ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
++  plugins: [ReactServerComponentPlugin()]
+})
+```
+
+[Read more about the plugin](/docs/plugins/react-server-components) for more details on usage and available components.
+</Step>
+
+<Step>
+### Optional: Use Kilpi React Server Components
+
+Use Kilpi to protect your UI in React Server Components with the components provided by the React Server Components plugin.
+
+```tsx
+export const { Access } = Kilpi.ReactServer.createComponents();
+
+<Access
+  to="documents:create"
+  Unauthorized={<p>Not authorized to create documents</p>}
+>
+  <CreateDocumentForm />
+</Access>
+```
+
+Read more about the [Access component](/docs/plugins/react-server-components#access) and other components provided by the plugin.
+</Step>
+
+<Step>
+### [Provide scope](/docs/concepts/scope) for server actions and endpoints
+
+To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. The React Server Components can automatically only provide a scope for React Server Components.
+
+<Tabs>
+<Tab label="Server actions">
+To provide a scope for server actions, you can use the `Kilpi.scoped` function to wrap each server action.
+
+```ts
+// action.ts
+export const myServerAction = Kilpi.scoped(async () => {
+  await Kilpi.onUnauthorized(() => { ... }); // Works due to Kilpi.scoped
+  await Kilpi.authorize(...); // Works due to Kilpi.scoped
+  // ...
+});
+```
+</Tab>
+<Tab label="Endpoints">
+To provide a scope for endpoints, you can use the `Kilpi.scoped` function to wrap each endpoint.
+
+```ts
+// route.ts
+export const POST = Kilpi.scoped(async (request: Request) => {
+  await Kilpi.onUnauthorized(() => { ... }); // Works due to Kilpi.scoped
+  await Kilpi.authorize(...); // Works due to Kilpi.scoped
+  // ...
+  return new Response();
+});
+```
+</Tab>
+<Tab label="next-safe-action">
+If you're using `next-safe-action` or similar framework for authoring server actions, you can use the middleware approach as follows with `Kilpi.runInScope`.
+
+```ts
+export const ActionClient = createSafeActionClient({ ... })
+  .use(async ({ next }) => {
+    return await Kilpi.runInScope(async () => {
+      // Optionally setup a global authorization error handler here
+      Kilpi.onUnauthorized((error) => { ... });
+
+      // Run the action within the scope
+      return await next();
+    });
+  });
+```
+</Tab>
+</Tabs>
+</Step>
+
+<Step>
+### Optional: Install Kilpi for React Client
+
+To use Kilpi on the client and in client components, you must [install and setup @kilpi/client](/docs/concepts/usage-on-client) and [@kilpi/react-client](/docs/plugins/react-client) for client-side bindings.
+</Step>
+</Steps>

@@ -65,7 +65,7 @@ export type AnyFunction = (...args: any[]) => any;
 
 /**
  * Prettify utility
- * https://www.totaltypescript.com/concepts/the-prettify-helper
+ * https://www.totaltypescript.com/docs/concepts/the-prettify-helper
  */
 export type Prettify<T> = {
   [K in keyof T]: T[K];

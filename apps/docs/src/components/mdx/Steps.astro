@@ -1,0 +1,19 @@
+---
+import { nanoid } from "nanoid";
+
+const id = nanoid();
+---
+
+<div class="pl-16 relative Mdx_Steps space-y-4">
+  <slot />
+</div>
+
+<script is:inline>
+  (() => {
+    const steppers = document.querySelectorAll(`.Mdx_Steps`).forEach((stepper) => {
+      stepper.querySelectorAll(`p[data-mdx-step-number]`).forEach((step, index) => {
+        step.innerHTML = index + 1;
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,40 @@
+---
+import type { MarkdownHeading } from "astro";
+import type { CollectionEntry } from "astro:content";
+
+const DEFAULT_MIN_DEPTH = 2;
+const DEFAULT_MAX_DEPTH = 3;
+
+type Props = {
+  doc: CollectionEntry<"docs">;
+  headings: MarkdownHeading[];
+  minDepth?: number;
+  maxDepth?: number;
+};
+
+const { doc, headings, minDepth = DEFAULT_MIN_DEPTH, maxDepth = DEFAULT_MAX_DEPTH } = Astro.props;
+
+const includedHeadings = headings.filter((h) => h.depth === minDepth || h.depth === maxDepth);
+---
+
+<div class="flex flex-col">
+  <a
+    class="flex items-center py-1 gap-2 text-sm border-l pl-4 hover:border-accent/30 transition hover:duration-0"
+    href="#"
+  >
+    {doc.data.title}
+  </a>
+  {
+    includedHeadings.map((heading) => {
+      return (
+        <a
+          class="flex items-center py-1 gap-2 text-sm border-l pl-4 hover:border-accent/30 transition hover:duration-0"
+          style={{ paddingLeft: `${16 * (heading.depth - minDepth + 1)}px` }}
+          href={`#${heading.slug}`}
+        >
+          {heading.text}
+        </a>
+      );
+    })
+  }
+</div>

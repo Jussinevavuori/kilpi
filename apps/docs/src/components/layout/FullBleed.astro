@@ -1,0 +1,18 @@
+---
+import { cn } from "@/utils/cn";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"div">;
+
+const { class: className, ...props } = Astro.props;
+---
+
+<div
+  class={cn(
+    "flex flex-col gap-16 bg-muted-bg relative w-screen left-1/2 -translate-x-1/2",
+    className
+  )}
+  {...props}
+>
+  <slot />
+</div>

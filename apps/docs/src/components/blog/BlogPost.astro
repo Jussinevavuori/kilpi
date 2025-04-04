@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatDate } from "date-fns/format";
+
+type Props = {
+  blog: CollectionEntry<"blog">;
+};
+
+const { blog } = Astro.props as Props;
+---
+
+<div class="flex flex-col gap-3">
+  {/* Recommended badge */}
+  {
+    blog.data.recommended && (
+      <span class="inline-flex items-center justify-center rounded-full bg-lime-100 px-2 py-1 text-sm font-medium text-lime-800 w-fit">
+        <span class="bg-lime-500 size-1.5 rounded-full ml-1 mr-2" />
+        Recommended article
+      </span>
+    )
+  }
+
+  {/* Title */}
+  <div class="max-w-lg flex flex-col gap-2">
+    <h2 class="text-2xl font-semibold tracking-tight leading-[1.2]">
+      <a href={`/blog/${blog.id}`} class="hover:underline">
+        {blog.data.title}
+      </a>
+    </h2>
+    {
+      blog.data.subtitle && (
+        <h2 class="font-medium tracking-tight leading-[1.2]">{blog.data.subtitle}</h2>
+      )
+    }
+  </div>
+
+  {/* Author and date */}
+  <div class="flex items-center gap-2 flex-row">
+    {
+      blog.data.authorImage && (
+        <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-6" />
+      )
+    }
+    <span class="text-muted-fg text-sm">By {blog.data.author}</span>
+    <span class="text-muted-fg text-sm">·</span>
+    <span class="text-muted-fg text-sm">
+      {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
+    </span>
+  </div>
+</div>

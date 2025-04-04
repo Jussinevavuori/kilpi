@@ -1,0 +1,23 @@
+---
+import OpenGraph from "./OpenGraph.astro";
+import Posthog from "./Posthog.astro";
+import PreloadFonts from "./PreloadFonts.astro";
+import TailwindTheme from "./TailwindTheme.astro";
+
+type Props = {
+  title?: string;
+};
+
+const { title } = Astro.props as Props;
+---
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{[title, "Kilpi"].filter(Boolean).join(" — ")}</title>
+  <link rel="icon" href="/turtle-emoji.png" type="image/svg+xml" />
+  <PreloadFonts />
+  <Posthog />
+  <OpenGraph />
+  <TailwindTheme />
+</head>

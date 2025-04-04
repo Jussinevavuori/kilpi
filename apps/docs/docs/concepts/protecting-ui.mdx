@@ -1,0 +1,65 @@
+---
+title: Protecting UI
+sidebar:
+  order: 7
+---
+
+A common authorization challenge is ensuring your UI matches your authorization policies. You may always use the Kilpi APIs such as `Kilpi.isAuthorized` to conditionally render UI. However, depending on your UI framework of choice, Kilpi offers you the primitives to do just that with a simple, declarative API.
+
+<Aside>
+  More plugins for more frameworks coming in the future. [How to support
+  development](/docs/getting-started/support).
+</Aside>
+
+<Tabs syncKey="framework">
+<Tab label="React (RSC)">
+Use the `<Access />` component provided by the [`@kilpi/react-server`](/docs/plugins/react-server-components) plugin to protect your UI.
+
+```tsx
+export async function Document({ id }) {
+  const doc = await getDocument.protect(id);
+
+  return (
+    <div>
+      <h1>{doc.title}</h1>
+
+      <Access
+        to="documents:delete" // Reference to policy
+        on={doc} // Resource (If required)
+        // Optional: Alter UI based on state
+        Unauthorized={<p>Not allowed to delete button</p>}
+        Loading={<p>Loading...</p>}
+      >
+        <DeleteDocButton doc={doc} />
+      </Access>
+    </div>
+  );
+}
+```
+
+</Tab>
+<Tab label="React (Client)">
+Use the `<ClientAccess />` component provided by the [`@kilpi/react-client`](/docs/plugins/react-client) plugin to protect your UI (or the `useSubject` and `useIsAuthorized` hooks).
+
+```tsx
+export function Document({ doc }) {
+  return (
+    <div>
+      <h1>{doc.title}</h1>
+
+      <ClientAccess
+        to="documents:delete" // Reference to policy
+        on={doc} // Resource (If required)
+        // Optional: Alter UI based on state
+        Unauthorized={<p>Not allowed to delete button</p>}
+        Loading={<p>Loading...</p>}
+      >
+        <DeleteDocButton doc={doc} />
+      </ClientAccess>
+    </div>
+  );
+}
+```
+
+</Tab>
+</Tabs>

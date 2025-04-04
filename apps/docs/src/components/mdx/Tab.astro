@@ -1,0 +1,13 @@
+---
+type Props = {
+  label: string;
+};
+
+const { label } = Astro.props;
+---
+
+<div data-tab={label} class="hidden">
+  <div class="space-y-4">
+    <slot />
+  </div>
+</div>

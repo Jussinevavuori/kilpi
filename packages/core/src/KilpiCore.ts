@@ -19,6 +19,18 @@ import { getPolicyByKey } from "./policy";
 import { createCallStackSizeProtector } from "./utils/callStackSizeProtector";
 import type { ArrayHead } from "./utils/types";
 
+export type KilpiCoreSettings = {
+  /**
+   * Disable subject caching.
+   */
+  disableSubjectCaching?: boolean;
+
+  /**
+   * Default onUnauthorized handler.
+   */
+  defaultOnUnauthorized?: KilpiOnUnauthorizedHandler;
+};
+
 /**
  * Arguments passed to construct a KilpiCore instance.
  */
@@ -33,11 +45,6 @@ export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject
   getSubject: () => Promise<TSubject>;
 
   /**
-   * Default values when no value is available from a scope.
-   */
-  defaults?: Pick<KilpiScope<KilpiCore<TSubject, TPolicyset>>, "onUnauthorized">;
-
-  /**
    * The policies which define the authorization logic of the application.
    */
   policies: TPolicyset;
@@ -45,9 +52,7 @@ export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject
   /**
    * Custom settings
    */
-  settings?: {
-    disableSubjectCaching?: boolean;
-  };
+  settings?: KilpiCoreSettings;
 };
 
 /**
@@ -63,9 +68,9 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   private uncached_getSubject: () => Promise<TSubject>;
 
   /**
-   * Default behaviour when no value is available from a scope.
+   * Settings for the Kilpi instance.
    */
-  public defaults?: KilpiConstructorArgs<TSubject, TPolicyset>["defaults"];
+  public settings?: KilpiCoreSettings;
 
   /**
    * The policies which define the authorization logic of the application.
@@ -78,11 +83,6 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * Applied via `KilpiCore.runInScope()`.
    */
   private scopeStorage: AsyncLocalStorage<KilpiScope<typeof this>>;
-
-  /**
-   * settings
-   */
-  public settings: KilpiConstructorArgs<TSubject, TPolicyset>["settings"];
 
   /**
    * Inferring utilities. Do not use at runtime.
@@ -100,7 +100,6 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   constructor(args: KilpiConstructorArgs<TSubject, TPolicyset>) {
     this.uncached_getSubject = args.getSubject;
     this.policies = args.policies;
-    this.defaults = args.defaults;
     this.scopeStorage = new AsyncLocalStorage();
     this.settings = args.settings;
     this.hooks = new KilpiHooks();
@@ -379,7 +378,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     this.resolveScope()?.onUnauthorized?.({ message });
 
     // Run default onUnauthorized handler if available
-    this.defaults?.onUnauthorized?.({ message });
+    this.settings?.defaultOnUnauthorized?.({ message });
 
     // Throw by default
     throw new KilpiError.AuthorizationDenied(message);

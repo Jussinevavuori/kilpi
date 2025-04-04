@@ -1,0 +1,16 @@
+---
+import { Collapsible as ReactCollapsible } from "./Collapsible";
+
+type Props = {
+  defaultOpen?: boolean;
+  title: string;
+};
+
+const { defaultOpen, title } = Astro.props as Props;
+---
+
+<ReactCollapsible client:load defaultOpen={defaultOpen} title={title}>
+  <div class="space-y-4">
+    <slot />
+  </div>
+</ReactCollapsible>

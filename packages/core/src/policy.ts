@@ -7,7 +7,7 @@ import type { DeepObject, RecursiveKeysTo, RecursiveValueByKey } from "./utils/t
 /**
  * Policy inputs either take in exactly 0 or 1 resources.
  */
-export type AnyPolicyInput = [] | [any];
+type AnyPolicyInput = [] | [any];
 
 /**
  * A policy is a function that takes in a subject and optionally a resource and returns an
@@ -38,7 +38,7 @@ export type InferPolicySubject<T> = T extends Policy<any, any, infer TSubject> ?
 /**
  * Separator for policy keys.
  */
-export const POLICY_KEY_SEPARATOR = ":" as const;
+const POLICY_KEY_SEPARATOR = ":" as const;
 
 /**
  * Policyset is a deep-object of policies which all share a common base subject type.
@@ -75,7 +75,7 @@ export type PolicysetKeysWithResource<TPolicyset extends Policyset<any>> = {
 /**
  * Ensure a value is a policy.
  */
-export type EnsureTypeIsPolicy<T> = T extends Policy<any, any, any> ? T : never;
+type EnsureTypeIsPolicy<T> = T extends Policy<any, any, any> ? T : never;
 
 /**
  * Type of a policy from a policyset given a key.

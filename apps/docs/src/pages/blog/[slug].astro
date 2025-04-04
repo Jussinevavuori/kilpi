@@ -1,68 +1,26 @@
 ---
-import "../../styles/blog.css";
-import "../../styles/custom.css";
-import "../../styles/global.css";
+import BlogArticleHeader from "@/components/blog/BlogArticleHeader.astro";
+import Layout from "@/components/layout/Layout.astro";
+import Section from "@/components/layout/Section.astro";
+import { components } from "@/components/mdx/_MdxComponents";
+import { getCollection, render } from "astro:content";
 
-import { DefaultSection } from "@/components/DefaultSection";
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
-import { getCollection } from "astro:content";
-import { formatDate } from "date-fns/format";
-
-// Get all blogs from blog collection
-
-// Statically prerender all blog pages
 export async function getStaticPaths() {
-  const blogs = await getCollection("blog");
+  const blogs = await getCollection("blog", ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
   return blogs.map((blog) => ({ params: { slug: blog.id }, props: { blog } }));
 }
 
 const { blog } = Astro.props;
+const { Content } = await render(blog);
 ---
 
-<StarlightPage frontmatter={{ title: blog.data.title, template: "splash" }}>
-  <!-- Header section -->
-  <DefaultSection className="py-10 max-w-prose flex flex-col gap-8">
-    <!-- Date -->
-    <p class="text-muted-foreground">
-      {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
-    </p>
-
-    <!-- Titles closer to each other -->
-    <div class="flex flex-col gap-4">
-      <h1 class="font-bold tracking-tighter text-4xl">
-        {blog.data.title}
-      </h1>
-      {
-        blog.data.subtitle && (
-          <h2 class="font-semibold tracking-tight text-2xl">{blog.data.subtitle}</h2>
-        )
-      }
-    </div>
-
-    <!-- Author + image -->
-    <div class="flex items-center gap-4">
-      {
-        blog.data.authorImage && (
-          <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-10" />
-        )
-      }
-
-      <div>
-        <p class="leading-tight text-muted-foreground">Written by</p>
-        <a
-          class="leading-tight underline text-foreground font-medium"
-          href={blog.data.authorUrl ?? "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {blog.data.author}
-        </a>
-      </div>
-    </div>
-  </DefaultSection>
-
-  <!-- Content section -->
-  <DefaultSection enableDefaultStyles className="pb-64 max-w-prose">
-    <article set:html={blog.rendered?.html} />
-  </DefaultSection>
-</StarlightPage>
+<Layout>
+  <Section class="py-36 flex flex-col gap-8 mx-auto" style={{ maxWidth: "660px" }}>
+    <article class="space-y-4">
+      <BlogArticleHeader {blog} />
+      <Content {components} />
+    </article>
+  </Section>
+</Layout>

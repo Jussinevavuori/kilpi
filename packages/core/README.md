@@ -25,13 +25,13 @@ Designed and created by [Jussi Nevavuori](https://jussinevavuori.com/) with ‚ù§Ô
 
 ## Installation guides
 
-- [React server components](https://kilpi.vercel.app/plugins/react-server-components)
-- [Next.js](https://kilpi.vercel.app/installation/next)
-- [Hono](https://kilpi.vercel.app/installation/hono)
-- [Express](https://kilpi.vercel.app/installation/express)
-- [Koa](https://kilpi.vercel.app/installation/koa)
-- [Oak](https://kilpi.vercel.app/installation/oak)
-- [Nestjs](https://kilpi.vercel.app/installation/nest-js)
+- [React server components](https://kilpi.vercel.app/docs/plugins/react-server-components)
+- [Next.js](https://kilpi.vercel.app/docs/installation/next-js)
+- [Hono](https://kilpi.vercel.app/docs/installation/hono)
+- [Express](https://kilpi.vercel.app/docs/installation/express)
+- [Koa](https://kilpi.vercel.app/docs/installation/koa)
+- [Oak](https://kilpi.vercel.app/docs/installation/oak)
+- [Nestjs](https://kilpi.vercel.app/docs/installation/nest-js)
 
 ...or any other framework - Kilpi is easy to integrate into any TypeScript application.
 

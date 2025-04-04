@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatDate } from "date-fns/format";
+
+type Props = {
+  blog: CollectionEntry<"blog">;
+};
+
+const { blog } = Astro.props;
+---
+
+<!-- Date -->
+<p class="text-muted-fg">
+  {formatDate(blog.data.date, "EEEE, MMMM do yyyy")}
+</p>
+
+<!-- Titles closer to each other -->
+<div class="flex flex-col gap-4">
+  <h1 class="font-bold tracking-tight text-4xl">
+    {blog.data.title}
+  </h1>
+  {
+    blog.data.subtitle && (
+      <h2 class="font-semibold tracking-tight text-2xl">{blog.data.subtitle}</h2>
+    )
+  }
+</div>
+
+<!-- Author + image -->
+<div class="flex items-center gap-4">
+  {
+    blog.data.authorImage && (
+      <img alt={blog.data.author} src={blog.data.authorImage} class="rounded-full size-10" />
+    )
+  }
+
+  <div>
+    <p class="leading-tight text-muted-fg">Written by</p>
+    <a
+      class="leading-tight underline text-foreground font-medium"
+      href={blog.data.authorUrl ?? "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {blog.data.author}
+    </a>
+  </div>
+</div>
+
+<hr class="my-8" />

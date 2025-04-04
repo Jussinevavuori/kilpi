@@ -1,0 +1,37 @@
+---
+import DocBreadcrumbs from "@/components/docs/DocBreadcrumbs.astro";
+import DocsFooterNav from "@/components/docs/DocsFooterNav.astro";
+import DocsHeader from "@/components/docs/DocsHeader.astro";
+import DocSidebar from "@/components/docs/DocSidebar.astro";
+import DocsNavigation from "@/components/docs/DocsNavigation.astro";
+import { getSidebar } from "@/components/docs/getSidebar";
+import DocsLayout from "@/components/layout/DocsLayout.astro";
+import Layout from "@/components/layout/Layout.astro";
+import { components } from "@/components/mdx/_MdxComponents";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs", ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true;
+  });
+  return docs.map((doc) => ({ props: { doc }, params: { docs: doc.id } }));
+}
+
+const sidebar = await getSidebar();
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+---
+
+<Layout>
+  <DocsLayout>
+    <DocsNavigation {sidebar} {doc} slot="left" />
+    <DocBreadcrumbs {doc} />
+    <DocsHeader {doc} />
+    <article class="space-y-4">
+      <Content {components} />
+    </article>
+    <DocsFooterNav {sidebar} {doc} />
+    <DocSidebar {doc} {headings} slot="right" />
+  </DocsLayout>
+</Layout>

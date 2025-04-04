@@ -1,0 +1,44 @@
+---
+import { cn } from "@/utils/cn";
+import type { CollectionEntry } from "astro:content";
+import DocsSidebarDocument from "./DocsSidebarDocument.astro";
+import type { SidebarFolder } from "./getSidebar";
+
+type Props = {
+  folder: SidebarFolder;
+  currentDoc?: CollectionEntry<"docs">;
+};
+
+const { folder, currentDoc } = Astro.props;
+---
+
+<div
+  class={cn(
+    "border-border-light",
+    // Indent nested folders
+    folder.level === 0 ? "pl-4 border-l" : "",
+    folder.level === 2 ? "pl-4 border-l pt-2" : ""
+  )}
+>
+  {
+    folder.level > 0 && (
+      <p class={cn("flex mb-1 w-full items-center justify-between gap-2 text-sm font-semibold")}>
+        {folder.name}
+      </p>
+    )
+  }
+
+  <ul class={cn("flex flex-col", folder.level === 0 ? "gap-8" : "")}>
+    {
+      folder.children.map((item) => (
+        <li>
+          {"doc" in item ? (
+            <DocsSidebarDocument item={item} />
+          ) : (
+            <Astro.self currentDoc={currentDoc} folder={item} />
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</div>

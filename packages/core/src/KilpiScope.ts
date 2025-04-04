@@ -39,7 +39,7 @@ export function warnOnScopeUnavailable(message: string) {
       "\n",
       `(Attempting to access current Kilpi scope, but no scope is available.`,
       `Provide a Kilpi scope either with a plugin or manually via Kilpi.runInScope().`,
-      `Read mode: https://kilpi.vercel.app/concepts/scope)`,
+      `Read mode: https://kilpi.vercel.app/docs/concepts/scope)`,
     ].join(" "),
   );
 }

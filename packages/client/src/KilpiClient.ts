@@ -71,7 +71,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
   /**
    * Subscribable to listen to cache clearings.
    */
-  public _cacheClearSubscribable: Subscribable<void>;
+  private _cacheClearSubscribable: Subscribable<void>;
 
   constructor(options: KilpiClientOptions) {
     // Setup request handler strategy with factory
@@ -154,6 +154,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
    */
   public clearCache() {
     this.cache.clear();
+    this._cacheClearSubscribable.publish();
   }
 
   /**

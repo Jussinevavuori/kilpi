@@ -1,0 +1,85 @@
+---
+title: Subject
+sidebar:
+  order: 3
+---
+
+**The subject** represents your **user** or other actor and their permissions, memberships or similar. The subject allows you to wrap any authentication provider and pass it to Kilpi for evaluating policies. The term "user" can be used interchangeably with the "subject".
+
+### Example subject
+
+```ts
+// src/kilpi/subject.ts
+export type Subject = { id: string };
+
+export async function getSubject(): Promise<Subject | null> {
+  const session = await getSession(); // From your auth provider
+  if (!session) return null;
+  return { id: session.id };
+}
+
+export const Kilpi = createKilpi({ getSubject, ... })
+```
+
+### Provide extra data to policies
+
+In addition to simply fetching the user object as your subject, you may also fetch any additional data, **if it is used in most policies**. This may include e.g. permissions, memberships, subscriptions or any other data that is used in most policies.
+
+```ts
+// subject.ts
+const getSubject = cache(() => {
+  const user = await getUserFromMyAuthProvider();
+  if (!user) return null;
+
+  return Object.assign(user, { 
+    permissions: await db.getPermissions(user.id),
+    memberships: await db.getMemberships(user.id),
+    subscription: await db.getSubscription(user.id),
+  });
+});
+```
+
+If you have data that is only used in a few policies, it should either be **fetched in the policy function** (preferred) or be passed down as the resource.
+
+### Subject caching
+
+The subject is automatically cached inside the scope, if one is available. To disable this behavior, you can pass `settings.disableSubjectCaching: true` to `createKilpi`.
+
+We recommend caching the subject for performance reasons, either yourself or by allowing Kilpi to cache it for you.
+
+```ts
+// kilpi.ts
+export const Kilpi = createKilpi({ ..., 
+  settings: { disableSubjectCaching: true, },
+})
+```
+
+---
+
+## Motivation for the subject pattern
+
+### 1. Reduce boilerplate
+
+By automatically providing the subject while evaluating policies, the caller does not have to worry about fetching the subject or passing it to the policy evaluation. Additionally, Kilpi can narrow down the type of the subject to reduce type-checking boilerplate.
+
+```ts
+// Without subject pattern
+const user = await getUserFromMyAuthProvider();
+await Kilpi.authorize(user, "docs:read", doc);
+if (!user) {
+  throw new Error("User not found");
+}
+console.log(user.name);
+
+// With subject pattern (and narrowed down `user` type)
+const user = await Kilpi.authorize("docs:read", doc);
+console.log(user.name);
+```
+
+While this does make the API design less explicit, it is justified by the fact that in most applications it reduces the complexity and boilerplate of the implementation by a considerable amount.
+
+### 2. Create auth-provider agnostic API
+
+By bringing your own `getSubject` function you can use any auth provider you want.
+
+This would allow you to easily change your auth provider without changing your authorization layer.

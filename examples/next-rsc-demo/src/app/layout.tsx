@@ -34,7 +34,7 @@ export default async function RootLayout({
           <Header />
         </Suspense>
 
-        <div className="max-w-5xl px-4 mx-auto flex py-16">{children}</div>
+        <div className="mx-auto flex max-w-5xl px-4 py-16">{children}</div>
 
         <Footer />
 

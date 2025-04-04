@@ -1,0 +1,28 @@
+---
+import type { MarkdownHeading } from "astro";
+import type { CollectionEntry } from "astro:content";
+import { ExternalLinkIcon } from "lucide-react";
+import TableOfContents from "./TableOfContents.astro";
+
+type Props = {
+  doc: CollectionEntry<"docs">;
+  headings: MarkdownHeading[];
+};
+
+const { doc, headings } = Astro.props;
+---
+
+<nav class="flex flex-col gap-4">
+  <p class="text-sm font-semibold">On this page</p>
+  <TableOfContents doc={doc} headings={headings} />
+  <hr />
+  <a
+    href={`https://github.com/Jussinevavuori/kilpi/edit/main/apps/docs/${doc.filePath}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="flex items-center gap-2 text-sm"
+  >
+    Edit this page on Github
+    <ExternalLinkIcon />
+  </a>
+</nav>

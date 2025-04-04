@@ -1,43 +1,35 @@
 ---
-import "../styles/custom.css";
-import "../styles/global.css";
-
-import { BottomGetStartedSection } from "@/components/BottomGetStartedSection";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { HeroSection } from "@/components/HeroSection";
-import { LatestBlogsSection } from "@/components/LatestBlogsSection";
-import { PluginsSection } from "@/components/PluginsSection";
-import { SupportSection } from "@/components/SupportSection";
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import BottomGetStartedSection from "@/components/landing-page/BottomGetStartedSection.astro";
+import FeaturesSection from "@/components/landing-page/FeaturesSection.astro";
+import HeroSection from "@/components/landing-page/HeroSection.astro";
+import LatestBlogsSection from "@/components/landing-page/LatestBlogsSection.astro";
+import PluginsSection from "@/components/landing-page/PluginsSection.astro";
+import SupportSection from "@/components/landing-page/SupportSection.astro";
+import Banner from "@/components/layout/Banner.astro";
+import Layout from "@/components/layout/Layout.astro";
 import { getCollection } from "astro:content";
 
 // Get all blogs from blog collection (newest first)
-const blogs = await getCollection("blog");
+const blogs = await getCollection("blog", ({ data }) => {
+  return import.meta.env.PROD ? data.draft !== true : true;
+});
 blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: "Kilpi",
-    template: "splash",
-    prev: false,
-    next: false,
-    banner: {
-      content: `<span class="font-medium">
-				🔥 Introducing Kilpi!
-				<a class="underline" href="/blog/2025-03-24-introducing-kilpi">
-					Read the article
-				</a>
-			</span>`,
-    },
-  }}
->
-  <main class="not-content text-foreground max-w-screen overflow-hidden">
+<Layout>
+  <Banner>
+    <span class="font-semibold">
+      🔥 Introducing Kilpi!
+      <a class="underline" href="/blog/2025-03-24-introducing-kilpi"> Read the article </a>
+    </span>
+  </Banner>
+
+  <div style="--site-width:1080px">
     <HeroSection />
     <SupportSection />
     <FeaturesSection />
     <PluginsSection />
     <LatestBlogsSection blogs={blogs} />
     <BottomGetStartedSection />
-  </main>
-</StarlightPage>
+  </div>
+</Layout>

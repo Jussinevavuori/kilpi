@@ -1,0 +1,50 @@
+---
+title: Oak
+description: Install Kilpi for Oak
+---
+
+<Steps>
+<Step>
+### Install & setup Kilpi
+
+Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
+
+```ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  ...
+})
+```
+</Step>
+
+<Step>
+### [Provide scope](/docs/concepts/scope)
+
+To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+
+```ts
+app.use(async (ctx, next) => {
+  Kilpi.runInScope(async () => {
+    await next();
+  })
+})
+```
+</Step>
+
+<Step>
+### Handle unauthorized errors
+
+Since Oak supports throwing HTTP exceptions, handling errors is straightforward with a middleware.
+
+```diff lang="ts"
+  app.use(async (ctx, next) => {
+    Kilpi.runInScope(async () => {
++     Kilpi.onUnauthorized(({ message }) => ctx.throw(403, message));
+      
+      await next();
+    })
+  })
+```
+</Step>
+</Steps>

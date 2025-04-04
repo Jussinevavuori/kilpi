@@ -4,7 +4,7 @@ This is an example project on how to use Kilpi in a Next.js App Router project u
 
 ## Setup
 
-Run the project using `bun run bootstrap` and visit `http://localhost:3000`. Requires [Bun](https://bun.sh/docs/installation).
+Run the project using `bun run bootstrap` and visit `http://localhost:3000`. Requires [Bun](https://bun.sh/docs/docs/installation).
 
 ```bash
 bun run bootstrap

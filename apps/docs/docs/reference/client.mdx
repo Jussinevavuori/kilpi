@@ -1,0 +1,109 @@
+---
+title: "@kilpi/client"
+sidebar:
+  order: 2
+---
+
+## Core API
+
+### `createKilpiClient`
+
+Entry point to Kilpi client.
+
+#### Example
+
+```ts
+import type { Kilpi } from "./kilpi.ts";
+
+export const KilpiClient = createKilpiClient({
+  infer: {} as typeof Kilpi, // Infer subject and policies from server instance
+  connect: {
+    endpointUrl: process.env.PUBLIC_KILPI_URL,
+    secret: process.env.PUBLIC_KILPI_SECRET,
+  },
+});
+```
+
+#### Required parameters
+
+- ##### `connect`
+
+  Connection options to the Kilpi endpoint. By default has the following shape
+
+  ```ts
+  {
+    endpointUrl: string;
+    secret: string;
+  }
+  ```
+
+  However other connection strategies are also supported, primarily for testing.
+
+  ```ts
+  {
+    handleRequest: (request: Request) => Promise<Response>;
+    secret: string;
+  }
+  ```
+
+#### Optional parameters
+
+- ##### `infer`
+
+  Set to `typeof Kilpi` from `import type { Kilpi } from "..."` to infer the subject and policies from your server instance.
+
+- ##### `batching.batchDelayMs`
+
+  Optionally control how long to wait before sending a batch of requests. Defaults to 50ms.
+
+- ##### `batching.jobTimeoutMs`
+
+  Set a timeout for fetches. Defaults to 5 seconds (5000 ms).
+
+- ##### `plugins: KilpiPlugin[]`
+
+  List of plugins to extend the functionality of KilpiClient. The plugin interfaces will be applied to the returned `KilpiCore` instance. Strongly typed up to 9 plugins. [More details](/docs/concepts/plugin).
+
+#### Generic type parameters
+
+Intended to be inferred from `infer` parameter.
+
+- `TCore`: Type of `KilpiCore` from server.
+
+#### Returns
+
+A `KilpiClient<TCore>` instance augmented with the plugin interfaces.
+
+---
+
+### `KilpiClient`
+
+#### Properties
+
+- ##### `fetchSubject({ queryOptions })`
+
+  Fetches the subject from the Kilpi endpoint. Optionally pass in `queryOptions: { signal: AbortSignal }`.
+
+- ##### `fetchIsAuthorized({ key, resource, queryOptions })`
+
+  Fetches a boolean for whether the current subject is authorized for the given policy (and resource). Requires a `key` for the policy and optionally a resource. Optionally pass in `queryOptions: { signal: AbortSignal }`.
+
+- ##### `clearCache`
+
+  Utility to clear the cache.
+
+- ##### `onCacheClear`
+
+  Register a callback to be called when the cache is cleared. Returns an unsubscribe function.
+
+- ##### `$$infer`
+
+  Utility type for inferring `TSubject` and `TPolicyset`. Not to be used during runtime.
+
+---
+
+## `Plugins`
+
+### `createKilpiClientPlugin`
+
+Constructs a new Kilpi client plugin. [Refer to the plugin documentation](/docs/concepts/plugin) for more details.

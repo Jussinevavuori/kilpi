@@ -7,7 +7,7 @@ import { db } from "./db";
 /**
  * Better-auth configuration
  *
- * https://www.better-auth.com/docs/installation
+ * https://www.better-auth.com/docs/docs/installation
  */
 export const auth = betterAuth({
   // Connect to Bun in-memory SQL database. It is seeded in the `seed` function

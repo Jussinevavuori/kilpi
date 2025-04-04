@@ -1,0 +1,52 @@
+---
+title: Express
+description: Install Kilpi for Express
+---
+
+<Steps>
+<Step>
+### Install & setup Kilpi
+
+Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
+
+```ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  ...
+})
+```
+</Step>
+
+<Step>
+### [Provide scope](/docs/concepts/scope)
+
+To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+
+```ts
+app.use((req, res, next) => {
+  Kilpi.runInScope(async () => {
+    next();
+  });
+})
+```
+</Step>
+
+<Step>
+### Handle unauthorized errors
+
+To handle unauthorized errors in Express, we recommend the following approach with a global error handler **after** all route definitions.
+
+```ts
+import { KilpiError } from '@kilpi/core';
+
+app.use((err, req, res, next) => {
+  if (err instanceof KilpiError.AuthorizationDenied) {
+    return res.status(403).json({ error: err.message });
+  }
+
+  // Handle other errors ...
+});
+```
+</Step>
+</Steps>

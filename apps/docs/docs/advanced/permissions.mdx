@@ -1,0 +1,109 @@
+---
+title: Permissions
+description: Design a flexible permission system for your application.
+---
+
+<Aside type="warning">
+This guide is full of opinions. This is not the only way to implement permissions, but a suggestion of one implementation that has worked well in the past. Feel free to adapt it to your needs.
+</Aside>
+
+This guide will show you how to design a very flexible authorization system based on organizations, roles, and dynamic permissions. It will not show you how to implement the data model, but will give you guidance on designing it.
+
+## Target
+
+The target is to enable your application to have a flexible permission system, where permissions can be dynamically controlled for your organization's members. Additionally, this guide will show you how to use the concept of roles as an useful abstraction layer to manage permissions.
+
+## Designing a data model
+
+A good starting point is to design memberships table to define which users belong to which organizations.
+
+![Suggested simplistic datamodel](/docs-assets/permissions-data-schema.png)
+
+<Aside type="tip">
+Instead of having a separate permissions table, you may store permissions as an array directly in the memberships table if your database or ORM makes it easier than managing a separate table. This also reduces the number of joins needed to check permissions.
+</Aside>
+
+Note how this schema does not include the concept of roles.
+
+### Roles as an user-facing abstraction
+
+To handle roles in your application, we suggest using the concept of roles as only an user facing abstraction and a way to group permissions into user-friendly groups.
+
+```ts
+// Map roles to groups of permissions
+const ROLES = {
+  ADMIN: ["documents:create", "documents:edit", "documents:delete"],
+  USER: ["documents:create", "documents:edit"],
+}
+```
+
+We leave it up to you to design the UI for managing roles and permissions. You may allow the user to only choose which role (or roles) the user has, or directly manage the permissions given to each user, or a mix of both.
+
+## Extend subject
+
+Let's assume you are building a SaaS-application, where almost every policy requires access to the user's memberships and permissions. In this case, integrating the memberships and permissions directly into the subject object is the most efficient and straightforward way to implement permissions in Kilpi.
+
+```ts
+export type Subject = User & {
+  memberships: {
+    organizationId: string;
+    role: string;
+    permissions: Permission[];
+  };
+}
+
+export async function getSubject(userId: string): Promise<Subject> {
+  const user = await getUser(userId);
+  const memberships = await getMembershipsWithPermissions(userId);
+  return { ...user, memberships };
+}
+```
+
+<Aside type="tip">
+For better typesafety, make your permissions strongly typed by e.g. using database enums and a `Permission` type, or by validating them runtime with `z.enum` using [Zod](https://zod.dev).
+</Aside>
+
+## Define policies
+
+You can now easily define policies with dynamic permissions based on the user's memberships and roles.
+
+Let's start off with creating an utility function.
+
+```ts
+function hasPermission(subject: Subject, orgId: string, permission: Permission) {
+  return subject.memberships.some(m => {
+    return m.organizationId === orgId && m.permissions.includes(permission);
+  });
+}
+```
+
+Now defining policies is easy. Let's say documents can only be deleted by the organization's members with the `documents:delete` permission.
+
+```ts
+export const policies = {
+  documents: {
+    delete(user, doc: Document) {
+      if (!user) return deny();
+      return hasPermission(user, doc.orgId, "docs:delete") ? grant() : deny()
+    }
+  }
+}
+```
+
+And with Kilpi, you are not limited to this. You can extend the policy with more complex ABAC logic, such as always allowing the document owner to delete the document and never allowing archived documents to be deleted.
+
+```ts
+export const policies = {
+  documents: {
+    delete(user, doc: Document) {
+      if (!user) return deny();
+      if (doc.archived) return deny();
+      if (doc.ownerId === user.id) return grant();
+      if (hasPermission(user, doc.orgId, "docs:delete")) return grant();
+      return deny();
+    } 
+  }
+}
+```
+
+Now you have an extremely flexible ABAC/ReBAC -style authorization system with dynamic permissions.

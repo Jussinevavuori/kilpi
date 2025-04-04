@@ -1,0 +1,56 @@
+---
+title: Nest.js
+description: Install Kilpi for Nest.js
+---
+
+<Steps>
+<Step>
+### Install & setup Kilpi
+
+Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
+
+```ts
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  ...
+})
+```
+</Step>
+
+<Step>
+### [Provide scope](/docs/concepts/scope)
+
+To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+
+```ts
+import { Request, Response, NextFunction } from 'express';
+
+function kilpiMiddleware(req: Request, res: Response, next: NextFunction) {
+  Kilpi.runInScope(async () => {
+    next();
+  })
+};
+
+app.use(kilpiMiddleware)
+```
+</Step>
+
+<Step>
+### Handle unauthorized errors
+
+Since Nest.js supports throwing HTTP exceptions, handling errors is straightforward with a middleware.
+
+```diff lang="ts"
+  function kilpiMiddleware(req: Request, res: Response, next: NextFunction) {
+    Kilpi.runInScope(async () => {
++     Kilpi.onUnauthorized(() => {
++       throw new ForbiddenException();
++     })
+      
+      next();
+    })
+  };
+```
+</Step>
+</Steps>

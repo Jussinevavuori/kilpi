@@ -1,0 +1,113 @@
+---
+title: React Server Components (RSC) Plugin
+sidebar:
+  label: React RSC Plugin
+---
+
+## Installation
+
+Install the plugin with your package manager of choice.
+
+<Tabs syncKey="package-manager">
+<Tab label="npm">
+
+```bash
+npm install @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="yarn">
+
+```bash
+yarn add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="pnpm">
+
+```bash
+pnpm add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="bun">
+
+```bash
+bun add @kilpi/react-server
+```
+
+</Tab>
+</Tabs>
+
+Apply the plugin in your Kilpi configuration as follows.
+
+```diff lang="ts"
+// kilpi.ts
+import { createKilpi } from "@kilpi/core";
+import { ReactServerComponentPlugin } from "@kilpi/react-server";
+
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
++  plugins: [ReactServerComponentPlugin()]
+})
+```
+
+---
+
+## Automatic scope for RSCs
+
+The plugin automatically provides a scope for React Server Components.
+
+```tsx {2,3}
+export default async function ProtectedPage() {
+  Kilpi.onUnauthorized(() => redirect("/")); // Just works
+  Kilpi.authorize("any:policy");
+  return <div>...</div>;
+}
+```
+
+<Aside>
+  Under the hood, the plugin stores the current scope for RSCs using `React.cache`, which is scoped
+  to the current request.
+</Aside>
+
+---
+
+## Components
+
+Use the `Kilpi.ReactServer.createComponents` function (provided by the plugin) to create React server component bindings for working with Kilpi.
+
+```ts
+// kilpi.components.ts
+export const { Access } = Kilpi.ReactServer.createComponents();
+```
+
+### `<Access />`
+
+Access is used to show or hide components based on the user's authorizations.
+
+Access is an asynchronous component which implement `<Suspense />` internally, allowing you to stream in UI and use a loading fallback.
+
+```tsx
+async function Component({ comment }) {
+  return (
+    <div>
+      <p>{comment.content}</p>
+      <Access
+        to="comments:delete"
+        // Required only if policy takes in a resource
+        on={comment}
+        // Optional fallback UIs
+        Loading={<p>Loading...</p>}
+        Unauthorized={<p>Unauthorized</p>}
+      >
+        <button>Delete</button>
+      </Access>
+    </div>
+  );
+}
+```

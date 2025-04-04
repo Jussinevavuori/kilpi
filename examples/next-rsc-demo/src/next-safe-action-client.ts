@@ -16,7 +16,7 @@ export const ActionClient = createSafeActionClient({
   // throw a client safe error, so they can be displayed to the user by next-safe-action.
   //
   // Read more:
-  // https://kilpi.vercel.app/concepts/scope/
+  // https://kilpi.vercel.app/docs/concepts/scope/
   .use(async ({ next }) => {
     return await Kilpi.runInScope(async () => {
       // Return a ClientSafeError on all Kilpi unauthorization errors.

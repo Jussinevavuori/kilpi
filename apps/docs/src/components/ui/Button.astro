@@ -1,0 +1,15 @@
+---
+import { cn } from "@/utils/cn";
+import type { Polymorphic } from "astro/types";
+import { type VariantProps } from "class-variance-authority";
+import { buttonVariants } from "../variants/buttonVariants";
+
+type Props<Tag extends "button" | "a"> = Polymorphic<{ as: Tag }> &
+  VariantProps<typeof buttonVariants>;
+
+const { as: Tag, variant, size, class: className, ...props } = Astro.props;
+---
+
+<Tag {...props} className={cn(buttonVariants({ variant, size, className }))}>
+  <slot />
+</Tag>
