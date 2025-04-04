@@ -1,4 +1,6 @@
 ---
+import { Code } from "astro-expressive-code/components";
+import dedent from "dedent";
 import { ArrowRightIcon, GithubIcon } from "lucide-react";
 import Section from "../layout/Section.astro";
 import Button from "../ui/Button.astro";
@@ -47,7 +49,23 @@ import Button from "../ui/Button.astro";
     </Button>
   </div>
 
-  <div class="flex flex-col gap-4 items-center">
+  <div class="flex flex-col gap-4 items-center w-full">
+    <p class="text-sm text-muted-fg">The simplest and most powerful authorization API</p>
+
+    <div class="flex flex-col text-left gap-2 items-stretch w-min overflow-x-auto max-w-full">
+      <Code lang="ts" code={`await Kilpi.authorize("docs:update", doc);`} />
+      <Code
+        lang="tsx"
+        code={dedent`
+					<Access to="comments:update" on={comment}>
+						<EditDocumentForm comment={comment} />
+					</Access>
+				`}
+      />
+      <Code lang="ts" code={`if (await Kilpi.isAuthorized("orgs:create")) {}`} />
+      <Code lang="ts" code={`const message = await getMessage.protect();`} />
+    </div>
+
     <p class="text-sm text-muted-fg">
       Designed and created by{" "}
       <a
