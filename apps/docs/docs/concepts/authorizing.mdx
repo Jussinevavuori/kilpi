@@ -55,8 +55,8 @@ Start by setting up a global error handler in `createKilpi`.
 ```ts
 export const Kilpi = createKilpi({
   ...,
-  defaults: {
-    onUnauthorized(error) {
+  settings: {
+    defaultOnUnauthorized(error) {
       throw new HTTPException(403, error.message);
     }
   }

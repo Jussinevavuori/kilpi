@@ -23,8 +23,8 @@ export const Kilpi = createKilpi({
    * a default `onUnauthorized` handler is a good practice. It can also redirect to a login page,
    * or a forbidden page for example.
    */
-  defaults: {
-    onUnauthorized() {
+  settings: {
+    defaultOnUnauthorized() {
       redirect("/");
     },
   },

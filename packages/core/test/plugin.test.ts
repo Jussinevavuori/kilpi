@@ -33,7 +33,7 @@ const defaultFn = vi.fn(() => {
 const Kilpi = createKilpi({
   getSubject: TestUtils.getSubject,
   policies: TestUtils.policies,
-  defaults: { onUnauthorized: defaultFn },
+  settings: { defaultOnUnauthorized: defaultFn },
   plugins: [TestPlugin()],
 });
 

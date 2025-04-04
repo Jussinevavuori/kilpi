@@ -173,8 +173,8 @@ Especially when using protectors that throw on unauthorized (using e.g. `Kilpi.a
 // Option 1. Use default error handler
 export const Kilpi = await createKilpi({
   // ...
-  defaults: {
-    onUnauthorized(error) {
+  settings: {
+    defaultOnUnauthorized(error) {
       redirect(`/login?message=${error.message}`);
     },
   },
@@ -285,7 +285,7 @@ There are several ways to design your protectors, depending on your use case.
 
 <Aside>
 
-Throwing on unauthorized requires either a [scope](/docs/concepts/scopes) with an error handler set via `Kilpi.onUnauthorized` or a global default error handler passed to `createKilpi` as `defaults.onUnauthorized`.
+Throwing on unauthorized requires either a [scope](/docs/concepts/scopes) with an error handler set via `Kilpi.onUnauthorized` or a global default error handler passed to `createKilpi` as `settings.defaultOnUnauthorized`.
 
 </Aside>
 

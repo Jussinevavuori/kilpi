@@ -2,9 +2,7 @@
 title: Hooks
 ---
 
-<Aside>
-This is an advanced concept and not required for most use-cases.
-</Aside>
+<Aside>This is an advanced concept and not required for most use-cases.</Aside>
 
 **Hooks are callback functions** registered via `Kilpi.hooks.onSomeHook`. Registering a hook returns an `unregister` function which can be used to remove the hook.
 
@@ -30,7 +28,14 @@ const unregister = Kilpi.hooks.onRequestScope(() => {
 If your framework provides an API to hook into a request-scoped AsyncContext or AsyncLocalStorage, you can use this hook to automatically create a scope for each request.
 
 [See for example](https://github.com/Jussinevavuori/kilpi/blob/main/packages/react-server/src/plugins/ReactServerComponentPlugin.ts) how the [React Server Components Plugin](/docs/plugins/react-server-components) uses `React.cache` to automatically create a scope for each RSC request.
+
 </Aside>
+
+#### Type reference
+
+Receives no parameters. Returns a `KilpiScope` object or `undefined`.
+
+---
 
 ### `onAfterAuthorization`
 
@@ -38,15 +43,48 @@ Called after a policy is evaluated with the authorization result (from e.g. `Kil
 
 ```ts
 const unregister = Kilpi.hooks.onAfterAuthorization((event) => {
-  console.log(`Authorization ${event.authorization.granted ? "passed" : "denied"}`)
-  console.log(`> Policy: ${event.policy}`)
-  console.log(`> Subject: ${event.subject.name}`)
-  console.log(`> Source: ${event.source}`)
-  console.log(`> Error: ${event.authorization.error}`)
+  console.log(`Authorization ${event.authorization.granted ? "passed" : "denied"}`);
+  console.log(`> Policy: ${event.policy}`);
+  console.log(`> Subject: ${event.subject.name}`);
+  console.log(`> Source: ${event.source}`);
+  console.log(`> Error: ${event.authorization.error}`);
 });
 ```
 
 <Aside type="tip">
-For auditing your authorizations, we recommend using the [Audit Plugin](/docs/plugins/audit) instead of this hook. It uses this hook internally.
+  For auditing your authorizations, we recommend using the [Audit Plugin](/docs/plugins/audit)
+  instead of this hook. It uses this hook internally.
 </Aside>
 
+#### Type reference
+
+Receives a `KilpiOnAfterAuthorizationEvent` object as a parameter.
+
+```ts
+export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
+  /**
+   * Source (Where was the authorization triggered from)
+   */
+  source: string;
+
+  /**
+   * Policy key to authorize
+   */
+  policy: string;
+
+  /**
+   * Current subject
+   */
+  subject: T["$$infer"]["subject"];
+
+  /**
+   * The resulting authorization object
+   */
+  authorization: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
+
+  /**
+   * The resource being authorized
+   */
+  resource?: unknown;
+};
+```
