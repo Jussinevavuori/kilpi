@@ -19,6 +19,7 @@ import Tab from "@/components/mdx/Tab.astro";
 import Tabs from "@/components/mdx/Tabs.astro";
 import UnorderedList from "@/components/mdx/UnorderedList.astro";
 import Collapsible from "./Collapsible.astro";
+import GenerateSecretButton from "./GenerateSecretButton.astro";
 import Hr from "./Hr.astro";
 
 /**
@@ -42,12 +43,13 @@ export const components = {
   blockquote: Blockquote,
 
   // Custom elements
-  Tab: Tab,
-  Tabs: Tabs,
-  Step: Step,
-  Steps: Steps,
-  Aside: Aside,
-  LinkCard: LinkCard,
-  FileTree: FileTree,
-  Collapsible: Collapsible,
+  Tab,
+  Tabs,
+  Step,
+  Steps,
+  Aside,
+  LinkCard,
+  FileTree,
+  Collapsible,
+  GenerateSecretButton,
 };

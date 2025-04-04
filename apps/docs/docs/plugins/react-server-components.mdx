@@ -1,7 +1,7 @@
 ---
 title: React Server Components (RSC) Plugin
 sidebar:
-  label: React RSC Plugin 
+  label: React RSC Plugin
 ---
 
 ## Installation
@@ -9,36 +9,46 @@ sidebar:
 Install the plugin with your package manager of choice.
 
 <Tabs syncKey="package-manager">
-  <Tab label="npm">
-    ```bash
-    npm install @kilpi/react-server
-    ```
-  </Tab>
+<Tab label="npm">
 
-  <Tab label="yarn">
-    ```bash
-    yarn add @kilpi/react-server
-    ```
-  </Tab>
+```bash
+npm install @kilpi/react-server
+```
 
-  <Tab label="pnpm">
-    ```bash
-    pnpm add @kilpi/react-server
-    ```
-  </Tab>
+</Tab>
 
-  
-  <Tab label="bun">
-    ```bash
-    bun add @kilpi/react-server
-    ```
-  </Tab>
+<Tab label="yarn">
+
+```bash
+yarn add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="pnpm">
+
+```bash
+pnpm add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="bun">
+
+```bash
+bun add @kilpi/react-server
+```
+
+</Tab>
 </Tabs>
 
 Apply the plugin in your Kilpi configuration as follows.
 
 ```diff lang="ts"
 // kilpi.ts
+import { createKilpi } from "@kilpi/core";
+import { ReactServerComponentPlugin } from "@kilpi/react-server";
+
 export const Kilpi = createKilpi({
   getSubject,
   policies,
@@ -46,9 +56,9 @@ export const Kilpi = createKilpi({
 })
 ```
 
-## Features
+---
 
-### Scope
+## Automatic scope for RSCs
 
 The plugin automatically provides a scope for React Server Components.
 
@@ -56,11 +66,18 @@ The plugin automatically provides a scope for React Server Components.
 export default async function ProtectedPage() {
   Kilpi.onUnauthorized(() => redirect("/")); // Just works
   Kilpi.authorize("any:policy");
-  return <div>...</div>
+  return <div>...</div>;
 }
 ```
 
-### Components
+<Aside>
+  Under the hood, the plugin stores the current scope for RSCs using `React.cache`, which is scoped
+  to the current request.
+</Aside>
+
+---
+
+## Components
 
 Use the `Kilpi.ReactServer.createComponents` function (provided by the plugin) to create React server component bindings for working with Kilpi.
 
@@ -77,16 +94,20 @@ Access is an asynchronous component which implement `<Suspense />` internally, a
 
 ```tsx
 async function Component({ comment }) {
-  return <div>
-    <p>{comment.content}</p>
-    <Access
-      to="comments:delete" // Required
-      on={comment} // Required only if policy takes in a resource
-      Loading={<p>Loading...</p>} // Optional fallback
-      Unauthorized={<p>Unauthorized</p>} // Optional fallback
-    >
-      <button>Delete</button>
-    </Access>
-  </div>
+  return (
+    <div>
+      <p>{comment.content}</p>
+      <Access
+        to="comments:delete"
+        // Required only if policy takes in a resource
+        on={comment}
+        // Optional fallback UIs
+        Loading={<p>Loading...</p>}
+        Unauthorized={<p>Unauthorized</p>}
+      >
+        <button>Delete</button>
+      </Access>
+    </div>
+  );
 }
 ```

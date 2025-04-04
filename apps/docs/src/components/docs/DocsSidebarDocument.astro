@@ -26,11 +26,12 @@ const { item } = Astro.props;
   <span
     class={cn(
       "flex w-full items-center justify-between gap-2",
-      "opacity-80 group-hover/dsd:opacity-100",
-      item.doc.id.includes("reference/") ? "font-mono" : ""
+      "opacity-80 group-hover/dsd:opacity-100"
     )}
   >
-    {item.doc.data.sidebar?.label || item.doc.data.title}
+    <span class={cn(item.doc.id.includes("reference/") ? "font-mono" : "")}>
+      {item.doc.data.sidebar?.label || item.doc.data.title}
+    </span>
 
     <!-- Badge -->
     {

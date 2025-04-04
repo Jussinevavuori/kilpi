@@ -10,9 +10,10 @@ const id = nanoid();
 
 <script is:inline>
   (() => {
-    const steps = document.querySelectorAll(`.Mdx_Steps p[data-mdx-step-number]`);
-    steps?.forEach((step, index) => {
-      step.innerHTML = index + 1;
+    const steppers = document.querySelectorAll(`.Mdx_Steps`).forEach((stepper) => {
+      stepper.querySelectorAll(`p[data-mdx-step-number]`).forEach((step, index) => {
+        step.innerHTML = index + 1;
+      });
     });
   })();
 </script>

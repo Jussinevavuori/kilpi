@@ -32,7 +32,7 @@ export const ArticleService = {
   /**
    * List all articles using a protected query.
    *
-   * https://kilpi.vercel.app/docs/guides/protecting-queries/
+   * https://kilpi.vercel.app/docs/concepts/protected-queries/
    */
   listArticles: Kilpi.query(
     async () => {
@@ -56,7 +56,7 @@ export const ArticleService = {
     },
     {
       // Return only articles which the user is allowed to read using Kilpi.filter.
-      // https://kilpi.vercel.app/docs/guides/protecting-queries/#using-kilpifilter
+      // https://kilpi.vercel.app/docs/concepts/protected-queries/#using-kilpifilter
       async protector({ output: articles }) {
         return Kilpi.filter("articles:read", articles);
       },
@@ -66,7 +66,7 @@ export const ArticleService = {
   /**
    * Get one article by ID using a protected query.
    *
-   * https://kilpi.vercel.app/docs/guides/protecting-queries/
+   * https://kilpi.vercel.app/docs/concepts/protected-queries/
    */
   getArticleById: Kilpi.query(
     async (id: string) => {

@@ -9,20 +9,30 @@ sidebar:
 It is used to store e.g. the current `onUnauthorized` handler set in `Kilpi.onUnauthorized`, as well as to cache the current subject.
 
 <Aside type="warning">
-To use certain APIs, such as `Kilpi.onUnauthorized` you must ensure you are calling them within a scope.
+To use certain APIs, such as `Kilpi.onUnauthorized` you must ensure you are calling them within a scope. A warning will be logged otherwise.
 </Aside>
 
-### Explicit scope
+## Provide an explicit scope
 
-You can provide an explicit scope using `Kilpi.runInScope` as follows.
+You can provide an explicit scope using either `Kilpi.runInScope` (to run a function) or `Kilpi.scoped` (to wrap a function) as follows.
 
 ```ts
+Kilpi.onUnauthorized(...); // Will not work, logs a warning
+
+// Using Kilpi.runInScope (runs the given function in a scope)
 const result = await Kilpi.runInScope(async () => {
+  Kilpi.onUnauthorized(...); // This works
+  ...
+})
+
+// Using Kilpi.scoped (returns a function wrapped in a scope)
+export const POST = Kilpi.scoped(async (req) => {
+  Kilpi.onUnauthorized(...); // This works
   ...
 })
 ```
 
-You can either manually wrap individual functions in a scope, or preferrably **automatically wrap functions using a middleware**, for example as follows:
+If possible, you should provide scope for each request **using a middleware** or similar.
 
 ```ts
 app.use(async (_, next) => {
@@ -32,12 +42,14 @@ app.use(async (_, next) => {
 })
 ```
 
-> `Kilpi.runInScope` uses `AsyncLocalStorage` under the hood.
+> `Kilpi.runInScope` and `Kilpi.scoped` use `AsyncLocalStorage` under the hood.
 
+## Implicit scope
 
-### Automatic scope from plugin
+Plugins can automatically provide an implicit scope in certain contexts, without having to call `Kilpi.runInScope` or `Kilpi.scoped` explicitly.
 
-Some plugins automatically provide a scope in certain contexts. For example, the [React Server Components Plugin](/docs/plugins/react-server-components) automatically provides for React Server Components.
+For example, the [React Server Components Plugin](/docs/plugins/react-server-components) automatically provides a scope for React Server Components.
+
 
 ```ts {3,7}
 const Kilpi = createKilpi({
@@ -46,22 +58,24 @@ const Kilpi = createKilpi({
 })
 
 export async function Page() {
-  Kilpi.onUnauthorized(() => redirect("/")); // This automatically works
+  Kilpi.onUnauthorized(() => redirect("/")); // Automatically works
   Kilpi.authorize("authed"); 
 }
 ```
 
-View the installation guide for your specific framework or see the list of available plugins.
-
-A plugin scope is always overridden by an explicit scope.
+This works by using the [`Kilpi.hooks.onRequestScope`](/docs/concepts/hooks#onrequestscope) hook to automatically create a scope for each request, when no explicit scope is available.
 
 ---
 
-### Alternatives to scope
+## Not able to provide a scope?
 
-If you are unable to provide a scope for any reason, you can for example:
+If you are unable to provide a request-level scope for any reason, you can use the following workarounds.
 
-1. **Only use the default values** provided to `createKilpi` to handle unauthorized requests.
+### `Kilpi.authorize` and `Kilpi.unauthorized`
+
+You can't set up request-level error handlers using `Kilpi To use Kilpi.authorize without a scope, you can...
+
+1. **Use the default error handler** provided to `createKilpi` to handle unauthorized requests, and avoid using request-level error handlers with `Kilpi.onUnauthorized`.
 2. **Avoid APIs that throw** and instead use manual APIs (such as `Kilpi.isAuthorized` and `Kilpi.getAuthorization` instead of `Kilpi.authorize`).
 
 ---

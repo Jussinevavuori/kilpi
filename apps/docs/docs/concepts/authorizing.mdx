@@ -38,9 +38,11 @@ In some cases, **throwing on unauthorized** is the simplest way to protect your 
 
 ```ts
 // Both will throw if not authorized
-await Kilpi.authorize("documents:create"); 
-await Kilpi.authorize("documents:delete", document); 
+await Kilpi.authorize("documents:create");
+await Kilpi.authorize("documents:delete", document);
 ```
+
+### Handling unauthorized errors
 
 Instead of the default behaviour (throws a `KilpiError.AuthorizationDenied` error), setup error handling to automatically handle unauthorized errors.
 
@@ -58,11 +60,12 @@ export const Kilpi = createKilpi({
       throw new HTTPException(403, error.message);
     }
   }
-}) 
+})
 
 // Will throw a 403 error if not authorized
 await Kilpi.authorize("documents:create");
 ```
+
 </Step>
 <Step>
 #### Setup a handler for each request (Optional)
@@ -73,6 +76,7 @@ For more control over your error handling, you can setup a handler for each requ
 **The error handler is stored in the [current scope](/docs/concepts/scope)**. A scope is required for `Kilpi.onUnauthorized` (a warning will be shown if no scope is available).
 
 See available installation guides for how to set up a scope for each request using your framework of choice.
+
 </Aside>
 
 ```ts {3-5}
@@ -80,7 +84,7 @@ export default async function CreateDocumentPage() {
   // Any unauthorized error anywhere on this page should redirect to login
   Kilpi.onUnauthorized((error) => {
     redirect("/login"); // Redirect via throw, e.g. in Next.js
-  })
+  });
 
   // Will redirect to login if not authorized
   await Kilpi.authorize("documents:create");
@@ -88,6 +92,7 @@ export default async function CreateDocumentPage() {
   // ...
 }
 ```
+
 </Step>
 </Steps>
 
@@ -101,8 +106,40 @@ For granted authorizations, it contains the **narrowed down** `subject`. For den
 const authorization = await Kilpi.getAuthorization("documents:create");
 
 if (authorization.granted) {
-  const user = authorization.subject; 
+  const user = authorization.subject;
 } else {
   console.error("Unauthorized", authorization.error);
 }
 ```
+
+### `Kilpi.unauthorized`
+
+If you want to throw similarly as `Kilpi.authorize` and trigger the default or request-level error handler, you can call `Kilpi.unauthorized`. It works the same way as a failed `Kilpi.authorize` check.
+
+```ts
+const isAllowed = await Kilpi.isAuthorized("documents:create");
+if (!isAllowed) {
+  Kilpi.unauthorized("Unauthorized"); // Throws
+}
+
+// Equivalent to
+await Kilpi.authorize("documents:create");
+```
+
+## Protecting queries
+
+The above APIs can be used to protect all parts of your application, even queries.
+
+Kilpi however offers an optional `Kilpi.query` API for creating **protected queries**. This API allows for co-locating your queries with the authorization logic. Read more below.
+
+<LinkCard
+  title="Protected Queries"
+  description="Learn how to protect queries and mutations in your application."
+  href="/docs/concepts/protected-queries"
+/>
+
+<LinkCard
+  title="Introducing the Protected Query Pattern for secure data access"
+  description="Read the article on protected queries"
+  href="/blog/2025-03-27-introducing-the-protected-query-pattern"
+/>

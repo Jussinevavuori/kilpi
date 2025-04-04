@@ -1,70 +1,87 @@
 ---
 title: React Client Plugin
 sidebar:
-  label: React Client Plugin 
+  label: React Client Plugin
 ---
 
 The **React Client Plugin** provides a set of React components and hooks for working with the Kilpi client in a React application.
 
-Ensure you have [setup Kilpi on the client](/docs/getting-started/usage-on-client).
+Ensure you have [setup KilpiClient](/docs/getting-started/usage-on-client) for using Kilpi on the client.
+
+---
 
 ## Installation
 
 Install the plugin with your package manager of choice.
 
 <Tabs syncKey="package-manager">
-  <Tab label="npm">
-    ```bash
-    npm install @kilpi/react-client
-    ```
-  </Tab>
+<Tab label="npm">
 
-  <Tab label="yarn">
-    ```bash
-    yarn add @kilpi/react-client
-    ```
-  </Tab>
+```bash
+npm install @kilpi/react-client
+```
 
-  <Tab label="pnpm">
-    ```bash
-    pnpm add @kilpi/react-client
-    ```
-  </Tab>
+</Tab>
 
-  
-  <Tab label="bun">
-    ```bash
-    bun add @kilpi/react-client
-    ```
-  </Tab>
+<Tab label="yarn">
+
+```bash
+yarn add @kilpi/react-client
+```
+
+</Tab>
+
+<Tab label="pnpm">
+
+```bash
+pnpm add @kilpi/react-client
+```
+
+</Tab>
+
+<Tab label="bun">
+
+```bash
+bun add @kilpi/react-client
+```
+
+</Tab>
 </Tabs>
 
 Apply the plugin in your Kilpi configuration as follows.
 
 ```diff lang="ts"
 // kilpi.ts
-export const Kilpi = createKilpiClient({
+import { createKilpiClient } from "@kilpi/client";
+import { ReactClientComponentPlugin } from "@kilpi/react-client";
+
+export const KilpiClient = createKilpiClient({
   // ...
 +  plugins: [ReactClientComponentPlugin()]
 })
 ```
 
+---
+
 ## Components and hooks
 
-Use the `Kilpi.ReactClient.createComponents` function (provided by the plugin) to create React client component and hook bindings for working with the Kilpi client.
+Use the `Kilpi.ReactClient.createComponents` function (provided by the plugin) to create React client component and hook bindings for working with the KilpiClient.
 
 ```ts
 // kilpi.components.ts
-export const { 
+export const {
+  // Utility hooks that wrap KilpiClient methods
   useIsAuthorized,
-  useSubject, 
-  ClientAccess
-} = Kilpi.ReactClient.createComponents();
+  useSubject,
+
+  // Utility component that wraps useIsAuthorized
+  ClientAccess,
+} = KilpiClient.ReactClient.createComponents();
 ```
 
 ### `useIsAuthorized()`
 
-`useIsAuthorized()` is a hook that checks if the user is authorized to perform a specific action. It wraps the `KilpiClient.fetchIsAuthorized()` method.
+`useIsAuthorized()` fetches an authorization decision from the Kilpi server using `KilpiClient.fetchIsAuthorized()`.
 
 ```tsx
 export function DeleteCommentButton({ comment, onDelete }) {
@@ -79,13 +96,17 @@ export function DeleteCommentButton({ comment, onDelete }) {
     isIdle, // boolean, true when status is "idle"
   } = useIsAuthorized("comments:delete", comment);
 
-  return <button disabled={!isAuthorized} onClick={onDelete}>
-    Delete comment
-  </button>
+  return (
+    <button disabled={!isAuthorized} onClick={onDelete}>
+      Delete comment
+    </button>
+  );
 }
 ```
 
 ### `useSubject()`
+
+Fetches the current subject from the Kilpi server using `KilpiClient.fetchSubject()`.
 
 ```tsx
 export function User() {
@@ -93,14 +114,14 @@ export function User() {
     subject, // Inferred subject type (when "success"), null (otherwise)
     status, // "idle" | "loading" | "error" | "success"
     error, // unknown (when "error"), null (otherwise)
-    
+
     isLoading, // boolean, true when status is "loading"
     isError, // boolean, true when status is "error"
     isSuccess, // boolean, true when status is "success"
     isIdle, // boolean, true when status is "idle"
   } = useSubject();
 
-  return <p>Signed in as {subject?.name}</p>
+  return <p>Signed in as {subject?.name}</p>;
 }
 ```
 
@@ -108,21 +129,25 @@ export function User() {
 
 Similar to the [`<Access />` React Server Component](/docs/plugins/react-server-components#access), `<ClientAccess />` is used to show or hide components based on the user's authorizations.
 
-Access uses the `useIsAuthorized()` hook under the hood.
+`<ClientAccess />` uses the `useIsAuthorized()` hook under the hood.
 
 ```tsx
 async function Component({ comment }) {
-  return <div>
-    <p>{comment.content}</p>
-    <Access
-      to="comments:delete" // Required
-      on={comment} // Required only if policy takes in a resource
-      Loading={<p>Loading...</p>} // Optional fallback
-      Unauthorized={<p>Unauthorized</p>} // Optional fallback
-      Error={<p>Error</p>} // Optional fallback
-    >
-      <button>Delete</button>
-    </Access>
-  </div>
+  return (
+    <div>
+      <p>{comment.content}</p>
+      <Access
+        to="comments:delete"
+        // Required only if policy takes in a resource
+        on={comment}
+        // Optional fallback UIs
+        Loading={<p>Loading...</p>}
+        Unauthorized={<p>Unauthorized</p>}
+        Error={<p>Error</p>}
+      >
+        <button>Delete</button>
+      </Access>
+    </div>
+  );
 }
 ```
