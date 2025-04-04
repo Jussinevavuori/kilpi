@@ -1,5 +1,15 @@
 # @kilpi/client
 
+## 0.14.0
+
+### Minor Changes
+
+- e9e55d2: merge KilpiCore.defaults into KilpiCore.settings, rename KilpiCore.defaults.onUnauthorized to KilpiCore.settings.defaultOnUnauthorized
+
+### Patch Changes
+
+- ad3f6e6: remove exports of internal properties
+
 ## 0.13.1
 
 ### Patch Changes
