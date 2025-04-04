@@ -48,7 +48,7 @@ export function MobileNav(props: MobileNavProps) {
           <DrawerTitle>Navigation</DrawerTitle>
         </DrawerHeader>
 
-        <nav className="flex max-h-[70vh] flex-col overflow-y-auto px-4">
+        <nav className="flex max-h-[70vh] flex-col overflow-y-auto overflow-x-hidden px-4">
           <a href="/" className={linkClassName()}>
             Home
           </a>
@@ -81,7 +81,7 @@ export function MobileNav(props: MobileNavProps) {
         </nav>
 
         <DrawerFooter>
-          <DrawerClose>
+          <DrawerClose asChild>
             <button className={buttonVariants({ variant: "outline", className: "w-full" })}>
               Close
             </button>
