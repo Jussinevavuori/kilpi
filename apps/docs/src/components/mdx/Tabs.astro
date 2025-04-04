@@ -1,11 +1,6 @@
 ---
 import * as cheerio from "cheerio";
-import { customAlphabet } from "nanoid";
 import { TabButtons } from "./TabButtons";
-
-type Tab = {
-  name: string;
-};
 
 type Props = {
   syncKey?: string;
@@ -14,7 +9,7 @@ type Props = {
 const { syncKey } = Astro.props;
 
 // Custom ID for just this tabs instance
-const id = customAlphabet("abcdefghijklmnopqrstuvwxyz", 10)();
+const id = `tabs-${Math.random().toString(36).slice(2)}`;
 
 // Render the default slot content as HTML
 const html = await Astro.slots.render("default");
