@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.9.6
+
+### Patch Changes
+
+- Updated dependencies [ad3f6e6]
+- Updated dependencies [e9e55d2]
+  - @kilpi/core@0.13.0
+
 ## 0.9.5
 
 ### Patch Changes
