@@ -16,6 +16,16 @@ You can also use Kilpi on the client-side, as long as you have a server-side ins
   By design, **all authorization is performed on the server**. The `@kilpi/client` package only
   fetches authorization decisions from the server, **with request caching, batching, and deduping**
   for performance.
+
+<Collapsible title="Reasons for server-first design">
+
+1.  **Priority**: Most critical authorizations should and do happen on the server. The client is a "second-class" citizen for the API as far less critical authorizations are performed there.
+1.  **Trust**: You can always trust the decisions from the server, not the client.
+1.  **Backend access**: The `getSubject` function and policies are all asynchronous and should be able to access e.g. the database.
+1.  **Sensitive data**: The policies or the `getSubject` function may handle sensitive data which shouldn't be exposed to the client.
+
+</Collapsible>
+
 </Aside>
 
 ---
