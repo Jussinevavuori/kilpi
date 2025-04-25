@@ -1,5 +1,13 @@
 # @kilpi/react-client
 
+## 0.3.7
+
+### Patch Changes
+
+- Updated dependencies [32ebbc9]
+  - @kilpi/core@0.14.0
+  - @kilpi/client@0.14.0
+
 ## 0.3.6
 
 ### Patch Changes
