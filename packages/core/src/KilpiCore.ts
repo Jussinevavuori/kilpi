@@ -351,7 +351,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
     }
 
     // Unauthorized
-    this.unauthorized(authorization.message ?? "Unauthorized");
+    this.unauthorized(authorization.message ?? "Unauthorized", authorization.type);
   }
 
   /**
@@ -373,12 +373,12 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * await updateResource(resource, user);
    * ```
    */
-  unauthorized(message = "Unauthorized"): never {
+  unauthorized(message = "Unauthorized", type?: string): never {
     // Run onUnauthorized handler in current scope if available
-    this.resolveScope()?.onUnauthorized?.({ message });
+    this.resolveScope()?.onUnauthorized?.({ message, type });
 
     // Run default onUnauthorized handler if available
-    this.settings?.defaultOnUnauthorized?.({ message });
+    this.settings?.defaultOnUnauthorized?.({ message, type });
 
     // Throw by default
     throw new KilpiError.AuthorizationDenied(message);

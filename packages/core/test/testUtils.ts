@@ -86,6 +86,22 @@ const policies = {
       },
     },
   },
+
+  // Types
+  types: {
+    none_1(subject) {
+      return deny({ message: "No type" });
+    },
+    none_2(subject) {
+      return deny("No type");
+    },
+    type_1(subject) {
+      return deny({ message: "Type 1", type: "type_1" });
+    },
+    type_2(subject) {
+      return deny({ message: "Type 2", type: "type_2" });
+    },
+  },
 } satisfies Policyset<TestSubject | null>;
 
 // Custom test error class for testing throwing custom errors

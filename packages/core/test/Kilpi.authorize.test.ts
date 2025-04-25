@@ -61,4 +61,21 @@ describe("Kilpi.authorize", () => {
       expect(Kilpi.authorize("docs:deeply:nested:policy", doc)).rejects.toBeInstanceOf(Denied);
     });
   });
+
+  it("should correctly handle different types of errors", async () => {
+    await Kilpi.runInScope(async () => {
+      const types: string[] = [];
+
+      await Kilpi.onUnauthorized((error) => {
+        types.push(error.type ?? "NO_TYPE");
+      });
+
+      await Kilpi.authorize("types:none_1").catch(() => null);
+      await Kilpi.authorize("types:none_2").catch(() => null);
+      await Kilpi.authorize("types:type_1").catch(() => null);
+      await Kilpi.authorize("types:type_2").catch(() => null);
+
+      expect(types).toEqual(["NO_TYPE", "NO_TYPE", "type_1", "type_2"]);
+    });
+  });
 });

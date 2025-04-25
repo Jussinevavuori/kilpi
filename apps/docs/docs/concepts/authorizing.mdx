@@ -94,6 +94,39 @@ export default async function CreateDocumentPage() {
 ```
 
 </Step>
+<Step>
+#### Optional: Handle different types of unauthorizations
+
+To differentiate between different types of unauthorized errors, you can provide a `type` while denying authorizations and use the `Kilpi.onUnauthorized` method to handle different types of errors differently.
+
+**1. Deny with `type` in denial**
+
+```ts
+export const policies = {
+  exmaple(user, doc: Document) {
+    if (!user) return deny({ message: "Unauthenticated", type: "unauthenticated" });
+    if (!user.isSubscribed) return deny({ message: "Not subscribed", type: "not_subscribed" });
+    return grant(user);
+  },
+};
+```
+
+**2. Handle different types of errors based on `error.type`**
+
+```ts
+Kilpi.onUnauthorized((error) => {
+  switch (error.type) {
+    case "unauthenticated":
+      throw new HTTPRedirect(302, "/login");
+    case "not_subscribed":
+      throw new HTTPRedirect(302, "/billing");
+    default:
+      throw new HTTPException(403, error.message);
+  }
+});
+```
+
+</Step>
 </Steps>
 
 ### `Kilpi.getAuthorization`

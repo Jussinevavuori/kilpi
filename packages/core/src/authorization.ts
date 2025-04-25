@@ -9,9 +9,22 @@ export type AuthorizationGranted<TSubject> = {
 
 /**
  * AuthorizationDenied represents a failed authorization check. It includes an optional message
- * to provide context for the denial.
+ * to provide context for the denial and an optional reason for the denial.
  */
-export type AuthorizationDenied = { granted: false; message?: string };
+export type AuthorizationDenied = {
+  granted: false;
+
+  /**
+   * Message to be displayed to the user.
+   */
+  message?: string;
+
+  /**
+   * Type of denial to be used by the system to handle e.g. unauthenticated and not subscribed
+   * errors differently.
+   */
+  type?: string;
+};
 
 /**
  * An authorization object represents the result of an authorization check. It can either be granted
@@ -29,6 +42,11 @@ export function grant<TSubject>(subject: TSubject): AuthorizationGranted<TSubjec
 /**
  * Utility to create an AuthorizationDenied object with a message.
  */
-export function deny(message: string = "Unauthorized"): AuthorizationDenied {
-  return { granted: false, message };
+export function deny(
+  input: string | Pick<AuthorizationDenied, "message" | "type"> = "Unauthorized",
+): AuthorizationDenied {
+  const message = typeof input === "string" ? input : input.message;
+  const type = typeof input === "string" ? undefined : input.type;
+
+  return { granted: false, message, type };
 }

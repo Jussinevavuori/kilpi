@@ -9,7 +9,6 @@ summary: This article introduces the protected query pattern for authorizing you
 recommended: true
 ---
 
-
 Securing modern full-stack applications can be complex. You have to manage authorizations in many different contexts from UI to data mutation functions.
 
 In all of these contexts, you are required to query data and authorize access to it, maybe even conditionally redact and filter parts of it.
@@ -21,7 +20,6 @@ This guide introduces the protected query pattern as a solution to this problem.
 Note: This guide views the problem from the perspective of full-stack web applications, such as ones built with Next.js, however this is fully applicable to any application with server-side data fetching.
 
 > This guide will use [Kilpi](https://kilpi.vercel.app) to implement strong authorizations, however the concepts can be transferred to your projects with or without using it.
-
 
 ## Protecting your queries
 
@@ -109,7 +107,8 @@ Creating a protected query is simple with [Kilpi.query](https://kilpi.vercel.app
 
 ```ts
 const getDocument = Kilpi.query(
-  cache(async (id: string) => { // Pure query function can be cached!
+  cache(async (id: string) => {
+    // Pure query function can be cached!
     const document = await getDocumentPure(id);
     return document;
   }),
@@ -122,23 +121,23 @@ const getDocument = Kilpi.query(
 
       // Handle errors by e.g. throwing or returning null
       throw new Error("You are not allowed to view this document");
-    }
-  }
-)
+    },
+  },
+);
 ```
 
-With this pattern, your functions become expressive, beautiful, and short. 
+With this pattern, your functions become expressive, beautiful, and short.
 
 (Just imagine removing this much code from hundreds of components and functions.)
 
 ```diff lang="ts"
   export async function DocumentPage({ id }) {
-  
+
 -   const user = await getCurrentUser();
 -   if (!user) {
 -     redirect("/login")
 -   };
--   
+-
 -   const document = await getDocument(id);
 -   if (!document) {
 -     redirect("/documents")
@@ -149,7 +148,7 @@ With this pattern, your functions become expressive, beautiful, and short.
 
 +   const document = await getDocument.protect(id);
 +   if (!document) redirect("/documents");
-  
+
     return <div>{document.title}</div>
   }
 ```
@@ -171,50 +170,50 @@ Again, short on time with pressure to complete your work, you might attempt the 
 
 1. Authorization logic in your query to redact the data.
 
-    ```ts
-    // BAD: Unpure function, not cacheable, not reusable in different contexts
-    async function getUserDetails(userId: string, user: User) {
-      const caller = await getCurrentUser();
-      
-      const userDetails = await db.userDetails.get(userId);
-      if (!userDetails) return null;
-      
-      if (userDetails.id !== user.id && !user.isAdmin) {
-        userDetails.email = null;
-        userDetails.phone = null;
-      }
-        
-      return userDetails;
-    } 
-    ```
+   ```ts
+   // BAD: Unpure function, not cacheable, not reusable in different contexts
+   async function getUserDetails(userId: string, user: User) {
+     const caller = await getCurrentUser();
+
+     const userDetails = await db.userDetails.get(userId);
+     if (!userDetails) return null;
+
+     if (userDetails.id !== user.id && !user.isAdmin) {
+       userDetails.email = null;
+       userDetails.phone = null;
+     }
+
+     return userDetails;
+   }
+   ```
 
 2. Redacting your data after calling the query.
 
-    ```ts
-    // BAD: Duplicated authorization logic, difficult to type correctly.
-    async function UserDetailsComponent({ userId }) {
-      const currentUser = await getCurrentUser();
-      const userDetails = await getUserDetails(userId);
-      if (userDetails && !(currentUser.id === userDetails.id || currentUser.isAdmin)) {
-        userDetails.email = null;
-        userDetails.phone = null;
-      }
-      return <div>...</div>
-    }
-    ```
+   ```ts
+   // BAD: Duplicated authorization logic, difficult to type correctly.
+   async function UserDetailsComponent({ userId }) {
+     const currentUser = await getCurrentUser();
+     const userDetails = await getUserDetails(userId);
+     if (userDetails && !(currentUser.id === userDetails.id || currentUser.isAdmin)) {
+       userDetails.email = null;
+       userDetails.phone = null;
+     }
+     return <div>...</div>
+   }
+   ```
 
-3.  Having two different functions for redacted and full data.
+3. Having two different functions for redacted and full data.
 
-    ```ts
-    // BAD: Duplicated authorization logic, more functions to maintain.
-    async function UserDetailsComponent({ userId }) {
-      const currentUser = await getCurrentUser();
-      const userDetails = currentUser.id === userId || currentUser.isAdmin
-        ? await getFullUserDetails(userId)
-        : await getOnlyPublicUserDetails(userId);
-      return <div>...</div>
-    }
-    ```
+   ```ts
+   // BAD: Duplicated authorization logic, more functions to maintain.
+   async function UserDetailsComponent({ userId }) {
+     const currentUser = await getCurrentUser();
+     const userDetails = currentUser.id === userId || currentUser.isAdmin
+       ? await getFullUserDetails(userId)
+       : await getOnlyPublicUserDetails(userId);
+     return <div>...</div>
+   }
+   ```
 
 None of these however feel right. All of them feel like workarounds, with each of them having their own problems.
 
@@ -273,10 +272,10 @@ This allows you to define your authorization logic in a single place, and then u
 export const policies = {
   documents: {
     read(user, document) {
-      return user.id === document.authorId || user.isAdmin? grant(user) : deny();
-    }
-  }
-} satisfies Policyset<Subject | null>
+      return user.id === document.authorId || user.isAdmin ? grant(user) : deny();
+    },
+  },
+} satisfies Policyset<Subject | null>;
 ```
 
 This makes it easy to implement protectors.
@@ -288,9 +287,9 @@ export const getDocument = Kilpi.query(
     async protector({ output: document }) {
       if (document) await Kilpi.authorize("documents:read", document);
       return document;
-    }
-  }
-)
+    },
+  },
+);
 ```
 
 ### Using `Kilpi.filter`
@@ -303,9 +302,9 @@ export const listDocuments = Kilpi.query(
   {
     async protector({ output: documents }) {
       return Kilpi.filter("documents:read", documents);
-    }
-  }
-)
+    },
+  },
+);
 ```
 
 ## Conclusion
