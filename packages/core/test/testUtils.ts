@@ -89,16 +89,19 @@ const policies = {
 
   // Types
   types: {
-    none_1(subject) {
+    none_1() {
       return deny({ message: "No type" });
     },
-    none_2(subject) {
+
+    none_2() {
       return deny("No type");
     },
-    type_1(subject) {
+
+    type_1() {
       return deny({ message: "Type 1", type: "type_1" });
     },
-    type_2(subject) {
+
+    type_2() {
       return deny({ message: "Type 2", type: "type_2" });
     },
   },
