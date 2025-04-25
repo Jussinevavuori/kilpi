@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.14.0
+
+### Minor Changes
+
+- 32ebbc9: introduced type to denied authorizations, added with deny({ message: "...", type: "..." })
+
 ## 0.13.0
 
 ### Minor Changes
