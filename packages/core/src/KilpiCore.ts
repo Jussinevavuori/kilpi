@@ -107,6 +107,7 @@ export class KilpiCore<
    */
   public $$infer = null as unknown as {
     getSubject: TGetSubject;
+    subject: Awaited<ReturnType<TGetSubject>>;
     policies: TPolicyset;
     context: InferContext<TGetSubject>;
   };
