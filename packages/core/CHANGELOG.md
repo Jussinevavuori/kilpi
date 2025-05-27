@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.15.0
+
+### Minor Changes
+
+- 9d88502: added subject context API for passing data into getSubject
+
 ## 0.14.0
 
 ### Minor Changes
