@@ -1,6 +1,5 @@
-import { describe } from "node:test";
 import { createKilpi } from "src";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { TestUtils } from "./testUtils";
 
 // Test Kilpi instance

@@ -1,6 +1,6 @@
 import { createKilpi, deny, EndpointPlugin, grant } from "@kilpi/core";
 import { createKilpiClient } from "src";
-import { describe, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 type Sub = { id: string; name: string };
 type Doc = { id: string; userId: string };
@@ -32,7 +32,7 @@ function init(options: { subject: Sub | null }) {
   });
 }
 
-describe("fetchIsAuthorized", (it) => {
+describe("fetchIsAuthorized", () => {
   it("should work when unauthenticated", async () => {
     const Client = init({ subject: null });
     expect(await Client.fetchIsAuthorized({ key: "always" })).toBe(true);

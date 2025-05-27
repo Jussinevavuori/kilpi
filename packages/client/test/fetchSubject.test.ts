@@ -1,6 +1,6 @@
 import { createKilpi, EndpointPlugin } from "@kilpi/core";
 import { createKilpiClient } from "src";
-import { describe, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 type Sub = { id: string; name: string };
 
@@ -26,7 +26,7 @@ function init(options: { subject: Sub | null }) {
   });
 }
 
-describe("fetchSubject", (it) => {
+describe("fetchSubject", () => {
   it("should return null when unauthenticated", async () => {
     const Client = init({ subject: null });
     const subject = await Client.fetchSubject();

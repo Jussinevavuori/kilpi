@@ -4,6 +4,7 @@ import { KilpiHooks } from "./KilpiHooks";
 import type { KilpiQueryProtector } from "./KilpiQuery";
 import { KilpiQuery } from "./KilpiQuery";
 import {
+  KILPI_SCOPE_CONTEXT_KEY,
   warnOnScopeUnavailable,
   type KilpiOnUnauthorizedHandler,
   type KilpiScope,
@@ -32,9 +33,23 @@ export type KilpiCoreSettings = {
 };
 
 /**
+ * Subject function gets an optional context and returns the subject data.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyGetSubject = (ctx?: any) => any;
+
+/**
+ * Utility to infer the context from a getSubject function.
+ */
+export type InferContext<TGetSubject extends AnyGetSubject> = Parameters<TGetSubject>[0];
+
+/**
  * Arguments passed to construct a KilpiCore instance.
  */
-export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject>> = {
+export type KilpiConstructorArgs<
+  TGetSubject extends AnyGetSubject,
+  TPolicyset extends Policyset<Awaited<ReturnType<TGetSubject>>>,
+> = {
   /**
    * Connect your own authentication provider (and other subject data / metadata) via a
    * custom `getSubject` function.
@@ -42,7 +57,7 @@ export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject
    * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
    * during each authorization check.
    */
-  getSubject: () => Promise<TSubject>;
+  getSubject: TGetSubject;
 
   /**
    * The policies which define the authorization logic of the application.
@@ -58,14 +73,17 @@ export type KilpiConstructorArgs<TSubject, TPolicyset extends Policyset<TSubject
 /**
  * The KilpiCore class is the primary interface for interacting with the Kilpi library.
  */
-export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
+export class KilpiCore<
+  TGetSubject extends AnyGetSubject,
+  TPolicyset extends Policyset<Awaited<ReturnType<TGetSubject>>>,
+> {
   /**
    * Connect your own authentication provider (and other subject data / metadata) via a
    * custom `getSubject` function.
    *
    * This will be automatically cached within each scope unless `settings.disableSubjectCaching`.
    */
-  private uncached_getSubject: () => Promise<TSubject>;
+  private uncached_getSubject: TGetSubject;
 
   /**
    * Settings for the Kilpi instance.
@@ -87,7 +105,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   /**
    * Inferring utilities. Do not use at runtime.
    */
-  public $$infer = null as unknown as { subject: TSubject; policies: TPolicyset };
+  public $$infer = null as unknown as {
+    getSubject: TGetSubject;
+    policies: TPolicyset;
+    context: InferContext<TGetSubject>;
+  };
 
   /**
    * Current hooks
@@ -97,7 +119,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   /**
    * New instance
    */
-  constructor(args: KilpiConstructorArgs<TSubject, TPolicyset>) {
+  constructor(args: KilpiConstructorArgs<TGetSubject, TPolicyset>) {
     this.uncached_getSubject = args.getSubject;
     this.policies = args.policies;
     this.scopeStorage = new AsyncLocalStorage();
@@ -111,31 +133,34 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * Caches the subject in the current scope (if available) unless `settings.disableSubjectCaching`
    * is set to true.
    */
-  public async getSubject(): Promise<TSubject> {
-    // Respect settings.disableSubjectCaching
-    if (this.settings?.disableSubjectCaching) {
-      return await this.uncached_getSubject();
-    }
-
+  public async getSubject(): Promise<ReturnType<TGetSubject>> {
+    // Get the current context and scope
+    const context = this.getContext();
     const scope = this.resolveScope();
+
+    // Cache disabled
+    if (this.settings?.disableSubjectCaching) {
+      return await this.uncached_getSubject(context);
+    }
 
     // Cache hit
     if (scope?.subjectCache) {
       return await scope.subjectCache.subjectPromise;
     }
 
-    // Cache miss: Populate cache
-    const subjectPromise = this.uncached_getSubject();
+    // Cache miss: Populate cache (requires cache to work, warn otherwise)
+    const subjectPromise = this.uncached_getSubject(context);
     if (!scope) warnOnScopeUnavailable("Kilpi: getSubject() could not be cached.");
     else {
       scope.subjectCache = { subjectPromise };
     }
 
+    // Return the subject promise
     return await subjectPromise;
   }
 
   /**
-   * Internal utility to resolve the current scope. Prioritizes the current explicit scope from
+   * Utility to resolve the current scope. Prioritizes the current explicit scope from
    * `scopeStorage` if available. If not available, falls back to using scopes provided by e.g.
    * plugins via the `onRequestScope` hook.
    */
@@ -151,6 +176,13 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
 
     // No scope available
     return null;
+  }
+
+  /**
+   * Utility to resolve the current context from the current scope.
+   */
+  public getContext(): InferContext<TGetSubject> {
+    return this.resolveScope()?.[KILPI_SCOPE_CONTEXT_KEY];
   }
 
   /**
@@ -170,8 +202,11 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
    * }
    * ```
    */
-  public async runInScope<T>(fn: () => Promise<T>): Promise<T> {
-    return await this.scopeStorage.run({}, fn);
+  public async runInScope<T>(
+    fn: () => Promise<T>,
+    context?: InferContext<TGetSubject>,
+  ): Promise<T> {
+    return await this.scopeStorage.run({ [KILPI_SCOPE_CONTEXT_KEY]: context }, fn);
   }
 
   /**
@@ -191,9 +226,13 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   public scoped<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends (...args: any[]) => Promise<any>,
-  >(fn: T): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+  >(
+    fn: T,
+    context?: InferContext<TGetSubject>,
+  ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+    // Return function wrapped with runInScope and context
     return (...args: Parameters<T>) => {
-      return this.runInScope(() => fn(...args));
+      return this.runInScope(() => fn(...args), context);
     };
   }
 
@@ -473,7 +512,7 @@ export class KilpiCore<TSubject, TPolicyset extends Policyset<TSubject>> {
   >(
     query: (...args: TInput) => TRawOutput,
     options: {
-      protector?: KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject>;
+      protector?: KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TGetSubject>;
     } = {},
   ) {
     // Implemented in a KilpiQuery class.

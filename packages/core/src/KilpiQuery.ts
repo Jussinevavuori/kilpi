@@ -1,11 +1,16 @@
-import type { KilpiCore } from "./KilpiCore";
+import type { AnyGetSubject, KilpiCore } from "./KilpiCore";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type KilpiQueryProtector<TInput, TRawOutput, TRedactedOutput, TSubject> = (args: {
+export type KilpiQueryProtector<
+  TInput,
+  TRawOutput,
+  TRedactedOutput,
+  TGetSubject extends AnyGetSubject,
+> = (args: {
   input: TInput;
   output: Awaited<TRawOutput>;
-  subject: TSubject;
+  subject: Awaited<ReturnType<TGetSubject>>;
 }) => TRedactedOutput;
 
 /**
@@ -62,7 +67,7 @@ export class KilpiQuery<
     TInput,
     TRawOutput,
     TRedactedOutput,
-    TCore["$$infer"]["subject"]
+    TCore["$$infer"]["getSubject"]
   >;
 
   constructor(
@@ -73,7 +78,7 @@ export class KilpiQuery<
         TInput,
         TRawOutput,
         TRedactedOutput,
-        TCore["$$infer"]["subject"]
+        TCore["$$infer"]["getSubject"]
       >;
     } = {},
   ) {

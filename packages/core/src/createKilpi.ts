@@ -1,4 +1,4 @@
-import { KilpiCore, type KilpiConstructorArgs } from "./KilpiCore";
+import { KilpiCore, type AnyGetSubject, type KilpiConstructorArgs } from "./KilpiCore";
 import type { KilpiPlugin } from "./KilpiPlugin";
 import type { Policyset } from "./policy";
 import type { AnyLengthHead } from "./utils/types";
@@ -9,8 +9,8 @@ import type { AnyLengthHead } from "./utils/types";
  * Instantiates a new KilpiCore object and applies all provided plugins.
  */
 export function createKilpi<
-  TSubject,
-  TPolicyset extends Policyset<TSubject>,
+  TGetSubject extends AnyGetSubject,
+  TPolicyset extends Policyset<Awaited<ReturnType<TGetSubject>>>,
   P1 extends object,
   P2 extends object,
   P3 extends object,
@@ -23,19 +23,19 @@ export function createKilpi<
 >({
   plugins = [],
   ...kilpiCoreOptions
-}: KilpiConstructorArgs<TSubject, TPolicyset> & {
+}: KilpiConstructorArgs<TGetSubject, TPolicyset> & {
   // Support up to 9 strongly typed plugins
   plugins?: AnyLengthHead<
     [
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P1>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P2>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P3>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P4>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P5>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P6>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P7>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P8>,
-      KilpiPlugin<KilpiCore<TSubject, TPolicyset>, P9>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P1>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P2>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P3>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P4>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P5>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P6>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P7>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P8>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P9>,
     ]
   >;
 }) {
