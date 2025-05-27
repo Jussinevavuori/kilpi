@@ -35,7 +35,7 @@ describe("Kilpi.context", () => {
         const result = await Kilpi.isAuthorized("authed");
         expect(result).toBe(true);
       },
-      { cookies: { userId: "1" } },
+      { cookies: { userId: "2" } },
     );
   });
   it("should be authorized when context provided via Kilpi.scoped", async () => {
