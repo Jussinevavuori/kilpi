@@ -1,6 +1,5 @@
-import { describe } from "node:test";
 import { deepEquals } from "src/utils/deepEquals";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("deepObjectEquals", () => {
   it("compares primitives", () => {

@@ -1,6 +1,6 @@
 import { createKilpi, EndpointPlugin, grant } from "@kilpi/core";
 import { createKilpiClient } from "src";
-import { describe, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 type Sub = { id: string; name: string };
 
@@ -26,7 +26,7 @@ function init(options: { serverSecret: string; clientSecret: string }) {
   });
 }
 
-describe("endpoint secret", (it) => {
+describe("endpoint secret", () => {
   it("should fail when mismatched secrets", async () => {
     const Client = init({ clientSecret: "1", serverSecret: "2" });
     await expect(Client.fetchIsAuthorized({ key: "always" })).rejects.toBeInstanceOf(Error);

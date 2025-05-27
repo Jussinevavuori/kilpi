@@ -1,7 +1,6 @@
-import { describe } from "node:test";
 import { createKilpi } from "src";
 import { createRbacPolicy } from "src/createRbacPolicy";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { TestUtils, type TestSubject } from "./testUtils";
 
 // Rbac policy

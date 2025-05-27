@@ -31,7 +31,6 @@ export class BatchAuditFlushStrategy<T extends AnyKilpiCore> implements AuditFlu
 
       // Flush all events and resolve each job
       runJobs: async (jobs) => {
-        console.log(`🔥 BATCH: Running ${jobs.length} jobs`);
         await this.options.onFlushEvents(jobs.map((_) => _.payload));
         jobs.map((_) => _.resolve());
       },
@@ -40,7 +39,6 @@ export class BatchAuditFlushStrategy<T extends AnyKilpiCore> implements AuditFlu
 
   onAuditEvent(event: KilpiAuditEvent<T>): void {
     this.eventBatcher.queueJob(event);
-    console.log(Date.now() % 10_000, "Enqueued", event);
   }
 
   async triggerFlush(): Promise<void> {

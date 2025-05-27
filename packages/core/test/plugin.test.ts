@@ -1,8 +1,7 @@
-import { describe } from "node:test";
 import { createKilpi, type AnyKilpiCore } from "src";
 import { createKilpiPlugin } from "src/KilpiPlugin";
 import type { KilpiScope } from "src/KilpiScope";
-import { expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { TestUtils } from "./testUtils";
 
 export function TestPlugin<T extends AnyKilpiCore>() {

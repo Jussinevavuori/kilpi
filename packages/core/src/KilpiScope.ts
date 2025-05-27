@@ -1,6 +1,11 @@
 import type { AnyKilpiCore } from "./KilpiCore";
 
 /**
+ * Symbol for storing the context in the current Kilpi scope.
+ */
+export const KILPI_SCOPE_CONTEXT_KEY = Symbol.for("Kilpi::scope.context");
+
+/**
  * Type of handler which is called when `KilpiCore.authorize()` denies access. This handler is
  * primarily responsible for customizing which value is thrown when access is denied (e.g.
  * to redirect to a login page, or to return a 403 status code).
@@ -22,7 +27,12 @@ export type KilpiScope<T extends AnyKilpiCore> = {
   /**
    * Cache current subject.
    */
-  subjectCache?: { subjectPromise: Promise<T["$$infer"]["subject"]> };
+  subjectCache?: { subjectPromise: ReturnType<T["$$infer"]["getSubject"]> };
+
+  /**
+   * Current context if any.
+   */
+  [KILPI_SCOPE_CONTEXT_KEY]?: T["$$infer"]["context"];
 };
 
 // Utility type

@@ -21,6 +21,49 @@ export async function getSubject(): Promise<Subject | null> {
 export const Kilpi = createKilpi({ getSubject, ... })
 ```
 
+---
+
+### Providing arguments to getSubject
+
+Often, to get your current subject, you need access to a **context**, such as the current request. **You can provide data to the `getSubject` function via the current scope** as follows.
+
+<Steps>
+<Step>
+  
+#### Accept context in `getSubject`
+
+Define the type of the context parameter in your `getSubject` function. **The parameter must be optional.** The context may contain e.g. the current request or any other data you need to fetch the subject.
+
+```ts {2}
+export async function getSubject(
+  context?: { req: Request }, // Must be optional
+) {
+  if (!context?.req) return null;
+  return await getUserFromRequest(context.req);
+}
+```
+
+</Step>
+<Step>
+
+#### Pass context via scope
+
+Pass the context as the second argument to `Kilpi.runInScope` or `Kilpi.scoped` to make it available in the `getSubject` function. The type is inferred from the `getSubject` function signature.
+
+```ts {4}
+app.use((req, res, next) => {
+  Kilpi.runInScope(
+    async () => await next(),
+    { req }, // Provide context object
+  );
+});
+```
+
+[Read more about the scope](/docs/concepts/scope).
+
+</Step>
+</Steps>
+
 ### Provide extra data to policies
 
 In addition to simply fetching the user object as your subject, you may also fetch any additional data, **if it is used in most policies**. This may include e.g. permissions, memberships, subscriptions or any other data that is used in most policies.
@@ -31,7 +74,7 @@ const getSubject = cache(() => {
   const user = await getUserFromMyAuthProvider();
   if (!user) return null;
 
-  return Object.assign(user, { 
+  return Object.assign(user, {
     permissions: await db.getPermissions(user.id),
     memberships: await db.getMemberships(user.id),
     subscription: await db.getSubscription(user.id),
@@ -49,7 +92,7 @@ We recommend caching the subject for performance reasons, either yourself or by 
 
 ```ts
 // kilpi.ts
-export const Kilpi = createKilpi({ ..., 
+export const Kilpi = createKilpi({ ...,
   settings: { disableSubjectCaching: true, },
 })
 ```
