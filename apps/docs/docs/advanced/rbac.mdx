@@ -9,59 +9,54 @@ sidebar:
 With Kilpi, you don't have to decide between [RBAC](/docs/advanced/rbac), [ABAC](/docs/advanced/abac), [ReBAC](/docs/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, [RBAC](/docs/advanced/rbac), [ABAC](/docs/advanced/abac) and [ReBAC](/docs/advanced/rebac) are not completely separate models (e.g. [RBAC](/docs/advanced/rbac) is a subset of [ABAC](/docs/advanced/abac)).
 
 This guide is a tutorial on how to implement authorization policies that would fall under the term of RBAC.
+
 </Aside>
 
 <Aside type="tip">
 Before implementing RBAC, carefully consider whether [ABAC](/docs/advanced/abac) or a [Permissions Based System](/docs/advanced/permissions) would be more suitable for your use case as RBAC is often a simplistic approach.
 
 Furthermore, [implementing permissions](/docs/advanced/permissions) instead of roles may allow for a more flexible authorization system, if needed. Roles can be seen as a user-facing abstraction of permissions, instead of an attribute of the user.
+
 </Aside>
 
-Implementing a role-based access control with Kilpi is simple with the `createRbacPolicy` utility, which is an alternative policy constructor API.
+Implement RBAC by assigning a role or roles for your subject in the `getSubject` function. You can then
+
+<Aside type="tip">
+An improved RBAC utility for defining e.g. role hierarchies and sessions is planned. Current design iterations look like
+
+<Collapsible title="Upcoming RBAC utility API">
 
 ```ts
-export const rbacPolicy = createRbacPolicy(
-  (subject: Subject | null) => { // May optionally be async, and e.g. fetch data
-    if (!subject) return null; // Subject narrowing
-    return { 
-      subject, 
-      roles: subject.roles, // Return user's roles as string[]
-    }
-  }
-)
-```
+// Limitations: Mutually exclusive roles must be implemented by developer, similarly to resolution
+const RBAC = Kilpi.rbac.create({
+  // Subject automatically inferred, also subject roles as generic `TRole`
+  // This allows for sessions
+  async getRoles(subject) {
+    // Always denies: Marks as unauthenticated
+    if (!subject) return null;
 
-The `rbacPolicy` constructor can now be used to easily create RBAC policies with strong typesafety.
-
-```ts
-export const policies = {
-  documents: {
-    read: rbacPolicy("user", "admin", "guest"),
-    create: rbacPolicy("user", "admin"),
-    delete: rbacPolicy("admin"),
+    // Infers as authenticated with specified roles
+    return { subject, roles: subject.roles };
   },
-}
-```
 
-Due to how the Policy API was designed, the RBAC configuration has to be declared as "Action-to-Roles" instead of "Roles-to-Actions".
-
-We believe this is justified, as most authorization systems quickly run into limitations with RBAC. Let's imagine a new requirement, where documents can be deleted by admins, but also by users if the user created the document. With this API, breaking out of the RBAC model to [ABAC](/docs/advanced/abac) is trivial:
-
-```diff lang="ts"
-export const policies = {
-  documents: {
-    read: rbacPolicy("user", "admin", "guest"),
-    create: rbacPolicy("user", "admin"),
--    delete: rbacPolicy("admin"),
-+    delete((user, document: Document) {
-+      return user && (hasRole(user, "admin") || user.id === document.ownerId) ? grant(user) : deny()
-+    })
+  // Setup optional role inheritance
+  //
+  // Note: Resolve roles using BFS to avoid circular dependencies (they are allowed, however any
+  //       role in a circular dependency role will automatically grant ALL other roles in the loop).
+  inheritance: {
+    editor: ["reader"],
+    admin: ["editor"],
   },
-}
+});
 
-+ function hasRole(subject: Subject, ...roles: Role[]) {
-+   return roles.some(role => subject.roles.includes(role));
-+ }
+export const policies = {
+  read(subject) {
+    return subject && RBAC.has(subject, "reader") ? grant(subject) : deny();
+  },
+  write: RBAC.policy("reader", "editor"),
+};
 ```
 
-With an "Roles-to-Actions" API, migrating to `ABAC` would require a more complex refactoring.
+</Collapsible>
+</Aside>
+```
