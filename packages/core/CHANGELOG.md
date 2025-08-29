@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.16.0
+
+### Minor Changes
+
+- 505d922: remove deprecated rbac utility (will be replaced by improved api)
+
 ## 0.15.0
 
 ### Minor Changes
