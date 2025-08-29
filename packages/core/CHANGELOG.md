@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.17.0
+
+### Minor Changes
+
+- 14d5319: add optional metadata field to denial objects
+
 ## 0.16.0
 
 ### Minor Changes
