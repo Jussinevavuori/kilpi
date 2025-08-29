@@ -1,4 +1,4 @@
-import type { Authorization } from "src/authorization";
+import type { Decision } from "src/decision";
 import type { AnyKilpiCore } from "src/KilpiCore";
 
 export type KilpiAuditEvent<T extends AnyKilpiCore> = {
@@ -10,7 +10,7 @@ export type KilpiAuditEvent<T extends AnyKilpiCore> = {
   /**
    * Authorization decision
    */
-  authorization: Authorization<T["$$infer"]["subject"]>;
+  authorization: Decision<T["$$infer"]["subject"]>;
 
   /**
    * Timestamp of the event

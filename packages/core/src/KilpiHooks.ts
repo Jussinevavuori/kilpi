@@ -1,4 +1,4 @@
-import type { Authorization } from "./authorization";
+import type { Decision } from "./decision";
 import type { AnyKilpiCore } from "./KilpiCore";
 import type { KilpiScope } from "./KilpiScope";
 import type { InferPolicySubject } from "./policy";
@@ -32,7 +32,7 @@ export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
   /**
    * The resulting authorization object
    */
-  authorization: Authorization<InferPolicySubject<T["$$infer"]["policies"]>>;
+  authorization: Decision<InferPolicySubject<T["$$infer"]["policies"]>>;
 
   /**
    * The resource being authorized

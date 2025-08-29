@@ -1,4 +1,4 @@
-import type { Authorization } from "./authorization";
+import type { Decision } from "./decision";
 import { KilpiError } from "./error";
 import type { DeepObject, RecursiveKeysTo, RecursiveValueByKey } from "./utils/types";
 
@@ -23,7 +23,7 @@ export type Policy<
 > = (
   subject: TSubjectInput,
   ...inputs: TInputs
-) => Authorization<TSubjectOutput> | Promise<Authorization<TSubjectOutput>>;
+) => Decision<TSubjectOutput> | Promise<Decision<TSubjectOutput>>;
 
 /**
  * Utility type for inferring the inputs of a policy.
