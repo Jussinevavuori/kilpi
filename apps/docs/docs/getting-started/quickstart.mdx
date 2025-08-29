@@ -145,7 +145,7 @@ If you run into issues migrating any existing applications, you are welcome to [
       documents: {
         // All authed users can read documents they own or public documents
         read(user, document: Document) {
-          if (!user) return deny("Unauthenticated");
+          if (!user) return deny({ message: "Unauthenticated" });
           if (document.isPublic) return grant(user);
           if (user.id === document.ownerId) return grant(user);
           return deny();

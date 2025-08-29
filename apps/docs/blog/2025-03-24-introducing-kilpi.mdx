@@ -24,17 +24,16 @@ Kilpi is my solution to authorization in fullstack TypeScript applications.
 
 Way too often, I've cooked the same spaghetti and ended up with unmaintainable code. Let's say that you can delete a document if you're the author, an application superadmin or you are an admin in the organization that the document belongs to. Most likely, you'd write something like the following.
 
-```ts 
+```ts
 async function deleteDocument(id: string) {
   const document = await db.getDocument(id);
 
-  if ( 
-    !user ||
-    user.role !== "superadmin" ||
-    user.id !== document.authorId ||
-    document.orgId ? (await listUserOrgMemberships(user.id)).some(
-      m => m.orgId === document.orgId && m.roles.includes("admin")
-    ) : false
+  if (
+    !user || user.role !== "superadmin" || user.id !== document.authorId || document.orgId
+      ? (await listUserOrgMemberships(user.id)).some(
+          (m) => m.orgId === document.orgId && m.roles.includes("admin"),
+        )
+      : false
   ) {
     // That was 🍝
     throw new UnauthorizedException("You are not allowed to delete this document");
@@ -69,66 +68,66 @@ Let's look behind the curtains. This section will act as a quick setup guide for
 1. Install `@kilpi/core` with your package manager of choice.
 2. Connect your auth provider by setting up a **subject**.
 
-    ```ts
-    // subject.ts
-    import { getSessionFromMyAuthProvider } from "./my-auth-provider";
+   ```ts
+   // subject.ts
+   import { getSessionFromMyAuthProvider } from "./my-auth-provider";
 
-    export type Subject = { id: string, name: string }
+   export type Subject = { id: string; name: string };
 
-    export async function getSubject() {  
-      const session = await getSessionFromMyAuthProvider();
-      if (!session) return null;
-      return { id: session.userId, name: session.userName };
-    }
-    ```
+   export async function getSubject() {
+     const session = await getSessionFromMyAuthProvider();
+     if (!session) return null;
+     return { id: session.userId, name: session.userName };
+   }
+   ```
 
 3. Setup your policies and define the `documents:delete` policy.
 
-    ```ts
-    // policies.ts
-    import { deny, grant, type Policyset } from "@kilpi/core";
-    import { Subject } from "./subject";
+   ```ts
+   // policies.ts
+   import { deny, grant, type Policyset } from "@kilpi/core";
+   import { Subject } from "./subject";
 
-    function hasOrgRole(subject: Subject, orgId: string, role: OrgRole): Promise<boolean> { ... }
+   function hasOrgRole(subject: Subject, orgId: string, role: OrgRole): Promise<boolean> { ... }
 
-    export const policies = {
-      documents: {
-        async delete(user, doc: Document) {
-          if (!user) return deny("Unauthenticated");
+   export const policies = {
+     documents: {
+       async delete(user, doc: Document) {
+         if (!user) return deny({ message: "Unauthenticated" });
 
-          if (user.role === "superadmin") return grant(user);
-          if (user.id === doc.authorId) return grant(user);
-          if (await hasOrgRole(user, doc.orgId, "admin")) return grant(user);
+         if (user.role === "superadmin") return grant(user);
+         if (user.id === doc.authorId) return grant(user);
+         if (await hasOrgRole(user, doc.orgId, "admin")) return grant(user);
 
-          return deny();
-        }
-      }
-    } as const satisfies Policyset<Subject | null>
-    ```
+         return deny();
+       }
+     }
+   } as const satisfies Policyset<Subject | null>
+   ```
 
 4. Create your Kilpi instance.
 
-    ```ts
-    // kilpi.ts
-    import { createKilpi } from "@kilpi/core";
-    import { policies } from "./policies";  
-    import { getSubject } from "./subject";
+   ```ts
+   // kilpi.ts
+   import { createKilpi } from "@kilpi/core";
+   import { policies } from "./policies";
+   import { getSubject } from "./subject";
 
-    export const Kilpi = createKilpi({ policies, getSubject });
-    ```
+   export const Kilpi = createKilpi({ policies, getSubject });
+   ```
 
 5. Protect your deletion.
 
-    ```ts
-    // document-service.ts
-    import { Kilpi } from "./kilpi";
+   ```ts
+   // document-service.ts
+   import { Kilpi } from "./kilpi";
 
-    async function deleteDocument(id: string) {
-      const document = await db.getDocument(id);
-      await Kilpi.authorize("documents:delete", document);
-      await db.deleteDocument(id);
-    }
-    ```
+   async function deleteDocument(id: string) {
+     const document = await db.getDocument(id);
+     await Kilpi.authorize("documents:delete", document);
+     await db.deleteDocument(id);
+   }
+   ```
 
 And it doesn't end there. Kilpi provides a comprehensive set of tools for protecting your applications since day 1. There's [protected queries](/docs/concepts/protected-queries), [plugins](/docs/concepts/docs/plugins), [hooks](/docs/concepts/hooks), [scopes](/docs/concepts/scopes), [React Server Components](/docs/plugins/react-server-components) and much more to explore in the documentation.
 

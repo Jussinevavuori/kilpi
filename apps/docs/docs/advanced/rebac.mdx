@@ -70,7 +70,7 @@ async function isOwnerOfFolderOrParent(folderId: string): Promise<boolean> {
 export const policies = {
   folders: {
     async delete(user, folderId: string) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return (await isOwnerOfFolderOrParent(folderId)) ? grant(user) : deny();
     },
   },
@@ -107,7 +107,7 @@ export function isMember(user: Subject, orgId: string) {
 export const policies = {
   documents: {
     create(user: Subject, organizationId: string) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return isMember(user, organizationId) ? grant(user) : deny();
     },
   },

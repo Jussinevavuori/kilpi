@@ -62,7 +62,7 @@ const policies = {
 
   // Authed only
   authed(subject) {
-    if (!subject) return deny("Unauthenticated");
+    if (!subject) return deny({ message: "Unauthenticated" });
     return grant(subject);
   },
 
@@ -70,7 +70,7 @@ const policies = {
   docs: {
     // Authed only if ID matches
     ownDocument(subject, doc: TestDocument) {
-      if (!subject) return deny("Unauthenticated");
+      if (!subject) return deny({ message: "Unauthenticated" });
       if (subject.id !== doc.userId) return deny();
       return grant(subject);
     },
@@ -79,7 +79,7 @@ const policies = {
     deeply: {
       nested: {
         policy(subject, doc: TestDocument) {
-          if (!subject) return deny("Unauthenticated");
+          if (!subject) return deny({ message: "Unauthenticated" });
           if (subject.id !== doc.userId) return deny();
           return grant(subject);
         },

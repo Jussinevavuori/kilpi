@@ -30,7 +30,7 @@ export const policies = {
   documents: {
     // Allow all authed members to read docs
     read(user) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return grant(user);
     },
   },
@@ -47,7 +47,7 @@ A basic policy takes in a `subject` (often aliased as `user`) and returns an aut
 export const policies = {
   comments: {
     create(user) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return grant(user);
     },
   },
@@ -64,7 +64,7 @@ A policy can optionally receive a **object** as the second argument.
 export const policies = {
   comments: {
     delete(user, comment: Comment) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return comment.userId === user.id ? grant(user) : deny();
     },
   },
@@ -81,7 +81,7 @@ Policies can even fetch data during evaluation, as they are by design always asy
 export const policies = {
   comments: {
     async archive(user, comment: Comment) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       const response = await getAiResponse("Allow deleting comment: Yes or no?");
       return response.includes("Yes") ? grant(user) : deny();
     },
@@ -102,7 +102,7 @@ await Kilpi.authorize("comments:delete", myComment);
 Almost always, your policies will be more readable when using utility functions. See below for examples on how to use utility functions for e.g. data fetching, common denials and more.
 
 ```diff lang="ts"
-+ const unauthed = () => deny("Unauthenticated");
++ const unauthed = () => deny({ message: "Unauthenticated" });
 
 + const isAdmin = (subject: Subject) => subject.role === "admin";
 
@@ -114,7 +114,7 @@ Almost always, your policies will be more readable when using utility functions.
   export const policies = {
     documents: {
 -     async create(user, orgId: string) {
--       if (!user) return deny("Unauthenticated");
+-       if (!user) return deny({ message: "Unauthenticated" });
 -       if (user.role === "admin") return grant(user);
 -       const memberships = await db.getMembershipsForUser(user.id);
 -       return memberships.some(m => m.orgId === orgId && m.role === "manager") ? grant(user) : deny();
@@ -134,7 +134,7 @@ Due to this method of defining policies, the final subject type is automatically
 export const policies = {
   documents: {
     read(user) {
-      if (!user) return deny("Unauthenticated");
+      if (!user) return deny({ message: "Unauthenticated" });
       return grant(user);
     },
   },

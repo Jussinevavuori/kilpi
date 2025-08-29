@@ -41,17 +41,17 @@ Define policies declaratively
 
 ```ts
 // Kilpi.ts
-export const Kilpi = createKilpi({ 
-  getSubject, 
+export const Kilpi = createKilpi({
+  getSubject,
   policies: {
     documents: {
       update(user, doc: Document) {
-        if (!user) return deny("Unauthenticated");
+        if (!user) return deny({ message: "Unauthenticated" });
         return user.id === doc.ownerId ? grant(user) : deny();
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});
 ```
 
 Authorize actions with one line
@@ -63,15 +63,12 @@ const user = await Kilpi.authorize("documents:update", document);
 Protect your data right at the source
 
 ```ts
-const getDocument = Kilpi.query(
-  async (id: string) => await db.documents.get(id),
-  {
-    async protector({ output: doc }) {
-      if (doc) await Kilpi.authorize("documents:read", doc);
-      return doc;
-    }
-  }
-);
+const getDocument = Kilpi.query(async (id: string) => await db.documents.get(id), {
+  async protector({ output: doc }) {
+    if (doc) await Kilpi.authorize("documents:read", doc);
+    return doc;
+  },
+});
 
 await getDocument.protect("1");
 ```
