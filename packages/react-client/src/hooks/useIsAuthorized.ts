@@ -70,7 +70,7 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
         try {
           const isAuthorized = await KilpiClient.fetchIsAuthorized({
             key,
-            resource: inputs[0],
+            object: inputs[0],
             queryOptions: { signal: abortController.signal },
           });
           if (isMounted) setValue({ status: "success", error: null, isAuthorized });

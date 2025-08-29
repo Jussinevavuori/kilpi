@@ -138,7 +138,7 @@ async function Component({ comment }) {
       <p>{comment.content}</p>
       <Access
         to="comments:delete"
-        // Required only if policy takes in a resource
+        // Required only if policy takes in an object
         on={comment}
         // Optional fallback UIs
         Loading={<p>Loading...</p>}

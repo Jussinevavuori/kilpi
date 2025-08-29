@@ -2,8 +2,8 @@ import type {
   GetPolicyByKey,
   InferPolicyInputs,
   KilpiCore,
-  PolicySetKeysWithoutResource,
-  PolicysetKeysWithResource,
+  PolicySetKeysWithoutObject,
+  PolicysetKeysWithObject,
 } from "@kilpi/core";
 import { Suspense } from "react";
 
@@ -32,20 +32,20 @@ type AccessBaseProps = {
 };
 
 /**
- * Custom access props for each key to ensure correct types (e.g. for resource) are provided
+ * Custom access props for each key to ensure correct types (e.g. for object) are provided
  * based on the provided policy key (`to`).
  */
 type AccessPropsByKey<TCore extends KilpiCore<any, any>> = {
-  // Policies that do not take in a resource:
-  // Type as { to: "policy:key" }, no resource required
-  [K in PolicySetKeysWithoutResource<TCore["policies"]>]: {
+  // Policies that do not take in an object:
+  // Type as { to: "policy:key" }, no object required
+  [K in PolicySetKeysWithoutObject<TCore["policies"]>]: {
     to: K;
     on?: never;
   };
 } & {
-  // Policies that do take in a resource:
-  // Type as { to: "policy:key", on: resource }, resource required
-  [K in PolicysetKeysWithResource<TCore["policies"]>]: {
+  // Policies that do take in an object:
+  // Type as { to: "policy:key", on: object }, object required
+  [K in PolicysetKeysWithObject<TCore["policies"]>]: {
     to: K;
     on: InferPolicyInputs<GetPolicyByKey<TCore["policies"], K>>[0];
   };
@@ -57,8 +57,8 @@ type AccessPropsByKey<TCore extends KilpiCore<any, any>> = {
 type AccessProps<
   TCore extends KilpiCore<any, any>,
   TKey extends
-    | PolicySetKeysWithoutResource<TCore["policies"]>
-    | PolicysetKeysWithResource<TCore["policies"]>,
+    | PolicySetKeysWithoutObject<TCore["policies"]>
+    | PolicysetKeysWithObject<TCore["policies"]>,
 > = AccessBaseProps & AccessPropsByKey<TCore>[TKey];
 
 /**
@@ -66,14 +66,14 @@ type AccessProps<
  */
 export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore) {
   /**
-   * Render children only if access to={key} (and optionally on={resource}) granted to current
+   * Render children only if access to={key} (and optionally on={object}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
    * access.
    */
   function Access<
     TKey extends
-      | PolicySetKeysWithoutResource<TCore["policies"]>
-      | PolicysetKeysWithResource<TCore["policies"]>,
+      | PolicySetKeysWithoutObject<TCore["policies"]>
+      | PolicysetKeysWithObject<TCore["policies"]>,
   >(props: AccessProps<TCore, TKey>) {
     // Inner async component to be suspended by parent
     async function Access_InnerSuspendable() {

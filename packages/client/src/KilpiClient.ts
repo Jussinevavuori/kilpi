@@ -119,11 +119,11 @@ export class KilpiClient<T extends AnyKilpiCore> {
    */
   public async fetchIsAuthorized<TKey extends PolicysetKeys<T["$$infer"]["policies"]>>(options: {
     key: TKey;
-    resource?: ArrayHead<InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>>;
+    object?: ArrayHead<InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>>;
     queryOptions?: { signal?: AbortSignal | null | undefined };
   }): Promise<boolean> {
     return this.cache.wrap(
-      { cacheKey: ["fetchIsAuthorized", options.key, options.resource] },
+      { cacheKey: ["fetchIsAuthorized", options.key, options.object] },
       async () => {
         // Fetch authorization from the server (with batching)
         const isAuthorized = await this.batcher.queueJob(
@@ -131,7 +131,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
             type: "getIsAuthorized",
             policy: options.key,
             requestId: nanoid(),
-            resource: options.resource,
+            object: options.object,
           },
           { signal: options.queryOptions?.signal },
         );

@@ -11,7 +11,7 @@ const Kilpi = createKilpi({
 });
 
 describe("Kilpi.getAuthorization", () => {
-  const resource: TestDocument = { id: "doc1", userId: "user1" };
+  const object: TestDocument = { id: "doc1", userId: "user1" };
 
   const Granted = (subject: TestSubject | null) => ({ granted: true, subject });
   const Denied = () => ({ granted: false });
@@ -40,25 +40,25 @@ describe("Kilpi.getAuthorization", () => {
     });
   });
 
-  it("should deny authed resource check when unauthed", async () => {
+  it("should deny authed object check when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+      await expect(Kilpi.getAuthorization("docs:ownDocument", object)).resolves.toMatchObject(
         Denied(),
       );
     });
   });
 
-  it("should grant authed resource check when authed as correct user", async () => {
+  it("should grant authed object check when authed as correct user", async () => {
     await TestUtils.runAs({ id: "user1", roles: [] }, async (subject) => {
-      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+      await expect(Kilpi.getAuthorization("docs:ownDocument", object)).resolves.toMatchObject(
         Granted(subject),
       );
     });
   });
 
-  it("should deny authed resource check when authed as incorrect user", async () => {
+  it("should deny authed object check when authed as incorrect user", async () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
-      await expect(Kilpi.getAuthorization("docs:ownDocument", resource)).resolves.toMatchObject(
+      await expect(Kilpi.getAuthorization("docs:ownDocument", object)).resolves.toMatchObject(
         Denied(),
       );
     });
@@ -67,7 +67,7 @@ describe("Kilpi.getAuthorization", () => {
   it("should work on deeply nested keys", async () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       await expect(
-        Kilpi.getAuthorization("docs:deeply:nested:policy", resource),
+        Kilpi.getAuthorization("docs:deeply:nested:policy", object),
       ).resolves.toMatchObject(Denied());
     });
   });

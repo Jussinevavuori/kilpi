@@ -38,7 +38,7 @@ describe("fetchIsAuthorized", () => {
     expect(await Client.fetchIsAuthorized({ key: "always" })).toBe(true);
     expect(await Client.fetchIsAuthorized({ key: "never" })).toBe(false);
     expect(await Client.fetchIsAuthorized({ key: "authed" })).toBe(false);
-    expect(await Client.fetchIsAuthorized({ key: "own", resource: { id: "1", userId: "1" } })).toBe(
+    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "1" } })).toBe(
       false,
     );
   });
@@ -49,10 +49,10 @@ describe("fetchIsAuthorized", () => {
     expect(await Client.fetchIsAuthorized({ key: "always" })).toBe(true);
     expect(await Client.fetchIsAuthorized({ key: "never" })).toBe(false);
     expect(await Client.fetchIsAuthorized({ key: "authed" })).toBe(true);
-    expect(await Client.fetchIsAuthorized({ key: "own", resource: { id: "1", userId: "1" } })).toBe(
+    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "1" } })).toBe(
       true,
     );
-    expect(await Client.fetchIsAuthorized({ key: "own", resource: { id: "1", userId: "2" } })).toBe(
+    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "2" } })).toBe(
       false,
     );
   });

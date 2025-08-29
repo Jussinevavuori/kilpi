@@ -173,16 +173,16 @@ const subject = await KilpiClient.fetchSubject({
 #### Fetching authorization decisions
 
 ```ts
-// Fetch authorization decisions for policy without resource
+// Fetch authorization decisions for policy without object
 const canCreateDocument = await KilpiClient.fetchIsAuthorized({
   key: "documents:create",
   queryOptions: { ... } // Optional
 });
 
-// Fetch authorization decisions for policy with resource
+// Fetch authorization decisions for policy with object
 const canUpdateComment = await KilpiClient.fetchIsAuthorized({
   key: "comments:update",
-  resource: comment,
+  object: comment,
   queryOptions: { ... } // Optional
 });
 ```
@@ -237,7 +237,7 @@ You can use `@kilpi/client` with your frontend framework of choice or use one of
           {/* Option 2 */}
           <ClientAccess
             policy="documents:delete"
-            resource={document}
+            object={document}
             fallback={<p>You are not authorized to create this document</p>}
           >
             <p>You are authorized to create this document</p>

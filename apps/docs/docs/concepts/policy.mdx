@@ -4,15 +4,15 @@ sidebar:
   order: 2
 ---
 
-**A policy** is a function that receives a [**subject**](/docs/concepts/subject) and optionally a **resource** and returns an [**authorization object**](/docs/concepts/authorization-object), either granted or denied.
+**A policy** is a function that receives a [**subject**](/docs/concepts/subject) and optionally a **object** and returns an [**authorization object**](/docs/concepts/authorization-object), either granted or denied.
 
-A policy defines an **action** that can be taken in your application, optionally **on a resource**, such as `documents:read`, `users:update`, `comments:delete`.
+A policy defines an **action** that can be taken in your application, optionally **on an object**, such as `documents:read`, `users:update`, `comments:delete`.
 
 In a nutshell...
 
 - Policies can be nested as deep as you want, forming a hierarchy.
 - Policies always take the subject as the first argument.
-- Policies can optionally take in a resource as the second argument.
+- Policies can optionally take in an object as the second argument.
 - Policies can be asynchronous functions and fetch data from external sources for deciding access.
 - A policy must explicitly either grant (with `return grant(subject)`) or deny (with `return deny(reason?)`) access.
 
@@ -20,9 +20,7 @@ In a nutshell...
 
 Define policies by constructing a `policies` object (with `as const satisfies Policyset<MySubjectType>` for improved type-safety).
 
-<Aside>
-The subject type must match the subject type returned by `getSubject` exactly.
-</Aside>
+<Aside>The subject type must match the subject type returned by `getSubject` exactly.</Aside>
 
 ```ts
 import { deny, grant, type Policyset } from "@kilpi/core";
@@ -30,14 +28,12 @@ import { deny, grant, type Policyset } from "@kilpi/core";
 export const policies = {
   // Example hierarchy
   documents: {
-
     // Allow all authed members to read docs
     read(user) {
       if (!user) return deny("Unauthenticated");
       return grant(user);
     },
-
-  }
+  },
 } as const satisfies Policyset<MySubjectType>;
 ```
 
@@ -45,7 +41,7 @@ export const policies = {
 
 A basic policy takes in a `subject` (often aliased as `user`) and returns an authorization with `return grant(user)` or `return deny(reason?)`.
 
-> The subject is automatically typed by `satisfies Policyset<MySubjectType>`. 
+> The subject is automatically typed by `satisfies Policyset<MySubjectType>`.
 
 ```ts
 export const policies = {
@@ -53,16 +49,16 @@ export const policies = {
     create(user) {
       if (!user) return deny("Unauthenticated");
       return grant(user);
-    }
-  }
+    },
+  },
 } as const satisfies Policyset<MySubjectType>;
 
 await Kilpi.authorize("comments:create");
 ```
 
-### Defining a policy with a resource
+### Defining a policy with an object
 
-A policy can optionally receive a **resource** as the second argument.
+A policy can optionally receive a **object** as the second argument.
 
 ```ts {3,5,10}
 export const policies = {
@@ -70,8 +66,8 @@ export const policies = {
     delete(user, comment: Comment) {
       if (!user) return deny("Unauthenticated");
       return comment.userId === user.id ? grant(user) : deny();
-    }
-  }
+    },
+  },
 } as const satisfies Policyset<MySubjectType>;
 
 await Kilpi.authorize("comments:delete", myComment);
@@ -88,15 +84,17 @@ export const policies = {
       if (!user) return deny("Unauthenticated");
       const response = await getAiResponse("Allow deleting comment: Yes or no?");
       return response.includes("Yes") ? grant(user) : deny();
-    }
-  }
+    },
+  },
 } as const satisfies Policyset<MySubjectType>;
 
 await Kilpi.authorize("comments:delete", myComment);
 ```
 
 <Aside type="warning">
-If using [protected queries](/docs/guides/protected-queries), do not call them via `.protect()`. Instead use `.unsafe()` to avoid infinite loops. This is safe, as the policy never returns the data to the user.
+  If using [protected queries](/docs/guides/protected-queries), do not call them via `.protect()`.
+  Instead use `.unsafe()` to avoid infinite loops. This is safe, as the policy never returns the
+  data to the user.
 </Aside>
 
 ### Tip: Utility functions
@@ -139,7 +137,7 @@ export const policies = {
       if (!user) return deny("Unauthenticated");
       return grant(user);
     },
-  }
+  },
 } as const satisfies Policyset<{ userId: string } | null>;
 
 // User is inferred to be non-null

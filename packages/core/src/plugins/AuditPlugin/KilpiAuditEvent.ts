@@ -23,9 +23,9 @@ export type KilpiAuditEvent<T extends AnyKilpiCore> = {
   subject: T["$$infer"]["subject"];
 
   /**
-   * Resource of the event
+   * Object of the event
    */
-  resource: unknown;
+  object: unknown;
 
   /**
    * Key of the policy

@@ -25,7 +25,7 @@ export async function Document({ id }) {
 
       <Access
         to="documents:delete" // Reference to policy
-        on={doc} // Resource (If required)
+        on={doc} // Object (If required)
         // Optional: Alter UI based on state
         Unauthorized={<p>Not allowed to delete button</p>}
         Loading={<p>Loading...</p>}
@@ -49,7 +49,7 @@ export function Document({ doc }) {
 
       <ClientAccess
         to="documents:delete" // Reference to policy
-        on={doc} // Resource (If required)
+        on={doc} // Object (If required)
         // Optional: Alter UI based on state
         Unauthorized={<p>Not allowed to delete button</p>}
         Loading={<p>Loading...</p>}

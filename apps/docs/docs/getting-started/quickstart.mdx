@@ -12,6 +12,7 @@ Follow this guide to get started using Kilpi fast from installation to first pro
 Kilpi does not require a rewrite of your codebase to start using. Instead, you can test Kilpi out by moving one policy at a time and by protecting one mutation, query, or page at a time. Get started by following this guide.
 
 If you run into issues migrating any existing applications, you are welcome to [file a new issue on GitHub](https://github.com/Jussinevavuori/kilpi/issues/new).
+
 </Collapsible>
 
 ---
@@ -40,12 +41,13 @@ If you run into issues migrating any existing applications, you are welcome to [
       ```
     </Tab>
 
-    
+
     <Tab label="bun">
       ```bash
       bun add @kilpi/core
       ```
     </Tab>
+
   </Tabs>
 
   </Step>
@@ -53,29 +55,23 @@ If you run into issues migrating any existing applications, you are welcome to [
     ### Project structure
 
     Create a `kilpi` directory (e.g. directly under your `/src` folder) with the following file structure.
-    
-  <FileTree>
-    - src
-      - kilpi
-        - policies.ts Define your policies here
-        - subject.ts Define your subject here
-        - kilpi.ts Define your Kilpi instance here
-  </FileTree>
+
+{" "}
+
+<FileTree>
+  - src - kilpi - policies.ts Define your policies here - subject.ts Define your subject here -
+  kilpi.ts Define your Kilpi instance here
+</FileTree>
 
   <Collapsible title="Project structure for larger projects">
     As your project grows, you may start extracting policies into their own files by domain, using e.g. a `policies` directory (below) or feature-based architecture.
 
-      
-  <FileTree>
-    - src
-      - kilpi
-        - policies
-          - organizations.policies.ts
-          - documents.policies.ts
-          - media.policies.ts
-        - subject.ts
-        - kilpi.ts        
-  </FileTree>
+{" "}
+
+<FileTree>
+  - src - kilpi - policies - organizations.policies.ts - documents.policies.ts - media.policies.ts -
+  subject.ts - kilpi.ts
+</FileTree>
 
     You would then import these policies in a `policies.ts` file or directly in your `kilpi.ts` file.
 
@@ -95,6 +91,7 @@ If you run into issues migrating any existing applications, you are welcome to [
       // ...
     })
     ```
+
   </Collapsible>
   </Step>
 
@@ -125,12 +122,13 @@ If you run into issues migrating any existing applications, you are welcome to [
     </Aside>
 
     [Read more about subjects](/docs/concepts/subject).
+
   </Step>
 
   <Step>
     ### Create your policies
 
-    Create `policies.ts` where you define all your policies as functions that take in the `user` and optionally a resource, and return `grant(user)` or `deny()`.
+    Create `policies.ts` where you define all your policies as functions that take in the `user` and optionally an object, and return `grant(user)` or `deny()`.
 
     [Read more about policies](/docs/concepts/policy).
 
@@ -155,6 +153,7 @@ If you run into issues migrating any existing applications, you are welcome to [
       },
     } as const satisfies Policyset<Subject | null>
     ```
+
   </Step>
 
   <Step>
@@ -168,13 +167,14 @@ If you run into issues migrating any existing applications, you are welcome to [
     import { getSubject } from "./subject";
     import { policies } from "./policies";
 
-    export const Kilpi = createKilpi({ 
-      getSubject, 
+    export const Kilpi = createKilpi({
+      getSubject,
       policies,
     });
     ```
 
     Also list any plugins, default behaviours and other configuration here.
+
   </Step>
 
   <Step>
@@ -189,5 +189,6 @@ If you run into issues migrating any existing applications, you are welcome to [
       // Your logic here ...
     }
     ```
+
   </Step>
 </Steps>

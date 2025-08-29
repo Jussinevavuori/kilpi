@@ -391,9 +391,9 @@ const getUser = Kilpi.query(
 
 ### Filter data
 
-In addition to returning partial data, you can also return filtered data either manually or by using `Kilpi.filter` to filter a set of resources to only the ones passing a specific policy.
+In addition to returning partial data, you can also return filtered data either manually or by using `Kilpi.filter` to filter a set of objects to only the ones passing a specific policy.
 
-1. Define a policy that accepts a resource.
+1. Define a policy that accepts an object.
 
    ```ts "doc: Document"
    docs: {
@@ -403,7 +403,7 @@ In addition to returning partial data, you can also return filtered data either 
    },
    ```
 
-2. Call `Kilpi.filter` to get only the resources that pass the policy for the current subject.
+2. Call `Kilpi.filter` to get only the objects that pass the policy for the current subject.
 
    ```ts
    const docs = await listAllDocuments();

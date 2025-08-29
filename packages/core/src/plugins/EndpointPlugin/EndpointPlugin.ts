@@ -12,7 +12,7 @@ export const endpointRequestSchema = z.discriminatedUnion("type", [
     type: z.literal("getIsAuthorized"),
     requestId: z.string(),
     policy: z.string(),
-    resource: z.any(),
+    object: z.any(),
   }),
   z.object({
     type: z.literal("getSubject"),
@@ -65,11 +65,11 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
 
             /**
              * Respond with a boolean for whether the current subject is authorized to
-             * the policy (on the resource if provided).
+             * the policy (on the object if provided).
              */
             case "getIsAuthorized": {
-              const isAuthorized = request.resource
-                ? await Kilpi.isAuthorized(request.policy, request.resource)
+              const isAuthorized = request.object
+                ? await Kilpi.isAuthorized(request.policy, request.object)
                 : await Kilpi.isAuthorized(request.policy);
               return createResponse(isAuthorized);
             }

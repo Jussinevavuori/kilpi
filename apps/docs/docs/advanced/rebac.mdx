@@ -9,9 +9,10 @@ sidebar:
 With Kilpi, you don't have to decide between [RBAC](/docs/advanced/rbac), [ABAC](/docs/advanced/abac), [ReBAC](/docs/advanced/rebac) or other access control models. Kilpi allows fluidly mixing them together based on your needs with a single declarative API. Besides, [RBAC](/docs/advanced/rbac), [ABAC](/docs/advanced/abac) and [ReBAC](/docs/advanced/rebac) are not completely separate models (e.g. [RBAC](/docs/advanced/rbac) is a subset of [ABAC](/docs/advanced/abac)).
 
 This guide is a tutorial on how to implement authorization policies that would fall under the term of ReBAC.
+
 </Aside>
 
-*ReBAC* or *Relationship-based access control* is a model where authorizations to resources are based on relationships between different resources, such as **data ownership**, **parent-child relationships**, **groups**, and **hierarchies**.
+_ReBAC_ or _Relationship-based access control_ is a model where authorizations to objects are based on relationships between different objects, such as **data ownership**, **parent-child relationships**, **groups**, and **hierarchies**.
 
 Let's explore different ReBAC scenarios and how they can be implemented using **Kilpi**.
 
@@ -25,10 +26,10 @@ This is trivial to implement with Kilpi as follows.
 export const policies = {
   comments: {
     delete(user, comment: Comment) {
-      return user && user.id === comment.userId ? grant(user) : deny()
-    }
-  }
-}
+      return user && user.id === comment.userId ? grant(user) : deny();
+    },
+  },
+};
 ```
 
 ### Parent-child relationships
@@ -57,23 +58,23 @@ async function isOwnerOfFolderOrParent(folderId: string): Promise<boolean> {
   const folder = await db.getFolderById(folderId);
 
   // Is owner: Stop recursion
-  if (folder?.ownerId === user.id) return true; 
+  if (folder?.ownerId === user.id) return true;
 
   // Recursively check parent folders until root
   if (folder?.parentId) return isOwnerOfFolderOrParent(folder.parentId);
-  
+
   // Base case
-  return false
+  return false;
 }
 
 export const policies = {
   folders: {
     async delete(user, folderId: string) {
       if (!user) return deny("Unauthenticated");
-      return await isOwnerOfFolderOrParent(folderId) ? grant(user) : deny()
+      return (await isOwnerOfFolderOrParent(folderId)) ? grant(user) : deny();
     },
-  }
-}
+  },
+};
 ```
 
 ### Groups (e.g. Organizations)
@@ -85,33 +86,32 @@ Instead of using an asynchronous data-fetching policy as we did for parent-child
 This is a great alternative if most of your authorization policies are based on memberships, which is common in many SaaS applications.
 
 ```ts
-type Subject = User & { 
+type Subject = User & {
   memberships: Array<{
     organizationId: string;
     role: string;
-  }>
+  }>;
 };
 
 export async function getSubject() {
   const user = await getCurrentUser();
   const memberships = await listMembershipsForUser(user.id);
-  return Object.assign(user, { memberships })
+  return Object.assign(user, { memberships });
 }
 
 // Tip: Use utility functions (You can extend this function with e.g. role checks in the future)
 export function isMember(user: Subject, orgId: string) {
-  return user.memberships.some(m => m.organizationId === orgId);
+  return user.memberships.some((m) => m.organizationId === orgId);
 }
-
 
 export const policies = {
   documents: {
     create(user: Subject, organizationId: string) {
       if (!user) return deny("Unauthenticated");
-      return isMember(user, organizationId) ? grant(user) : deny()
+      return isMember(user, organizationId) ? grant(user) : deny();
     },
-  }
-}
+  },
+};
 ```
 
 ### Permissions
@@ -122,14 +122,14 @@ See the article on [implementing permissions using Kilpi](/docs/advanced/permiss
 
 In general, any ReBAC problem can be solved by designing a **data model** and **queries** for fetching the necessary relationships. Here are some common strategies for querying your data model.
 
-1. **Pass as resource**
+1. **Pass as object**
 
-    When the relationship is between the resource and the subject, it is best to pass the resource as an argument to the policy function directly. See the [Data ownership](#data-ownership) example.
+   When the relationship is between the object and the subject, it is best to pass the object as an argument to the policy function directly. See the [Data ownership](#data-ownership) example.
 
 2. **Fetch in policy**
 
-    For data that can not be considered the resource of the policy, and is not global enough to be included in the subject, you can fetch in an asynchronous policy. See the [Parent-child relationships example](#parent-child-relationships).
+   For data that can not be considered the object of the policy, and is not global enough to be included in the subject, you can fetch in an asynchronous policy. See the [Parent-child relationships example](#parent-child-relationships).
 
 3. **Pass in subject**
 
-    For data that can be considered global enough to be always fetched, you can include it in the subject. See the [Groups (e.g. Organizations)](#groups-eg-organizations) example.
+   For data that can be considered global enough to be always fetched, you can include it in the subject. See the [Groups (e.g. Organizations)](#groups-eg-organizations) example.

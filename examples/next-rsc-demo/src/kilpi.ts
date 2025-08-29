@@ -19,7 +19,7 @@ export const Kilpi = createKilpi({
   plugins: [ReactServerComponentPlugin()],
 
   /**
-   * By default, redirect to home page when user is unauthorized to access a resource. Setting up
+   * By default, redirect to home page when user is unauthorized to access an object. Setting up
    * a default `onUnauthorized` handler is a good practice. It can also redirect to a login page,
    * or a forbidden page for example.
    */

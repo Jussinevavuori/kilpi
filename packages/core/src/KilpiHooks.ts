@@ -35,9 +35,9 @@ export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
   authorization: Decision<InferPolicySubject<T["$$infer"]["policies"]>>;
 
   /**
-   * The resource being authorized
+   * The object being authorized
    */
-  resource?: unknown;
+  object?: unknown;
 };
 
 /**

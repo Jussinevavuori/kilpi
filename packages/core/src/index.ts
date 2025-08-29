@@ -20,6 +20,6 @@ export {
   type Policy,
   type Policyset,
   type PolicysetKeys,
-  type PolicySetKeysWithoutResource,
-  type PolicysetKeysWithResource,
+  type PolicysetKeysWithObject,
+  type PolicySetKeysWithoutObject,
 } from "./policy";

@@ -5,14 +5,14 @@ import type { DeepObject, RecursiveKeysTo, RecursiveValueByKey } from "./utils/t
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Policy inputs either take in exactly 0 or 1 resources.
+ * Policy inputs either take in exactly 0 or 1 objects.
  */
 type AnyPolicyInput = [] | [any];
 
 /**
- * A policy is a function that takes in a subject and optionally a resource and returns an
+ * A policy is a function that takes in a subject and optionally an object and returns an
  * authorization representing whether the subject is allowed to perform the specified action
- * (on the specified resource).
+ * (on the specified object).
  *
  * A passed authorization check can also return a narrowed down version of the subject.
  */
@@ -55,18 +55,18 @@ export type PolicysetKeys<TPolicyset extends Policyset<any>> = RecursiveKeysTo<
 >;
 
 /**
- * Get list of policy keys that do not take in a resource.
+ * Get list of policy keys that do not take in an object.
  */
-export type PolicySetKeysWithoutResource<TPolicyset extends Policyset<any>> = {
+export type PolicySetKeysWithoutObject<TPolicyset extends Policyset<any>> = {
   [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<GetPolicyByKey<TPolicyset, K>> extends []
     ? K
     : never;
 }[PolicysetKeys<TPolicyset>];
 
 /**
- * Get list of policy keys that do take in a resource.
+ * Get list of policy keys that do take in an object.
  */
-export type PolicysetKeysWithResource<TPolicyset extends Policyset<any>> = {
+export type PolicysetKeysWithObject<TPolicyset extends Policyset<any>> = {
   [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<GetPolicyByKey<TPolicyset, K>> extends [any]
     ? K
     : never;

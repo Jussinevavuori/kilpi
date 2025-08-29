@@ -38,19 +38,19 @@ describe("Kilpi.authorize", () => {
     });
   });
 
-  it("should deny resource when unauthed", async () => {
+  it("should deny object when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
       await expect(Kilpi.authorize("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
     });
   });
 
-  it("should grant if owner of resource", async () => {
+  it("should grant if owner of object", async () => {
     await TestUtils.runAs({ id: "user1", roles: [] }, async (subject) => {
       await expect(Kilpi.authorize("docs:ownDocument", doc)).resolves.toMatchObject(subject);
     });
   });
 
-  it("should deny if not owner of resource", async () => {
+  it("should deny if not owner of object", async () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       await expect(Kilpi.authorize("docs:ownDocument", doc)).rejects.toBeInstanceOf(Denied);
     });

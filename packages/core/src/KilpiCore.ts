@@ -219,7 +219,7 @@ export class KilpiCore<
    * ```ts
    * export const POST = Kilpi.scoped(async (request) => {
    *   // ...
-   *   await Kilpi.authorize("resource:update", resource);
+   *   await Kilpi.authorize("object:update", object);
    *   return new Response(...);
    * })
    * ```
@@ -283,7 +283,7 @@ export class KilpiCore<
 
       // Run `onAfterAuthorization` hooks
       this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-        hook({ source: options.source, policy: key, subject, authorization, resource: inputs[0] });
+        hook({ source: options.source, policy: key, subject, authorization, object: inputs[0] });
       });
 
       // Return all relevant data
@@ -295,18 +295,18 @@ export class KilpiCore<
    * Evaluate a policy and return the full authorization object.
    *
    * @param key The key of the policy to evaluate
-   * @param inputs The resource (if any) to provide to the policy.
+   * @param inputs The object (if any) to provide to the policy.
    * @returns The full authorization object as a promise.
    *
    * ## Example
    *
    * @example
    * ```ts
-   * const authorization = await Kilpi.getAuthorization("resource:read", resource);
+   * const authorization = await Kilpi.getAuthorization("object:read", object);
    * if (authorization.granted) {
-   *   console.log(`User ${authorization.subject.id} can read resource ${resource.id}`);
+   *   console.log(`User ${authorization.subject.id} can read object ${object.id}`);
    * } else {
-   *   console.log(`Can not read resource: ${authorization.message}`);
+   *   console.log(`Can not read object: ${authorization.message}`);
    * }
    * ```
    */
@@ -327,16 +327,16 @@ export class KilpiCore<
    * Check if a user passes a policy.
    *
    * @param key The key of the policy to evaluate
-   * @param inputs The resource (if any) to provide to the policy.
+   * @param inputs The object (if any) to provide to the policy.
    * @returns A boolean indicating whether the user passes the policy.
    *
    * ## Example
    *
    * @example
    * ```ts
-   * const isAuthorized = await Kilpi.isAuthorized("resource:update", resource);
+   * const isAuthorized = await Kilpi.isAuthorized("object:update", object);
    * if (isAuthorized) {
-   *   await updateResource();
+   *   await updateObject();
    * }
    * ```
    */
@@ -358,7 +358,7 @@ export class KilpiCore<
    * throws.
    *
    * @param key The key of the policy to evaluate
-   * @param inputs The resource (if any) to provide to the policy.
+   * @param inputs The object (if any) to provide to the policy.
    * @returns The narrowed down subject if the user passes the policy.
    * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
@@ -367,11 +367,11 @@ export class KilpiCore<
    *
    * @example
    * ```ts
-   * const user = await Kilpi.authorize("resource:update", resource);
+   * const user = await Kilpi.authorize("object:update", object);
    *
-   * // User is authorized to update the resource. If not, `Kilpi.authorize` will have thrown
+   * // User is authorized to update the object. If not, `Kilpi.authorize` will have thrown
    * // or the custom `.onUnauthorized(...)` handler will have been called.
-   * await updateResource(resource, user);
+   * await updateObject(object, user);
    * ```
    */
   async authorize<TKey extends PolicysetKeys<TPolicyset>>(
@@ -410,7 +410,7 @@ export class KilpiCore<
    * if (!user) await Kilpi.unauthorized();
    *
    * // User is authed.
-   * await updateResource(resource, user);
+   * await updateObject(object, user);
    * ```
    */
   unauthorized(message = "Unauthorized", type?: string): never {
@@ -425,57 +425,57 @@ export class KilpiCore<
   }
 
   /**
-   * Utility to filter resources to only those resources that pass the policy. Requires a rule
-   * that takes in a resource.
+   * Utility to filter objects to only those objects that pass the policy. Requires a rule
+   * that takes in an object.
    *
    * ## Example
    *
    * @example
    * ```ts
-   * // Policy must take in a resource
+   * // Policy must take in an object
    * const Kilpi = createKilpi({
    *   ...,
    *   policies: {
-   *     resources: {
-   *       read: SomePolicy((user, resource) => ...),
+   *     objects: {
+   *       read: SomePolicy((user, object) => ...),
    *     }
    *   }
    * })
    *
-   * // Return only resources which the user is authorized to read
-   * const unauthorizedResources = await listResources();
-   * const authorizedResources = await Kilpi.filter("resource:read", unauthorizedResources);
+   * // Return only objects which the user is authorized to read
+   * const unauthorizedObjects = await listObjects();
+   * const authorizedObjects = await Kilpi.filter("object:read", unauthorizedObjects);
    *
    * // Or apply already in protected query and call vai `.protect()`
-   * const listResources = Kilpi.query(
-   *   async () => await db.listResources(),
+   * const listObjects = Kilpi.query(
+   *   async () => await db.listObjects(),
    *   {
-   *     async protector({ output: resources }) {
-   *       return await Kilpi.filter("resource:read", resources);
+   *     async protector({ output: objects }) {
+   *       return await Kilpi.filter("object:read", objects);
    *     }
    *   }
    * )
-   * const authorizedResources = listResources.protect();
+   * const authorizedObjects = listObjects.protect();
    * ```
    */
   async filter<
     TKey extends PolicysetKeys<TPolicyset>,
-    TResource extends ArrayHead<InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>>,
-  >(key: TKey, resources: TResource[]) {
+    TObject extends ArrayHead<InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>>,
+  >(key: TKey, objects: TObject[]) {
     // Get the current subject (cached)
     const subject = await this.getSubject();
 
     // Resolve the policy function by key
     const policy = getPolicyByKey(this.policies, key);
 
-    // Collect all resources which passed authorization here.
-    const authorizedResources: TResource[] = [];
+    // Collect all objects which passed authorization here.
+    const authorizedObjects: TObject[] = [];
 
     // Evaluate policies in parallel inside infinite loop detection.
     await KilpiCore.CallStackSizeProtector.run(async () =>
       Promise.all(
-        resources.map(async (resource) => {
-          const authorization = await policy(subject, resource);
+        objects.map(async (object) => {
+          const authorization = await policy(subject, object);
 
           // Run `onAfterAuthorization` hooks
           this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
@@ -483,14 +483,14 @@ export class KilpiCore<
           });
 
           if (authorization.granted) {
-            authorizedResources.push(resource);
+            authorizedObjects.push(object);
           }
         }),
       ),
     );
 
-    // Return all authorized resources.
-    return authorizedResources;
+    // Return all authorized objects.
+    return authorizedObjects;
   }
 
   /**
