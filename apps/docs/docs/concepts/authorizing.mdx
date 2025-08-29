@@ -137,19 +137,19 @@ Kilpi.onUnauthorized((error) => {
 </Step>
 </Steps>
 
-### `Kilpi.getAuthorization`
+### `Kilpi.getAuthorizationDecision`
 
-Similarly to `Kilpi.isAuthorized`, `Kilpi.getAuthorization` allows you to manually control your authorizations but returns an **authorization object**, with more data about the result of the authorization check.
+Similarly to `Kilpi.isAuthorized`, `Kilpi.getAuthorizationDecision` allows you to manually control your authorizations but returns an **decision object**, with more data about the result of the authorization check.
 
-For granted authorizations, it contains the **narrowed down** `subject`. For denied authorizations, it contains the `error` message.
+Granted decisions contain the **narrowed down** `subject`. Denied decisions contain the `message` and optional `type` and `metadata` fields.
 
 ```ts
-const authorization = await Kilpi.getAuthorization("documents:create");
+const decision = await Kilpi.getAuthorizationDecision("documents:create");
 
-if (authorization.granted) {
-  const user = authorization.subject;
+if (decision.granted) {
+  const user = decision.subject;
 } else {
-  console.error("Unauthorized", authorization.error);
+  console.error("Unauthorized", decision.error);
 }
 ```
 

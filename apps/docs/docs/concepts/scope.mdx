@@ -9,7 +9,8 @@ sidebar:
 It is used to store e.g. the current `onUnauthorized` handler set in `Kilpi.onUnauthorized`, as well as to cache the current subject.
 
 <Aside type="warning">
-To use certain APIs, such as `Kilpi.onUnauthorized` you must ensure you are calling them within a scope. A warning will be logged otherwise.
+  To use certain APIs, such as `Kilpi.onUnauthorized` you must ensure you are calling them within a
+  scope. A warning will be logged otherwise.
 </Aside>
 
 ## Provide an explicit scope
@@ -39,7 +40,7 @@ app.use(async (_, next) => {
   return await Kilpi.runInScope(async () => {
     return await next(); // Run handler in Kilpi scope
   });
-})
+});
 ```
 
 > `Kilpi.runInScope` and `Kilpi.scoped` use `AsyncLocalStorage` under the hood.
@@ -50,16 +51,15 @@ Plugins can automatically provide an implicit scope in certain contexts, without
 
 For example, the [React Server Components Plugin](/docs/plugins/react-server-components) automatically provides a scope for React Server Components.
 
-
 ```ts {3,7}
 const Kilpi = createKilpi({
   // ...
   plugins: [ReactServerComponentPlugin()],
-})
+});
 
 export async function Page() {
   Kilpi.onUnauthorized(() => redirect("/")); // Automatically works
-  Kilpi.authorize("authed"); 
+  Kilpi.authorize("authed");
 }
 ```
 
@@ -76,7 +76,7 @@ If you are unable to provide a request-level scope for any reason, you can use t
 You can't set up request-level error handlers using `Kilpi To use Kilpi.authorize without a scope, you can...
 
 1. **Use the default error handler** provided to `createKilpi` to handle unauthorized requests, and avoid using request-level error handlers with `Kilpi.onUnauthorized`.
-2. **Avoid APIs that throw** and instead use manual APIs (such as `Kilpi.isAuthorized` and `Kilpi.getAuthorization` instead of `Kilpi.authorize`).
+2. **Avoid APIs that throw** and instead use manual APIs (such as `Kilpi.isAuthorized` and `Kilpi.getAuthorizationDecision` instead of `Kilpi.authorize`).
 
 ---
 
@@ -86,14 +86,14 @@ The scope API was designed to
 
 1. **Reduce boilerplate**
 
-    With scope, you optimally only have to call `Kilpi.onUnauthorized` once, and all subsequent authorizations (in nested queries, components, ...) will automatically use the same handler.
+   With scope, you optimally only have to call `Kilpi.onUnauthorized` once, and all subsequent authorizations (in nested queries, components, ...) will automatically use the same handler.
 
 2. **Enable caching**
 
-    The scope is used to cache e.g. the subject for the current request.
+   The scope is used to cache e.g. the subject for the current request.
 
 3. **Enable protected queries**
 
-    Without a "global" `onUnauthorized` handler, you would have to define what happens when a protected query authorization fails. The same query should throw a `HTTPForbiddenError` in one context and redirect to the login page in another.
+   Without a "global" `onUnauthorized` handler, you would have to define what happens when a protected query authorization fails. The same query should throw a `HTTPForbiddenError` in one context and redirect to the login page in another.
 
 The primary trade-off of this approach is the **complexity** of having to manually provide a scope or use a plugin adds complexity to installing the library.

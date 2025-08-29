@@ -128,7 +128,7 @@ Almost always, your policies will be more readable when using utility functions.
 
 ## Narrowed down subject type
 
-Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript. You can receive the narrowed down subject type using `Kilpi.authorize` or `Kilpi.getAuthorization`.
+Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript. You can receive the narrowed down subject type using `Kilpi.authorize` or `Kilpi.getAuthorizationDecision`.
 
 ```ts {4-5,11}
 export const policies = {
