@@ -1,5 +1,15 @@
 # @kilpi/core
 
+## 0.18.0
+
+### Minor Changes
+
+- 7d49760: remove string overload from deny, deny input must be object
+
+### Patch Changes
+
+- ea9ef8a: rename resource to object for consistency
+
 ## 0.17.0
 
 ### Minor Changes
