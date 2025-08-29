@@ -46,7 +46,7 @@ export function AuditPlugin<T extends AnyKilpiCore>(
         // Construct audit event
         const auditEvent: KilpiAuditEvent<T> = {
           type: "authorization",
-          authorization: event.authorization,
+          decision: event.decision,
 
           subject: event.subject,
           policyKey: event.policy,

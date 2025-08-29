@@ -67,14 +67,14 @@ describe("Kilpi.query", async () => {
 
   await it("protect call resolves or throws", async () => {
     await TestUtils.runAs(null, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.AuthorizationDenied);
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.Unauthorized);
     });
 
     await TestUtils.runAs({ id: "user1", roles: [] }, async () => {
       await expect(getDoc.protect("doc1")).resolves.toMatchObject(doc1);
     });
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
-      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.AuthorizationDenied);
+      await expect(getDoc.protect("doc1")).rejects.toBeInstanceOf(KilpiError.Unauthorized);
     });
   });
 

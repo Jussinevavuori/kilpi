@@ -94,7 +94,7 @@ const policies = {
     },
 
     none_2() {
-      return deny("No type");
+      return deny({ message: "No type" });
     },
 
     type_1() {
@@ -103,6 +103,14 @@ const policies = {
 
     type_2() {
       return deny({ message: "Type 2", type: "type_2" });
+    },
+
+    type_3_with_metadata() {
+      return deny({
+        message: "Type 3",
+        type: "type_3",
+        metadata: { type: 3 },
+      });
     },
   },
 } satisfies Policyset<TestSubject | null>;

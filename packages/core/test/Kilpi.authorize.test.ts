@@ -12,7 +12,7 @@ const Kilpi = createKilpi({
 
 describe("Kilpi.authorize", () => {
   const doc: TestDocument = { id: "doc1", userId: "user1" };
-  const Denied = KilpiError.AuthorizationDenied;
+  const Denied = KilpiError.Unauthorized;
 
   it("should grant public when unauthed", async () => {
     await TestUtils.runAs(null, async () => {
@@ -65,17 +65,21 @@ describe("Kilpi.authorize", () => {
   it("should correctly handle different types of errors", async () => {
     await Kilpi.runInScope(async () => {
       const types: string[] = [];
+      const metadatas: unknown[] = [];
 
       await Kilpi.onUnauthorized((error) => {
         types.push(error.type ?? "NO_TYPE");
+        metadatas.push(error.metadata ?? null);
       });
 
       await Kilpi.authorize("types:none_1").catch(() => null);
       await Kilpi.authorize("types:none_2").catch(() => null);
       await Kilpi.authorize("types:type_1").catch(() => null);
       await Kilpi.authorize("types:type_2").catch(() => null);
+      await Kilpi.authorize("types:type_3_with_metadata").catch(() => null);
 
-      expect(types).toEqual(["NO_TYPE", "NO_TYPE", "type_1", "type_2"]);
+      expect(types).toEqual(["NO_TYPE", "NO_TYPE", "type_1", "type_2", "type_3"]);
+      expect(metadatas).toEqual([null, null, null, null, { type: 3 }]);
     });
   });
 });

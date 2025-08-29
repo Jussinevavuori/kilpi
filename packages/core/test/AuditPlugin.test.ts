@@ -174,7 +174,7 @@ describe("AuditPlugin", () => {
           strategy: "immediate",
           onFlushEvents: async (events) => events.forEach((e) => mockAuditApi(e)),
           filterEvents(e) {
-            return e.authorization.granted === false;
+            return e.decision.granted === false;
           },
         }),
       ],

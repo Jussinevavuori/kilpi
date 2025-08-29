@@ -15,7 +15,7 @@ export default async function ArticlePage(props: {
   if (!article) redirect("/");
 
   return (
-    <article className="flex flex-col gap-8 max-w-lg mx-auto w-full">
+    <article className="mx-auto flex w-full max-w-lg flex-col gap-8">
       <h1 className="text-3xl font-bold tracking-tight">{article.title}</h1>
 
       <p className="text-sm">
@@ -25,7 +25,7 @@ export default async function ArticlePage(props: {
 
       <p>{article.content}</p>
 
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row items-center gap-2">
         <div
           className={cn(
             "size-2 rounded-full",

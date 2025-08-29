@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "async_hooks";
+import type { DeniedDecision } from "./decision";
 import { KilpiError } from "./error";
 import { KilpiHooks } from "./KilpiHooks";
 import type { KilpiQueryProtector } from "./KilpiQuery";
@@ -265,7 +266,7 @@ export class KilpiCore<
    * Internal utility called by all authorization functions. Gets the subject, resolves
    * the policy by key and evaluates the policy. Returns all authorization information.
    */
-  private async evaluateAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
+  private async evaluate<TKey extends PolicysetKeys<TPolicyset>>(
     options: { source: string },
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
@@ -279,15 +280,21 @@ export class KilpiCore<
       const policy = getPolicyByKey(this.policies, key);
 
       // Evaluate the policy
-      const authorization = await policy(subject, ...[...inputs]);
+      const decision = await policy(subject, ...[...inputs]);
 
       // Run `onAfterAuthorization` hooks
       this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-        hook({ source: options.source, policy: key, subject, authorization, object: inputs[0] });
+        hook({
+          source: options.source,
+          policy: key,
+          subject,
+          decision,
+          object: inputs[0],
+        });
       });
 
       // Return all relevant data
-      return { authorization, policy, subject };
+      return { decision, policy, subject };
     });
   }
 
@@ -296,31 +303,31 @@ export class KilpiCore<
    *
    * @param key The key of the policy to evaluate
    * @param inputs The object (if any) to provide to the policy.
-   * @returns The full authorization object as a promise.
+   * @returns The full decision object as a promise.
    *
    * ## Example
    *
    * @example
    * ```ts
-   * const authorization = await Kilpi.getAuthorization("object:read", object);
-   * if (authorization.granted) {
-   *   console.log(`User ${authorization.subject.id} can read object ${object.id}`);
+   * const decision = await Kilpi.getAuthorizationDecision("object:read", object);
+   * if (decision.granted) {
+   *   console.log(`User ${decision.subject.id} can read object ${object.id}`);
    * } else {
-   *   console.log(`Can not read object: ${authorization.message}`);
+   *   console.log(`Can not read object: ${decision.message}`);
    * }
    * ```
    */
-  async getAuthorization<TKey extends PolicysetKeys<TPolicyset>>(
+  async getAuthorizationDecision<TKey extends PolicysetKeys<TPolicyset>>(
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ) {
-    // Evaluate policy and return the authorization object
-    const { authorization } = await this.evaluateAuthorization(
-      { source: "getAuthorization" },
+    // Evaluate policy and return the decision object
+    const { decision } = await this.evaluate(
+      { source: "getAuthorizationDecision" },
       key,
       ...inputs,
     );
-    return authorization;
+    return decision;
   }
 
   /**
@@ -345,12 +352,8 @@ export class KilpiCore<
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<boolean> {
     // Evaluate policy and return the granted boolean
-    const { authorization } = await this.evaluateAuthorization(
-      { source: "isAuthorized" },
-      key,
-      ...inputs,
-    );
-    return authorization.granted;
+    const { decision } = await this.evaluate({ source: "isAuthorized" }, key, ...inputs);
+    return decision.granted;
   }
 
   /**
@@ -360,7 +363,7 @@ export class KilpiCore<
    * @param key The key of the policy to evaluate
    * @param inputs The object (if any) to provide to the policy.
    * @returns The narrowed down subject if the user passes the policy.
-   * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
+   * @throws KilpiError.Unauthorized if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
    *
    * ## Example
@@ -378,20 +381,16 @@ export class KilpiCore<
     key: TKey,
     ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
   ): Promise<InferPolicySubject<GetPolicyByKey<TPolicyset, TKey>>> {
-    // Evaluate policy and get the authorization object
-    const { authorization } = await this.evaluateAuthorization(
-      { source: "authorize" },
-      key,
-      ...inputs,
-    );
+    // Evaluate policy and get the decision
+    const { decision } = await this.evaluate({ source: "authorize" }, key, ...inputs);
 
     // Granted, return the narrowed down subject and escape early
-    if (authorization.granted) {
-      return authorization.subject;
+    if (decision.granted) {
+      return decision.subject;
     }
 
     // Unauthorized
-    this.unauthorized(authorization.message ?? "Unauthorized", authorization.type);
+    this.unauthorized(decision);
   }
 
   /**
@@ -399,7 +398,7 @@ export class KilpiCore<
    * similarly as with `.authorize()` with this function.
    *
    * @param message The optional message to pass to the onUnauthorized handler.
-   * @throws KilpiError.AuthorizationDenied if the user does not pass the policy, or other
+   * @throws KilpiError.Unauthorized if the user does not pass the policy, or other
    * value defined in `.onUnauthorized(...)`.
    *
    * ## Example
@@ -413,15 +412,15 @@ export class KilpiCore<
    * await updateObject(object, user);
    * ```
    */
-  unauthorized(message = "Unauthorized", type?: string): never {
+  unauthorized(denial: DeniedDecision): never {
     // Run onUnauthorized handler in current scope if available
-    this.resolveScope()?.onUnauthorized?.({ message, type });
+    this.resolveScope()?.onUnauthorized?.(denial);
 
     // Run default onUnauthorized handler if available
-    this.settings?.defaultOnUnauthorized?.({ message, type });
+    this.settings?.defaultOnUnauthorized?.(denial);
 
     // Throw by default
-    throw new KilpiError.AuthorizationDenied(message);
+    throw new KilpiError.Unauthorized(denial.message);
   }
 
   /**
@@ -475,14 +474,14 @@ export class KilpiCore<
     await KilpiCore.CallStackSizeProtector.run(async () =>
       Promise.all(
         objects.map(async (object) => {
-          const authorization = await policy(subject, object);
+          const decision = await policy(subject, object);
 
           // Run `onAfterAuthorization` hooks
           this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-            hook({ source: "filter", policy: key, subject, authorization });
+            hook({ source: "filter", policy: key, subject, decision });
           });
 
-          if (authorization.granted) {
+          if (decision.granted) {
             authorizedObjects.push(object);
           }
         }),

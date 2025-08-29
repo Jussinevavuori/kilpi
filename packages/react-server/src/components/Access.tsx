@@ -77,11 +77,11 @@ export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore
   >(props: AccessProps<TCore, TKey>) {
     // Inner async component to be suspended by parent
     async function Access_InnerSuspendable() {
-      // Get authorization
-      const authorization = await KilpiCore.getAuthorization(props.to, props.on);
+      // Get decision
+      const decision = await KilpiCore.getAuthorizationDecision(props.to, props.on);
 
-      // No authorization, render Unauthorized component
-      if (!authorization.granted) return props.Unauthorized;
+      // No decision, render Unauthorized component
+      if (!decision.granted) return props.Unauthorized;
 
       // Authorization passed, render children
       return props.children;

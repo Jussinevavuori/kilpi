@@ -1,11 +1,5 @@
 export { createKilpi } from "./createKilpi";
-export {
-  deny,
-  grant,
-  type Decision as Authorization,
-  type DeniedDecision,
-  type GrantedDecision,
-} from "./decision";
+export { deny, grant, type Decision, type DeniedDecision, type GrantedDecision } from "./decision";
 export { KilpiError } from "./error";
 export { KilpiCore, type AnyKilpiCore, type KilpiConstructorArgs } from "./KilpiCore";
 export { createKilpiPlugin, type KilpiPlugin } from "./KilpiPlugin";

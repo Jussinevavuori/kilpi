@@ -10,7 +10,7 @@ export type KilpiAuditEvent<T extends AnyKilpiCore> = {
   /**
    * Authorization decision
    */
-  authorization: Decision<T["$$infer"]["subject"]>;
+  decision: Decision<T["$$infer"]["subject"]>;
 
   /**
    * Timestamp of the event

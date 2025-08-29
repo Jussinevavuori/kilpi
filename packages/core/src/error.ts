@@ -11,10 +11,10 @@ class KilpiInternalError extends Error {
 /**
  * Error thrown when an authorization check fails.
  */
-class KilpiAuthorizationDeniedError extends Error {
+class KilpiUnauthorizedError extends Error {
   constructor(message = "Unauthorized") {
     super(message);
-    this.name = "Kilpi_AuthorizationDeniedError";
+    this.name = "KilpiUnauthorizedError";
   }
 }
 
@@ -23,5 +23,5 @@ class KilpiAuthorizationDeniedError extends Error {
  */
 export const KilpiError = {
   Internal: KilpiInternalError,
-  AuthorizationDenied: KilpiAuthorizationDeniedError,
+  Unauthorized: KilpiUnauthorizedError,
 };
