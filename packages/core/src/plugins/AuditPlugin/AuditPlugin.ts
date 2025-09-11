@@ -49,7 +49,7 @@ export function AuditPlugin<T extends AnyKilpiCore>(
           decision: event.decision,
 
           subject: event.subject,
-          policyKey: event.policy,
+          action: event.action,
           object: event.object,
           source: event.source,
           timestamp: Date.now(),

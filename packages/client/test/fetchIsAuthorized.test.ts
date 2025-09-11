@@ -35,25 +35,25 @@ function init(options: { subject: Sub | null }) {
 describe("fetchIsAuthorized", () => {
   it("should work when unauthenticated", async () => {
     const Client = init({ subject: null });
-    expect(await Client.fetchIsAuthorized({ key: "always" })).toBe(true);
-    expect(await Client.fetchIsAuthorized({ key: "never" })).toBe(false);
-    expect(await Client.fetchIsAuthorized({ key: "authed" })).toBe(false);
-    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "1" } })).toBe(
-      false,
-    );
+    expect(await Client.fetchIsAuthorized({ action: "always" })).toBe(true);
+    expect(await Client.fetchIsAuthorized({ action: "never" })).toBe(false);
+    expect(await Client.fetchIsAuthorized({ action: "authed" })).toBe(false);
+    expect(
+      await Client.fetchIsAuthorized({ action: "own", object: { id: "1", userId: "1" } }),
+    ).toBe(false);
   });
 
   it("should work when authenticated", async () => {
     const subject: Sub = { id: "1", name: "Tester" };
     const Client = init({ subject });
-    expect(await Client.fetchIsAuthorized({ key: "always" })).toBe(true);
-    expect(await Client.fetchIsAuthorized({ key: "never" })).toBe(false);
-    expect(await Client.fetchIsAuthorized({ key: "authed" })).toBe(true);
-    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "1" } })).toBe(
-      true,
-    );
-    expect(await Client.fetchIsAuthorized({ key: "own", object: { id: "1", userId: "2" } })).toBe(
-      false,
-    );
+    expect(await Client.fetchIsAuthorized({ action: "always" })).toBe(true);
+    expect(await Client.fetchIsAuthorized({ action: "never" })).toBe(false);
+    expect(await Client.fetchIsAuthorized({ action: "authed" })).toBe(true);
+    expect(
+      await Client.fetchIsAuthorized({ action: "own", object: { id: "1", userId: "1" } }),
+    ).toBe(true);
+    expect(
+      await Client.fetchIsAuthorized({ action: "own", object: { id: "1", userId: "2" } }),
+    ).toBe(false);
   });
 });

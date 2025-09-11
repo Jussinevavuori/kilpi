@@ -19,7 +19,7 @@ Kilpi is designed to follow several guidelines and principles. The aim of these 
 
 ### Centralized authorization layer
 
-Kilpi is designed around a centralized authorization layer consisting of a set of policies, referred to by their keys, such as `documents:update`. Reducing duplicated code makes your authorization logic easier to maintain and understand.
+Kilpi is designed around a centralized authorization layer consisting of a set of policies, uniquely mapping each action, such as `documents:update`, to a functional policy. Reducing duplicated code makes your authorization logic easier to maintain and understand.
 
 ### Policies as code
 
@@ -92,4 +92,4 @@ The [OWASP Top Ten](https://owasp.org/www-project-top-ten/) lists the top 10 sec
 - **`OWASP A01:2021`**: Broken Access Control (Listed at #1)
 - **`OWASP A04:2021`**: Insecure Design (Listed at #4)
 
-Kilpi offers you a **secure design** for your authorization and by centralizing and making your policies explicit, it helps you avoid **broken access control**, especially when policies change. 
+Kilpi offers you a **secure design** for your authorization and by centralizing and making your policies explicit, it helps you avoid **broken access control**, especially when policies change.

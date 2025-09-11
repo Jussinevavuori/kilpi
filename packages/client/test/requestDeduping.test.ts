@@ -187,9 +187,9 @@ describe("requestDeduping", () => {
     const { KilpiClient, processItemCb } = init();
 
     // Send 2 identical requests + 1 different request
-    KilpiClient.fetchIsAuthorized({ key: "always" });
-    KilpiClient.fetchIsAuthorized({ key: "always" });
-    await KilpiClient.fetchIsAuthorized({ key: "never" });
+    KilpiClient.fetchIsAuthorized({ action: "always" });
+    KilpiClient.fetchIsAuthorized({ action: "always" });
+    await KilpiClient.fetchIsAuthorized({ action: "never" });
 
     // Ensure only 2 items were sent
     expect(processItemCb).toHaveBeenCalledTimes(2);
@@ -211,8 +211,8 @@ describe("requestDeduping", () => {
     const { KilpiClient, processItemCb } = init();
 
     // Send 2 identical requests, flush on last
-    KilpiClient.fetchIsAuthorized({ key: "doc", object: { id: "1", userId: "1" } });
-    await KilpiClient.fetchIsAuthorized({ key: "doc", object: { id: "1", userId: "1" } });
+    KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
+    await KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
 
     // Ensure only 1 item was sent
     expect(processItemCb).toHaveBeenCalledTimes(1);
@@ -222,8 +222,8 @@ describe("requestDeduping", () => {
     const { KilpiClient, processItemCb } = init();
 
     // Send 2 identical requests
-    KilpiClient.fetchIsAuthorized({ key: "doc", object: { id: "1", userId: "1" } });
-    await KilpiClient.fetchIsAuthorized({ key: "doc", object: { userId: "1", id: "1" } });
+    KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
+    await KilpiClient.fetchIsAuthorized({ action: "doc", object: { userId: "1", id: "1" } });
 
     // Ensure only 1 item was sent
     expect(processItemCb).toHaveBeenCalledTimes(1);

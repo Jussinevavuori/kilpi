@@ -1,5 +1,10 @@
 import type { KilpiClient } from "@kilpi/client";
-import type { AnyKilpiCore, GetPolicyByKey, InferPolicyInputs, PolicysetKeys } from "@kilpi/core";
+import type {
+  AnyKilpiCore,
+  GetPolicyByAction,
+  InferPolicyInputs,
+  PolicysetActions,
+} from "@kilpi/core";
 import { useEffect, useState } from "react";
 import { useCacheClearSignal } from "./useCacheClearSignal";
 
@@ -35,9 +40,9 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
   /**
    * React client hook for accessing the current subject.
    */
-  return function useIsAuthorized<TKey extends PolicysetKeys<T["$$infer"]["policies"]>>(
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>
+  return function useIsAuthorized<TAction extends PolicysetActions<T["$$infer"]["policies"]>>(
+    action: TAction,
+    ...inputs: InferPolicyInputs<GetPolicyByAction<T["$$infer"]["policies"], TAction>>
   ) {
     /**
      * Hold current state of useIsAuthorized.
@@ -69,7 +74,7 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
         if (isMounted) setValue({ status: "loading", error: null, isAuthorized: null });
         try {
           const isAuthorized = await KilpiClient.fetchIsAuthorized({
-            key,
+            action: action,
             object: inputs[0],
             queryOptions: { signal: abortController.signal },
           });

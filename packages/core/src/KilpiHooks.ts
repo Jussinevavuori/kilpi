@@ -20,9 +20,9 @@ export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
   source: string;
 
   /**
-   * Policy key to authorize
+   * Action
    */
-  policy: string;
+  action: string;
 
   /**
    * Current subject

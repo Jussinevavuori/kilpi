@@ -2,7 +2,7 @@ import { ClientCache } from "src/utils/ClientCache";
 import { describe, expect, it } from "vitest";
 
 describe("ClientCache", () => {
-  it("handle key serialization", () => {
+  it("handles key serialization", () => {
     const cache = new ClientCache();
     cache.set(["example", 1, true, { a: 1, b: 2 }], "value");
     expect(cache.get(["example", 1, true, { a: 1, b: 2 }])).toBe("value");

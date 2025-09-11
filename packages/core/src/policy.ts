@@ -36,9 +36,9 @@ export type InferPolicyInputs<T> = T extends Policy<infer TInputs, any, any> ? T
 export type InferPolicySubject<T> = T extends Policy<any, any, infer TSubject> ? TSubject : never;
 
 /**
- * Separator for policy keys.
+ * Separator for action keys (e.g. "blog:edit").
  */
-const POLICY_KEY_SEPARATOR = ":" as const;
+const SEPARATOR = ":" as const;
 
 /**
  * Policyset is a deep-object of policies which all share a common base subject type.
@@ -46,31 +46,35 @@ const POLICY_KEY_SEPARATOR = ":" as const;
 export type Policyset<TSubject> = DeepObject<Policy<any, TSubject, any>>;
 
 /**
- * List of all keys in policyset.
+ * List of all actions in a PolicySet.
  */
-export type PolicysetKeys<TPolicyset extends Policyset<any>> = RecursiveKeysTo<
+export type PolicysetActions<TPolicyset extends Policyset<any>> = RecursiveKeysTo<
   TPolicyset,
   TPolicyset extends Policyset<infer TSubject> ? Policy<any, TSubject, any> : never,
-  typeof POLICY_KEY_SEPARATOR
+  typeof SEPARATOR
 >;
 
 /**
- * Get list of policy keys that do not take in an object.
+ * Get list of actions that do not take in an object.
  */
-export type PolicySetKeysWithoutObject<TPolicyset extends Policyset<any>> = {
-  [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<GetPolicyByKey<TPolicyset, K>> extends []
+export type PolicySetActionsWithoutObject<TPolicyset extends Policyset<any>> = {
+  [K in PolicysetActions<TPolicyset>]: InferPolicyInputs<
+    GetPolicyByAction<TPolicyset, K>
+  > extends []
     ? K
     : never;
-}[PolicysetKeys<TPolicyset>];
+}[PolicysetActions<TPolicyset>];
 
 /**
- * Get list of policy keys that do take in an object.
+ * Get list of actions that do take in an object.
  */
-export type PolicysetKeysWithObject<TPolicyset extends Policyset<any>> = {
-  [K in PolicysetKeys<TPolicyset>]: InferPolicyInputs<GetPolicyByKey<TPolicyset, K>> extends [any]
+export type PolicysetActionsWithObject<TPolicyset extends Policyset<any>> = {
+  [K in PolicysetActions<TPolicyset>]: InferPolicyInputs<GetPolicyByAction<TPolicyset, K>> extends [
+    any,
+  ]
     ? K
     : never;
-}[PolicysetKeys<TPolicyset>];
+}[PolicysetActions<TPolicyset>];
 
 /**
  * Ensure a value is a policy.
@@ -78,29 +82,29 @@ export type PolicysetKeysWithObject<TPolicyset extends Policyset<any>> = {
 type EnsureTypeIsPolicy<T> = T extends Policy<any, any, any> ? T : never;
 
 /**
- * Type of a policy from a policyset given a key.
+ * Type of a policy from a policyset given an action.
  */
-export type GetPolicyByKey<
+export type GetPolicyByAction<
   TPolicyset extends Policyset<any>,
-  TKey extends PolicysetKeys<TPolicyset>,
-> = EnsureTypeIsPolicy<RecursiveValueByKey<TPolicyset, TKey, typeof POLICY_KEY_SEPARATOR>>;
+  TAction extends PolicysetActions<TPolicyset>,
+> = EnsureTypeIsPolicy<RecursiveValueByKey<TPolicyset, TAction, typeof SEPARATOR>>;
 
 /**
- * Typesafe function to extract a policy from a policyset by key.
+ * Typesafe function to extract a policy from a policyset by the action.
  */
-export function getPolicyByKey<
+export function getPolicyByAction<
   const TPolicyset extends Policyset<any>,
-  TKey extends PolicysetKeys<TPolicyset>,
->(policyset: TPolicyset, key: TKey): GetPolicyByKey<TPolicyset, TKey> {
-  // Access policy by key
-  const keys = key.split(POLICY_KEY_SEPARATOR);
-  const policy = keys.reduce<any>((index, k) => index[k], policyset);
+  TAction extends PolicysetActions<TPolicyset>,
+>(policyset: TPolicyset, action: TAction): GetPolicyByAction<TPolicyset, TAction> {
+  // Access policy by action
+  const parts = action.split(SEPARATOR);
+  const policy = parts.reduce<any>((index, k) => index[k], policyset);
 
   // Ensure policy found
   if (typeof policy !== "function") {
-    throw new KilpiError.Internal(`Policy not found: "${key}"`);
+    throw new KilpiError.Internal(`Policy not found: "${action}"`);
   }
 
   // Typecast as this can not be done type-safely without
-  return policy as GetPolicyByKey<TPolicyset, TKey>;
+  return policy as GetPolicyByAction<TPolicyset, TAction>;
 }

@@ -1,9 +1,9 @@
 import type {
   AnyKilpiCore,
   endpointRequestSchema,
-  GetPolicyByKey,
+  GetPolicyByAction,
   InferPolicyInputs,
-  PolicysetKeys,
+  PolicysetActions,
 } from "@kilpi/core";
 import { nanoid } from "nanoid";
 import { parse as superJsonParse } from "superjson";
@@ -117,19 +117,21 @@ export class KilpiClient<T extends AnyKilpiCore> {
   /**
    * Fetch whether the current subject is authorized to the policy.
    */
-  public async fetchIsAuthorized<TKey extends PolicysetKeys<T["$$infer"]["policies"]>>(options: {
-    key: TKey;
-    object?: ArrayHead<InferPolicyInputs<GetPolicyByKey<T["$$infer"]["policies"], TKey>>>;
+  public async fetchIsAuthorized<
+    TAction extends PolicysetActions<T["$$infer"]["policies"]>,
+  >(options: {
+    action: TAction;
+    object?: ArrayHead<InferPolicyInputs<GetPolicyByAction<T["$$infer"]["policies"], TAction>>>;
     queryOptions?: { signal?: AbortSignal | null | undefined };
   }): Promise<boolean> {
     return this.cache.wrap(
-      { cacheKey: ["fetchIsAuthorized", options.key, options.object] },
+      { cacheKey: ["fetchIsAuthorized", options.action, options.object] },
       async () => {
         // Fetch authorization from the server (with batching)
         const isAuthorized = await this.batcher.queueJob(
           {
             type: "getIsAuthorized",
-            policy: options.key,
+            action: options.action,
             requestId: nanoid(),
             object: options.object,
           },

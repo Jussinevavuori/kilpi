@@ -7,13 +7,13 @@ export { type AnyKilpiScope, type KilpiOnUnauthorizedHandler, type KilpiScope } 
 export { AuditPlugin } from "./plugins/AuditPlugin/AuditPlugin";
 export { EndpointPlugin, endpointRequestSchema } from "./plugins/EndpointPlugin/EndpointPlugin";
 export {
-  getPolicyByKey,
-  type GetPolicyByKey,
+  getPolicyByAction,
+  type GetPolicyByAction,
   type InferPolicyInputs,
   type InferPolicySubject,
   type Policy,
   type Policyset,
-  type PolicysetKeys,
-  type PolicysetKeysWithObject,
-  type PolicySetKeysWithoutObject,
+  type PolicysetActions,
+  type PolicysetActionsWithObject,
+  type PolicySetActionsWithoutObject,
 } from "./policy";

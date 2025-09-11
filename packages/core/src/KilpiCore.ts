@@ -11,13 +11,13 @@ import {
   type KilpiScope,
 } from "./KilpiScope";
 import type {
-  GetPolicyByKey,
+  GetPolicyByAction,
   InferPolicyInputs,
   InferPolicySubject,
   Policyset,
-  PolicysetKeys,
+  PolicysetActions,
 } from "./policy";
-import { getPolicyByKey } from "./policy";
+import { getPolicyByAction } from "./policy";
 import { createCallStackSizeProtector } from "./utils/callStackSizeProtector";
 import type { ArrayHead } from "./utils/types";
 
@@ -264,20 +264,20 @@ export class KilpiCore<
 
   /**
    * Internal utility called by all authorization functions. Gets the subject, resolves
-   * the policy by key and evaluates the policy. Returns all authorization information.
+   * the policy by the action and evaluates the policy. Returns all authorization information.
    */
-  private async evaluate<TKey extends PolicysetKeys<TPolicyset>>(
+  private async evaluate<TAction extends PolicysetActions<TPolicyset>>(
     options: { source: string },
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
+    action: TAction,
+    ...inputs: InferPolicyInputs<GetPolicyByAction<TPolicyset, TAction>>
   ) {
     // Evaluate policy within infinite loop protection
     return await KilpiCore.CallStackSizeProtector.run(async () => {
       // Get the current subject (cached)
       const subject = await this.getSubject();
 
-      // Resolve the policy function by key
-      const policy = getPolicyByKey(this.policies, key);
+      // Resolve the policy function by the action
+      const policy = getPolicyByAction(this.policies, action);
 
       // Evaluate the policy
       const decision = await policy(subject, ...[...inputs]);
@@ -286,7 +286,7 @@ export class KilpiCore<
       this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
         hook({
           source: options.source,
-          policy: key,
+          action: action,
           subject,
           decision,
           object: inputs[0],
@@ -301,7 +301,7 @@ export class KilpiCore<
   /**
    * Evaluate a policy and return the full authorization object.
    *
-   * @param key The key of the policy to evaluate
+   * @param action The action to evaluate
    * @param inputs The object (if any) to provide to the policy.
    * @returns The full decision object as a promise.
    *
@@ -317,14 +317,14 @@ export class KilpiCore<
    * }
    * ```
    */
-  async getAuthorizationDecision<TKey extends PolicysetKeys<TPolicyset>>(
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
+  async getAuthorizationDecision<TAction extends PolicysetActions<TPolicyset>>(
+    action: TAction,
+    ...inputs: InferPolicyInputs<GetPolicyByAction<TPolicyset, TAction>>
   ) {
     // Evaluate policy and return the decision object
     const { decision } = await this.evaluate(
       { source: "getAuthorizationDecision" },
-      key,
+      action,
       ...inputs,
     );
     return decision;
@@ -333,7 +333,7 @@ export class KilpiCore<
   /**
    * Check if a user passes a policy.
    *
-   * @param key The key of the policy to evaluate
+   * @param action The action to evaluate
    * @param inputs The object (if any) to provide to the policy.
    * @returns A boolean indicating whether the user passes the policy.
    *
@@ -347,12 +347,12 @@ export class KilpiCore<
    * }
    * ```
    */
-  async isAuthorized<TKey extends PolicysetKeys<TPolicyset>>(
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
+  async isAuthorized<TAction extends PolicysetActions<TPolicyset>>(
+    action: TAction,
+    ...inputs: InferPolicyInputs<GetPolicyByAction<TPolicyset, TAction>>
   ): Promise<boolean> {
     // Evaluate policy and return the granted boolean
-    const { decision } = await this.evaluate({ source: "isAuthorized" }, key, ...inputs);
+    const { decision } = await this.evaluate({ source: "isAuthorized" }, action, ...inputs);
     return decision.granted;
   }
 
@@ -360,7 +360,7 @@ export class KilpiCore<
    * Check if a user passes a policy. If yes, returns the narrowed down subject. Else,
    * throws.
    *
-   * @param key The key of the policy to evaluate
+   * @param action The action to evaluate
    * @param inputs The object (if any) to provide to the policy.
    * @returns The narrowed down subject if the user passes the policy.
    * @throws KilpiError.Unauthorized if the user does not pass the policy, or other
@@ -377,12 +377,12 @@ export class KilpiCore<
    * await updateObject(object, user);
    * ```
    */
-  async authorize<TKey extends PolicysetKeys<TPolicyset>>(
-    key: TKey,
-    ...inputs: InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>
-  ): Promise<InferPolicySubject<GetPolicyByKey<TPolicyset, TKey>>> {
+  async authorize<TAction extends PolicysetActions<TPolicyset>>(
+    action: TAction,
+    ...inputs: InferPolicyInputs<GetPolicyByAction<TPolicyset, TAction>>
+  ): Promise<InferPolicySubject<GetPolicyByAction<TPolicyset, TAction>>> {
     // Evaluate policy and get the decision
-    const { decision } = await this.evaluate({ source: "authorize" }, key, ...inputs);
+    const { decision } = await this.evaluate({ source: "authorize" }, action, ...inputs);
 
     // Granted, return the narrowed down subject and escape early
     if (decision.granted) {
@@ -412,7 +412,7 @@ export class KilpiCore<
    * await updateObject(object, user);
    * ```
    */
-  unauthorized(denial: DeniedDecision): never {
+  public unauthorized(denial: DeniedDecision): never {
     // Run onUnauthorized handler in current scope if available
     this.resolveScope()?.onUnauthorized?.(denial);
 
@@ -458,14 +458,14 @@ export class KilpiCore<
    * ```
    */
   async filter<
-    TKey extends PolicysetKeys<TPolicyset>,
-    TObject extends ArrayHead<InferPolicyInputs<GetPolicyByKey<TPolicyset, TKey>>>,
-  >(key: TKey, objects: TObject[]) {
+    TAction extends PolicysetActions<TPolicyset>,
+    TObject extends ArrayHead<InferPolicyInputs<GetPolicyByAction<TPolicyset, TAction>>>,
+  >(action: TAction, objects: TObject[]) {
     // Get the current subject (cached)
     const subject = await this.getSubject();
 
-    // Resolve the policy function by key
-    const policy = getPolicyByKey(this.policies, key);
+    // Resolve the policy function by action
+    const policy = getPolicyByAction(this.policies, action);
 
     // Collect all objects which passed authorization here.
     const authorizedObjects: TObject[] = [];
@@ -478,7 +478,7 @@ export class KilpiCore<
 
           // Run `onAfterAuthorization` hooks
           this.hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-            hook({ source: "filter", policy: key, subject, decision });
+            hook({ source: "filter", action: action, subject, decision });
           });
 
           if (decision.granted) {

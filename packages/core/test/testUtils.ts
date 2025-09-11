@@ -66,7 +66,7 @@ const policies = {
     return grant(subject);
   },
 
-  // Nested keys
+  // Nested actions
   docs: {
     // Authed only if ID matches
     ownDocument(subject, doc: TestDocument) {

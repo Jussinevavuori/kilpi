@@ -12,7 +12,7 @@ Using Kilpi, there are several APIs for performing authorizations. They can all 
 
 ### `Kilpi.isAuthorized`
 
-The simplest way to check for authorizations is to use `Kilpi.isAuthorized`. It returns a `Promise<boolean>` indicating whether the user is authorized or not. Pass it the policy key and an object, if the policy requires one.
+The simplest way to check for authorizations is to use `Kilpi.isAuthorized`. It returns a `Promise<boolean>` indicating whether the user is authorized or not. Pass it the action and an object, if the policy requires one.
 
 Unlike with `Kilpi.authorize`, you must also handle the unauthorized case manually.
 
@@ -34,7 +34,7 @@ if (await Kilpi.isAuthorized("documents:delete", document)) {
 
 In some cases, **throwing on unauthorized** is the simplest way to protect your application, e.g. to automatically always throw a 403 error when an authorization check fails.
 
-`Kilpi.authorize` also takes in the policy key and optionally an object if the policy requires one.
+`Kilpi.authorize` also takes in the action and optionally an object if the policy requires one.
 
 ```ts
 // Both will throw if not authorized

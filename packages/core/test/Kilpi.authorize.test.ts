@@ -56,7 +56,7 @@ describe("Kilpi.authorize", () => {
     });
   });
 
-  it("should work on deeply nested keys", async () => {
+  it("should work on deeply nested actions", async () => {
     await TestUtils.runAs({ id: "user2", roles: [] }, async () => {
       expect(Kilpi.authorize("docs:deeply:nested:policy", doc)).rejects.toBeInstanceOf(Denied);
     });

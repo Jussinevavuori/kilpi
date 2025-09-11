@@ -29,10 +29,10 @@ function init(options: { serverSecret: string; clientSecret: string }) {
 describe("endpoint secret", () => {
   it("should fail when mismatched secrets", async () => {
     const Client = init({ clientSecret: "1", serverSecret: "2" });
-    await expect(Client.fetchIsAuthorized({ key: "always" })).rejects.toBeInstanceOf(Error);
+    await expect(Client.fetchIsAuthorized({ action: "always" })).rejects.toBeInstanceOf(Error);
   });
   it("should succeed when matched secrets", async () => {
     const Client = init({ clientSecret: "same", serverSecret: "same" });
-    await expect(Client.fetchIsAuthorized({ key: "always" })).resolves.toBe(true);
+    await expect(Client.fetchIsAuthorized({ action: "always" })).resolves.toBe(true);
   });
 });

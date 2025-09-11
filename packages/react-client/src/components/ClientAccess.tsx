@@ -3,15 +3,15 @@
 import type { KilpiClient } from "@kilpi/client";
 import type {
   AnyKilpiCore,
-  GetPolicyByKey,
+  GetPolicyByAction,
   InferPolicyInputs,
-  PolicySetKeysWithoutObject,
-  PolicysetKeysWithObject,
+  PolicySetActionsWithoutObject,
+  PolicysetActionsWithObject,
 } from "@kilpi/core";
 import { createUseIsAuthorized } from "src/hooks/useIsAuthorized";
 
 /**
- * Base access props, always present, not-depending on key
+ * Base access props, always present, not-depending on the action
  */
 type ClientAccessBaseProps = {
   /**
@@ -36,34 +36,34 @@ type ClientAccessBaseProps = {
 };
 
 /**
- * Custom access props for each key to ensure correct types (e.g. for object) are provided
- * based on the provided policy key (`to`).
+ * Custom access props for each action to ensure correct types (e.g. for object) are provided
+ * based on the provided action (`to`).
  */
-type ClientAccessPropsByKey<TCore extends AnyKilpiCore> = {
+type ClientAccessPropsByAction<TCore extends AnyKilpiCore> = {
   // Policies that do not take in an object:
-  // Type as { to: "policy:key" }, no object required
-  [K in PolicySetKeysWithoutObject<TCore["policies"]>]: {
+  // Type as { to: "policy:action" }, no object required
+  [K in PolicySetActionsWithoutObject<TCore["policies"]>]: {
     to: K;
     on?: never;
   };
 } & {
   // Policies that do take in an object:
-  // Type as { to: "policy:key", on: object }, object required
-  [K in PolicysetKeysWithObject<TCore["policies"]>]: {
+  // Type as { to: "policy:action", on: object }, object required
+  [K in PolicysetActionsWithObject<TCore["policies"]>]: {
     to: K;
-    on: InferPolicyInputs<GetPolicyByKey<TCore["policies"], K>>[0];
+    on: InferPolicyInputs<GetPolicyByAction<TCore["policies"], K>>[0];
   };
 };
 
 /**
- * Access props, with correct types based on the provided policy key (`to`).
+ * Access props, with correct types based on the provided action (`to`).
  */
 type ClientAccessProps<
   TCore extends AnyKilpiCore,
-  TKey extends
-    | PolicySetKeysWithoutObject<TCore["policies"]>
-    | PolicysetKeysWithObject<TCore["policies"]>,
-> = ClientAccessBaseProps & ClientAccessPropsByKey<TCore>[TKey];
+  TAction extends
+    | PolicySetActionsWithoutObject<TCore["policies"]>
+    | PolicysetActionsWithObject<TCore["policies"]>,
+> = ClientAccessBaseProps & ClientAccessPropsByAction<TCore>[TAction];
 
 /**
  * Create the <ClientAccess /> react client component.
@@ -73,16 +73,18 @@ export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiCli
   const useIsAuthorized = createUseIsAuthorized(KilpiClient);
 
   /**
-   * Render children only if access to={key} (and optionally on={object}) granted to current
+   * Render children only if access to={action} (and optionally on={object}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
    * access.
    */
   function ClientAccess<
-    TKey extends PolicySetKeysWithoutObject<T["policies"]> | PolicysetKeysWithObject<T["policies"]>,
-  >(props: ClientAccessProps<T, TKey>) {
+    TAction extends
+      | PolicySetActionsWithoutObject<T["policies"]>
+      | PolicysetActionsWithObject<T["policies"]>,
+  >(props: ClientAccessProps<T, TAction>) {
     // Get data via hook
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = useIsAuthorized<TKey>(props.to as any, ...([props.to, props.on] as any));
+    const query = useIsAuthorized<TAction>(props.to as any, ...([props.to, props.on] as any));
 
     // Render correct component based on query status
     switch (query.status) {

@@ -31,7 +31,7 @@ See [usage on client](/docs/getting-started/usage-on-client) for how to set up `
 
 ```ts
 await KilpiClient.fetchIsAuthorized({
-  key: "documents:delete",
+  action: "documents:delete",
   object: myDocument,
 });
 ```
@@ -80,7 +80,7 @@ type RequestBody = Array<
   | {
       type: "getIsAuthorized";
       requestId: string;
-      policy: string; // Policy key (e.g. "documents:create")
+      action: string; // Action (e.g. "documents:create")
       object?: any; // Optional object
     }
   | {

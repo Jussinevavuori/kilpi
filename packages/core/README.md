@@ -37,12 +37,16 @@ Designed and created by [Jussi Nevavuori](https://jussinevavuori.com/) with â¤ï
 
 ## Examples
 
-Define policies declaratively
+Define policies declaratively and authorize actions with one line
 
 ```ts
 // Kilpi.ts
 export const Kilpi = createKilpi({
-  getSubject,
+  // (1) Connect your authentication provider with subject adapter
+  async getSubject() {
+    return myAuthProvider.getCurrentUser();
+  },
+  // (2) Define all policies
   policies: {
     documents: {
       update(user, doc: Document) {
@@ -52,26 +56,22 @@ export const Kilpi = createKilpi({
     },
   },
 });
-```
 
-Authorize actions with one line
+// (3) Protect with one-liners
 
-```ts
+// Option 1: Succeed or throw
 const user = await Kilpi.authorize("documents:update", document);
+// Option 2: Authorization as boolean
+const isAuthorized = await Kilpi.isAuthorized("posts:comment", post);
+// Option 3: Full authorization decision object with all metadata
+const decision = await Kilpi.getAuthorizationDecision("comments:delete", comment);
 ```
 
-Protect your data right at the source
+Continue learning about
 
-```ts
-const getDocument = Kilpi.query(async (id: string) => await db.documents.get(id), {
-  async protector({ output: doc }) {
-    if (doc) await Kilpi.authorize("documents:read", doc);
-    return doc;
-  },
-});
-
-await getDocument.protect("1");
-```
+- Plugins
+- Protecting queries, actions, UI, pages, routes, ...
+- Components
 
 And much more.
 

@@ -28,9 +28,9 @@ export type KilpiAuditEvent<T extends AnyKilpiCore> = {
   object: unknown;
 
   /**
-   * Key of the policy
+   * The action
    */
-  policyKey: string;
+  action: string;
 
   /**
    * Source of the event

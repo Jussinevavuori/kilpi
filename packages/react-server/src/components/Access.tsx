@@ -1,16 +1,16 @@
 import type {
-  GetPolicyByKey,
+  GetPolicyByAction,
   InferPolicyInputs,
   KilpiCore,
-  PolicySetKeysWithoutObject,
-  PolicysetKeysWithObject,
+  PolicySetActionsWithoutObject,
+  PolicysetActionsWithObject,
 } from "@kilpi/core";
 import { Suspense } from "react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Base access props, always present, not-depending on key
+ * Base access props, always present, not-depending on the action
  */
 type AccessBaseProps = {
   /**
@@ -32,49 +32,49 @@ type AccessBaseProps = {
 };
 
 /**
- * Custom access props for each key to ensure correct types (e.g. for object) are provided
- * based on the provided policy key (`to`).
+ * Custom access props for each action to ensure correct types (e.g. for object) are provided
+ * based on the provided action (`to`).
  */
-type AccessPropsByKey<TCore extends KilpiCore<any, any>> = {
+type AccessPropsByAction<TCore extends KilpiCore<any, any>> = {
   // Policies that do not take in an object:
-  // Type as { to: "policy:key" }, no object required
-  [K in PolicySetKeysWithoutObject<TCore["policies"]>]: {
+  // Type as { to: "some:action" }, no object required
+  [K in PolicySetActionsWithoutObject<TCore["policies"]>]: {
     to: K;
     on?: never;
   };
 } & {
   // Policies that do take in an object:
-  // Type as { to: "policy:key", on: object }, object required
-  [K in PolicysetKeysWithObject<TCore["policies"]>]: {
+  // Type as { to: "some:action", on: object }, object required
+  [K in PolicysetActionsWithObject<TCore["policies"]>]: {
     to: K;
-    on: InferPolicyInputs<GetPolicyByKey<TCore["policies"], K>>[0];
+    on: InferPolicyInputs<GetPolicyByAction<TCore["policies"], K>>[0];
   };
 };
 
 /**
- * Access props, with correct types based on the provided policy key (`to`).
+ * Access props, with correct types based on the provided action (`to`).
  */
 type AccessProps<
   TCore extends KilpiCore<any, any>,
-  TKey extends
-    | PolicySetKeysWithoutObject<TCore["policies"]>
-    | PolicysetKeysWithObject<TCore["policies"]>,
-> = AccessBaseProps & AccessPropsByKey<TCore>[TKey];
+  TAction extends
+    | PolicySetActionsWithoutObject<TCore["policies"]>
+    | PolicysetActionsWithObject<TCore["policies"]>,
+> = AccessBaseProps & AccessPropsByAction<TCore>[TAction];
 
 /**
  * Create the <Access /> react server component.
  */
 export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore) {
   /**
-   * Render children only if access to={key} (and optionally on={object}) granted to current
+   * Render children only if access to={action} (and optionally on={object}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
    * access.
    */
   function Access<
-    TKey extends
-      | PolicySetKeysWithoutObject<TCore["policies"]>
-      | PolicysetKeysWithObject<TCore["policies"]>,
-  >(props: AccessProps<TCore, TKey>) {
+    TAction extends
+      | PolicySetActionsWithoutObject<TCore["policies"]>
+      | PolicysetActionsWithObject<TCore["policies"]>,
+  >(props: AccessProps<TCore, TAction>) {
     // Inner async component to be suspended by parent
     async function Access_InnerSuspendable() {
       // Get decision
