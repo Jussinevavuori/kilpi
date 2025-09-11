@@ -1,5 +1,11 @@
 # @kilpi/client
 
+## 0.15.0
+
+### Minor Changes
+
+- 31fa33b: rename policy key to action
+
 ## 0.14.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 0.19.0
+
+### Minor Changes
+
+- 31fa33b: rename policy key to action
+
 ## 0.18.0
 
 ### Minor Changes
