@@ -84,7 +84,7 @@ export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiCli
   >(props: ClientAccessProps<T, TAction>) {
     // Get data via hook
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = useIsAuthorized<TAction>(props.to as any, ...([props.to, props.on] as any));
+    const query = useIsAuthorized<TAction>(...([props.to, props.on] as any));
 
     // Render correct component based on query status
     switch (query.status) {

@@ -1,14 +1,17 @@
-import { deleteArticleAction, updateArticleAction } from "@/article-actions";
+"use client";
+
 import { Article } from "@/article-service";
 import { ClientAccess } from "@/kilpi.client";
-import { revalidatePath } from "next/cache";
 import { Button } from "./ui/button";
 
 export type ManageArticleFormProps = {
   article: Article;
+
+  updateArticle: () => Promise<void>;
+  deleteArticle: () => Promise<void>;
 };
 
-export function ManageArticleForm({ article }: ManageArticleFormProps) {
+export function ManageArticleForm({ article, ...props }: ManageArticleFormProps) {
   return (
     <div className="flex flex-row items-center gap-2">
       {/* Update article button */}
@@ -26,13 +29,7 @@ export function ManageArticleForm({ article }: ManageArticleFormProps) {
           </Button>
         }
       >
-        <form
-          action={async () => {
-            "use server";
-            await updateArticleAction({ id: article.id, isPublished: !article.isPublished });
-            await revalidatePath(`/article/${article.id}`);
-          }}
-        >
+        <form action={props.updateArticle}>
           <Button type="submit" variant="secondary">
             {article.isPublished ? "Unpublish" : "Publish"}
           </Button>
@@ -54,13 +51,7 @@ export function ManageArticleForm({ article }: ManageArticleFormProps) {
           </Button>
         }
       >
-        <form
-          action={async () => {
-            "use server";
-            await deleteArticleAction({ id: article.id });
-            await revalidatePath(`/article/${article.id}`);
-          }}
-        >
+        <form action={props.deleteArticle}>
           <Button type="submit" variant="ghost">
             Delete article
           </Button>

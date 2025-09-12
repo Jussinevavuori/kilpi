@@ -1,7 +1,9 @@
+import { deleteArticleAction, updateArticleAction } from "@/article-actions";
 import { ArticleService } from "@/article-service";
 import { ManageArticleForm } from "@/components/ManageArticleForm";
 import { cn } from "@/utils/cn";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export default async function ArticlePage(props: {
   params: Promise<{
@@ -13,6 +15,18 @@ export default async function ArticlePage(props: {
   const { articleId } = await props.params;
   const article = await ArticleService.getArticleById.protect(articleId);
   if (!article) redirect("/");
+
+  async function updateArticle() {
+    "use server";
+    await updateArticleAction({ id: article.id, isPublished: !article.isPublished });
+    await revalidatePath(`/article/${article.id}`);
+  }
+
+  async function deleteArticle() {
+    "use server";
+    await deleteArticleAction({ id: article.id });
+    await revalidatePath(`/article/${article.id}`);
+  }
 
   return (
     <article className="mx-auto flex w-full max-w-lg flex-col gap-8">
@@ -39,7 +53,11 @@ export default async function ArticlePage(props: {
       </div>
 
       <hr />
-      <ManageArticleForm article={article} />
+      <ManageArticleForm
+        article={article}
+        updateArticle={updateArticle}
+        deleteArticle={deleteArticle}
+      />
     </article>
   );
 }
