@@ -1,6 +1,6 @@
 import type { KilpiClient } from "@kilpi/client";
 import { createKilpiClientPlugin } from "@kilpi/client";
-import { type AnyKilpiCore } from "@kilpi/core";
+import type { AnyKilpiCore } from "@kilpi/core";
 import { createClientAccess } from "src/components/ClientAccess";
 import { createUseIsAuthorized } from "src/hooks/useIsAuthorized";
 import { createUseSubject } from "src/hooks/useSubject";
