@@ -42,16 +42,16 @@ type ClientAccessBaseProps = {
 type ClientAccessPropsByAction<TCore extends AnyKilpiCore> = {
   // Policies that do not take in an object:
   // Type as { to: "policy:action" }, no object required
-  [K in PolicySetActionsWithoutObject<TCore["policies"]>]: {
-    to: K;
+  [TAction in PolicySetActionsWithoutObject<TCore["policies"]>]: {
+    to: TAction;
     on?: never;
   };
 } & {
   // Policies that do take in an object:
   // Type as { to: "policy:action", on: object }, object required
-  [K in PolicysetActionsWithObject<TCore["policies"]>]: {
-    to: K;
-    on: InferPolicyInputs<GetPolicyByAction<TCore["policies"], K>>[0];
+  [TAction in PolicysetActionsWithObject<TCore["policies"]>]: {
+    to: TAction;
+    on: InferPolicyInputs<GetPolicyByAction<TCore["policies"], TAction>>[0];
   };
 };
 
@@ -84,7 +84,7 @@ export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiCli
   >(props: ClientAccessProps<T, TAction>) {
     // Get data via hook
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query = useIsAuthorized<TAction>(...([props.to, props.on] as any));
+    const query = useIsAuthorized<TAction>(props.to as any, ...([props.on] as any));
 
     // Render correct component based on query status
     switch (query.status) {
