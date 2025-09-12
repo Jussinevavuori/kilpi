@@ -1,5 +1,11 @@
 # @kilpi/react-client
 
+## 0.3.13
+
+### Patch Changes
+
+- 3480016: fix #48 on impors
+
 ## 0.3.12
 
 ### Patch Changes
