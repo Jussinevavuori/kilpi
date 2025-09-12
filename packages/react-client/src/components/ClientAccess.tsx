@@ -94,7 +94,8 @@ export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiCli
       case "idle":
         return props.Loading ?? null;
       case "success":
-        return props.children;
+        if (query.isAuthorized) return props.children;
+        return props.Unauthorized ?? null;
     }
   }
 

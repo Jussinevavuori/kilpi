@@ -18,7 +18,7 @@ export const Kilpi = createKilpi({
    */
   plugins: [
     ReactServerComponentPlugin(),
-    EndpointPlugin({ secret: process.env.PUBLIC_KILPI_SECRET! }),
+    EndpointPlugin({ secret: process.env.NEXT_PUBLIC_KILPI_SECRET! }),
   ],
 
   /**

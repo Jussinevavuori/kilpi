@@ -2,6 +2,7 @@ import "./globals.css";
 
 import { Footer } from "@/components/Footer";
 import { Header, Header_Unauthenticated } from "@/components/Header";
+import { KilpiClientCacheRefresh } from "@/components/KilpiClientCacheRefresh";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
@@ -39,6 +40,10 @@ export default async function RootLayout({
         <Footer />
 
         <Toaster />
+
+        <Suspense fallback={null}>
+          <KilpiClientCacheRefresh />
+        </Suspense>
       </body>
     </html>
   );

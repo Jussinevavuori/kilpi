@@ -7,8 +7,8 @@ import type { Kilpi } from "./kilpi.js";
 export const KilpiClient = createKilpiClient({
   infer: {} as typeof Kilpi, // Infer subject and policies from server instance
   connect: {
-    endpointUrl: process.env.PUBLIC_KILPI_URL!,
-    secret: process.env.PUBLIC_KILPI_SECRET!,
+    endpointUrl: process.env.NEXT_PUBLIC_KILPI_URL!,
+    secret: process.env.NEXT_PUBLIC_KILPI_SECRET!,
   },
   plugins: [ReactClientComponentPlugin()],
 });

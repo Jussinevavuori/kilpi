@@ -140,9 +140,9 @@ export class KilpiClient<T extends AnyKilpiCore> {
 
         // Ensure the response is a boolean
         if (typeof isAuthorized !== "boolean") {
-          throw new Error(
-            `Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`,
-          );
+          const message = `[KilpiClient] Kilpi server responded with non-boolean value for fetchIsAuthorized: ${JSON.stringify(isAuthorized)}`;
+          console.error(message);
+          throw new Error(message);
         }
 
         // Return isAuthorized boolean
@@ -195,8 +195,13 @@ export class KilpiClient<T extends AnyKilpiCore> {
 
     // Body had an error: Reject all requests with useful message
     if (body.error) {
+      console.error(body.error);
       return jobs.forEach((job) => {
-        job.reject(new Error("Kilpi server responded with invalid data."));
+        job.reject(
+          new Error(`[KilpiClient] Kilpi server responded with invalid data`, {
+            cause: body.error,
+          }),
+        );
       });
     }
 

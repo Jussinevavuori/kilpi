@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createKilpi, EndpointPlugin } from "@kilpi/core";
+import { createKilpi } from "@kilpi/core";
 import { ReactServerComponentPlugin } from "@kilpi/react-server";
 import { redirect } from "next/navigation";
 import { policies } from "./kilpi.policies";
@@ -16,10 +16,7 @@ export const Kilpi = createKilpi({
   /**
    * Enable React server components.
    */
-  plugins: [
-    ReactServerComponentPlugin(),
-    EndpointPlugin({ secret: process.env.PUBLIC_KILPI_SECRET! }),
-  ],
+  plugins: [ReactServerComponentPlugin()],
 
   /**
    * By default, redirect to home page when user is unauthorized to access an object. Setting up

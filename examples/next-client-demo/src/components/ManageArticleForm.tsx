@@ -23,6 +23,11 @@ export function ManageArticleForm({ article, ...props }: ManageArticleFormProps)
             Loading ...
           </Button>
         }
+        Error={
+          <Button disabled variant="secondary">
+            Error checking access
+          </Button>
+        }
         Unauthorized={
           <Button disabled variant="secondary">
             Not authorized to {article.isPublished ? "unpublish" : "publish"}
@@ -43,6 +48,11 @@ export function ManageArticleForm({ article, ...props }: ManageArticleFormProps)
         Loading={
           <Button disabled variant="ghost">
             Loading ...
+          </Button>
+        }
+        Error={
+          <Button disabled variant="ghost">
+            Error checking access
           </Button>
         }
         Unauthorized={

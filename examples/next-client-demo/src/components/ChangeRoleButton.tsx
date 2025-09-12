@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { Kilpi } from "@/kilpi";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function ChangeRoleButton({
   children,
@@ -23,6 +24,7 @@ export async function ChangeRoleButton({
           .query("UPDATE user SET role = $role WHERE id = $id")
           .run({ $role: targetRole, $id: user.id });
         await revalidatePath("/", "layout");
+        await redirect("/");
       }}
     >
       <button type="submit" {...ButtonProps}>
