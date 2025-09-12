@@ -1,5 +1,11 @@
 # @kilpi/client
 
+## 0.15.1
+
+### Patch Changes
+
+- b1c38e6: add error logs to help developers, fix client-access
+
 ## 0.15.0
 
 ### Minor Changes
