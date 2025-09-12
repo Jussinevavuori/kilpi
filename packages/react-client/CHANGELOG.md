@@ -1,5 +1,13 @@
 # @kilpi/react-client
 
+## 0.3.15
+
+### Patch Changes
+
+- b1c38e6: add error logs to help developers, fix client-access
+- Updated dependencies [b1c38e6]
+  - @kilpi/client@0.15.1
+
 ## 0.3.14
 
 ### Patch Changes
