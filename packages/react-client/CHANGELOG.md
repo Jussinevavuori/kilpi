@@ -1,5 +1,11 @@
 # @kilpi/react-client
 
+## 0.3.14
+
+### Patch Changes
+
+- c1980c7: fix issue with rendering children from client-access
+
 ## 0.3.13
 
 ### Patch Changes
