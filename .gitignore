@@ -46,3 +46,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # production
 /build
+
+# local testing folder
+/local_testing
