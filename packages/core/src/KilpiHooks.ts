@@ -32,7 +32,7 @@ export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
   /**
    * The resulting decision object
    */
-  decision: Decision<InferPolicySubject<T["$$infer"]["policies"]>>;
+  decision: Decision<InferPolicySubject<T["policies"]>>;
 
   /**
    * The object being authorized

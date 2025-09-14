@@ -5,13 +5,13 @@ import type {
   AnyKilpiCore,
   GetPolicyByAction,
   InferPolicyInputs,
-  PolicySetActionsWithoutObject,
+  PolicysetActionsWithoutObject,
   PolicysetActionsWithObject,
 } from "@kilpi/core";
-import { createUseIsAuthorized } from "src/hooks/useIsAuthorized";
+import type { create_useIsAuthorized } from "../hooks/useIsAuthorized";
 
 /**
- * Base access props, always present, not-depending on the action
+  type* Base access props, always present, not-depending on the action
  */
 type ClientAccessBaseProps = {
   /**
@@ -42,7 +42,7 @@ type ClientAccessBaseProps = {
 type ClientAccessPropsByAction<TCore extends AnyKilpiCore> = {
   // Policies that do not take in an object:
   // Type as { to: "policy:action" }, no object required
-  [TAction in PolicySetActionsWithoutObject<TCore["policies"]>]: {
+  [TAction in PolicysetActionsWithoutObject<TCore["policies"]>]: {
     to: TAction;
     on?: never;
   };
@@ -61,25 +61,27 @@ type ClientAccessPropsByAction<TCore extends AnyKilpiCore> = {
 type ClientAccessProps<
   TCore extends AnyKilpiCore,
   TAction extends
-    | PolicySetActionsWithoutObject<TCore["policies"]>
+    | PolicysetActionsWithoutObject<TCore["policies"]>
     | PolicysetActionsWithObject<TCore["policies"]>,
 > = ClientAccessBaseProps & ClientAccessPropsByAction<TCore>[TAction];
 
 /**
  * Create the <ClientAccess /> react client component.
  */
-export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiClient<T>) {
-  // Hook to fetch authorizations
-  const useIsAuthorized = createUseIsAuthorized(KilpiClient);
+export function create_ClientAccess<T extends AnyKilpiCore>(
+  KilpiClient: KilpiClient<T>,
+  useIsAuthorized: ReturnType<typeof create_useIsAuthorized<T>>,
+) {
+  void KilpiClient; // Unused
 
   /**
    * Render children only if access to={action} (and optionally on={object}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
    * access.
    */
-  function ClientAccess<
+  return function ClientAccess<
     TAction extends
-      | PolicySetActionsWithoutObject<T["policies"]>
+      | PolicysetActionsWithoutObject<T["policies"]>
       | PolicysetActionsWithObject<T["policies"]>,
   >(props: ClientAccessProps<T, TAction>) {
     // Get data via hook
@@ -96,9 +98,8 @@ export function createClientAccess<T extends AnyKilpiCore>(KilpiClient: KilpiCli
       case "success":
         if (query.isAuthorized) return props.children;
         return props.Unauthorized ?? null;
+      default:
+        return null;
     }
-  }
-
-  // Return all components
-  return ClientAccess;
+  };
 }

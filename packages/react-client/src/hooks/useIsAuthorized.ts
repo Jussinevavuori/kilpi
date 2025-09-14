@@ -36,13 +36,13 @@ type UseIsAuthorizedValue =
 /**
  * Create the `useIsAuthorized` react client hook.
  */
-export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: KilpiClient<T>) {
+export function create_useIsAuthorized<T extends AnyKilpiCore>(KilpiClient: KilpiClient<T>) {
   /**
    * React client hook for accessing the current subject.
    */
-  return function useIsAuthorized<TAction extends PolicysetActions<T["$$infer"]["policies"]>>(
+  return function useIsAuthorized<TAction extends PolicysetActions<T["policies"]>>(
     action: TAction,
-    ...inputs: InferPolicyInputs<GetPolicyByAction<T["$$infer"]["policies"], TAction>>
+    ...inputs: InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>
   ) {
     /**
      * Hold current state of useIsAuthorized.
@@ -61,6 +61,11 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
     });
 
     /**
+     * Unwrap input
+     */
+    const object = inputs[0];
+
+    /**
      * Fetch the current subject. It is OK to fire this fetch function in multiple components,
      * as the subject is cached and only fetched once.
      */
@@ -74,8 +79,8 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
         if (isMounted) setValue({ status: "loading", error: null, isAuthorized: null });
         try {
           const isAuthorized = await KilpiClient.fetchIsAuthorized({
-            action: action,
-            object: inputs[0],
+            action,
+            object,
             queryOptions: { signal: abortController.signal },
           });
           if (isMounted) setValue({ status: "success", error: null, isAuthorized });
@@ -92,7 +97,7 @@ export function createUseIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilpi
         isMounted = false;
         abortController.abort();
       };
-    }, [setValue, cacheSignal]);
+    }, [setValue, cacheSignal, action, object]);
 
     /**
      * Return value with computed values.

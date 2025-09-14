@@ -1,6 +1,6 @@
 import type { Decision } from "./decision";
 import { KilpiError } from "./error";
-import type { DeepObject, RecursiveKeysTo, RecursiveValueByKey } from "./utils/types";
+import type { DeepObject, RecursiveValueByKey } from "./utils/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -26,6 +26,11 @@ export type Policy<
 ) => Decision<TSubjectOutput> | Promise<Decision<TSubjectOutput>>;
 
 /**
+ * Policyset is a deep-object of policies which all share a common base subject type.
+ */
+export type Policyset<TSubject> = DeepObject<Policy<any, TSubject, any>>;
+
+/**
  * Utility type for inferring the inputs of a policy.
  */
 export type InferPolicyInputs<T> = T extends Policy<infer TInputs, any, any> ? TInputs : [];
@@ -41,40 +46,43 @@ export type InferPolicySubject<T> = T extends Policy<any, any, infer TSubject> ?
 const SEPARATOR = ":" as const;
 
 /**
- * Policyset is a deep-object of policies which all share a common base subject type.
+ * Specialized version of RecursiveKeysTo that matches by function parameter type instead of
+ * exact type.
  */
-export type Policyset<TSubject> = DeepObject<Policy<any, TSubject, any>>;
-
-/**
- * List of all actions in a PolicySet.
- */
-export type PolicysetActions<TPolicyset extends Policyset<any>> = RecursiveKeysTo<
-  TPolicyset,
-  TPolicyset extends Policyset<infer TSubject> ? Policy<any, TSubject, any> : never,
-  typeof SEPARATOR
->;
+export type RecursiveKeysToFnByParams<
+  Object,
+  TargetParams,
+  Separator extends string = ".",
+> = Object extends object
+  ? {
+      [Key in keyof Object]: Key extends string | number
+        ? Object[Key] extends (...args: infer FnParams) => any
+          ? FnParams extends TargetParams
+            ? Key
+            : never
+          : `${Key}${Separator}${RecursiveKeysToFnByParams<Object[Key], TargetParams, Separator>}`
+        : never;
+    }[keyof Object]
+  : never;
 
 /**
  * Get list of actions that do not take in an object.
  */
-export type PolicySetActionsWithoutObject<TPolicyset extends Policyset<any>> = {
-  [K in PolicysetActions<TPolicyset>]: InferPolicyInputs<
-    GetPolicyByAction<TPolicyset, K>
-  > extends []
-    ? K
-    : never;
-}[PolicysetActions<TPolicyset>];
+export type PolicysetActionsWithoutObject<TPolicyset extends Policyset<any>> =
+  RecursiveKeysToFnByParams<TPolicyset, [] | [any], typeof SEPARATOR>;
 
 /**
  * Get list of actions that do take in an object.
  */
-export type PolicysetActionsWithObject<TPolicyset extends Policyset<any>> = {
-  [K in PolicysetActions<TPolicyset>]: InferPolicyInputs<GetPolicyByAction<TPolicyset, K>> extends [
-    any,
-  ]
-    ? K
-    : never;
-}[PolicysetActions<TPolicyset>];
+export type PolicysetActionsWithObject<TPolicyset extends Policyset<any>> =
+  RecursiveKeysToFnByParams<TPolicyset, [any, any], typeof SEPARATOR>;
+
+/**
+ * List of all actions in a Policyset.
+ */
+export type PolicysetActions<TPolicyset extends Policyset<any>> =
+  | PolicysetActionsWithObject<TPolicyset>
+  | PolicysetActionsWithoutObject<TPolicyset>;
 
 /**
  * Ensure a value is a policy.
@@ -95,7 +103,7 @@ export type GetPolicyByAction<
 export function getPolicyByAction<
   const TPolicyset extends Policyset<any>,
   TAction extends PolicysetActions<TPolicyset>,
->(policyset: TPolicyset, action: TAction): GetPolicyByAction<TPolicyset, TAction> {
+>(policyset: TPolicyset, action: TAction) {
   // Access policy by action
   const parts = action.split(SEPARATOR);
   const policy = parts.reduce<any>((index, k) => index[k], policyset);

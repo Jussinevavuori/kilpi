@@ -1,6 +1,6 @@
 import { createKilpiPlugin, type AnyKilpiCore, type AnyKilpiScope } from "@kilpi/core";
 import React from "react";
-import { createAccess } from "src/components/Access";
+import { create_Access } from "src/components/Access";
 
 // This is a hack to determine if we are running in a React Server Component context.
 // If a cached random function returns the same result twice, the cache is working
@@ -24,10 +24,10 @@ export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
 
     return {
       ReactServer: {
+        // Create components
         createComponents() {
-          return {
-            Access: createAccess(Kilpi),
-          };
+          const Access = create_Access(Kilpi);
+          return { Access };
         },
       },
     };
