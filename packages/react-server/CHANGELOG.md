@@ -1,5 +1,13 @@
 # @kilpi/react
 
+## 0.9.13
+
+### Patch Changes
+
+- ebac238: improve typings, temporary workaround for react-client plugin
+- Updated dependencies [ebac238]
+  - @kilpi/core@0.19.1
+
 ## 0.9.12
 
 ### Patch Changes
