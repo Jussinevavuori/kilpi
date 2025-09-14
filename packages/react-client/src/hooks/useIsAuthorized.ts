@@ -1,10 +1,5 @@
 import type { KilpiClient } from "@kilpi/client";
-import type {
-  AnyKilpiCore,
-  GetPolicyByAction,
-  InferPolicyInputs,
-  PolicysetActions,
-} from "@kilpi/core";
+import type { AnyKilpiCore, PolicysetActions } from "@kilpi/core";
 import { useEffect, useState } from "react";
 import { useCacheClearSignal } from "./useCacheClearSignal";
 
@@ -42,7 +37,9 @@ export function create_useIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilp
    */
   return function useIsAuthorized<TAction extends PolicysetActions<T["policies"]>>(
     action: TAction,
-    ...inputs: InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>
+    // ...inputs: InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...inputs: [] | [any]
   ) {
     /**
      * Hold current state of useIsAuthorized.
