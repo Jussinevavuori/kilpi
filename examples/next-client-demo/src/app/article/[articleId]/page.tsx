@@ -18,12 +18,14 @@ export default async function ArticlePage(props: {
 
   async function updateArticle() {
     "use server";
+		if(!article) return;
     await updateArticleAction({ id: article.id, isPublished: !article.isPublished });
     await revalidatePath(`/article/${article.id}`);
   }
-
+	
   async function deleteArticle() {
-    "use server";
+		"use server";
+		if(!article) return;
     await deleteArticleAction({ id: article.id });
     await revalidatePath(`/article/${article.id}`);
   }

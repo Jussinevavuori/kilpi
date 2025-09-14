@@ -31,7 +31,7 @@ type UseSubjectValue<T extends AnyKilpiCore> =
 /**
  * Create the `useSubject` react client hook.
  */
-export function createUseSubject<T extends AnyKilpiCore>(KilpiClient: KilpiClient<T>) {
+export function create_useSubject<T extends AnyKilpiCore>(KilpiClient: KilpiClient<T>) {
   /**
    * React client hook for accessing the current subject.
    */

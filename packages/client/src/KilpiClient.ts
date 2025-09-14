@@ -117,11 +117,9 @@ export class KilpiClient<T extends AnyKilpiCore> {
   /**
    * Fetch whether the current subject is authorized to the policy.
    */
-  public async fetchIsAuthorized<
-    TAction extends PolicysetActions<T["$$infer"]["policies"]>,
-  >(options: {
+  public async fetchIsAuthorized<TAction extends PolicysetActions<T["policies"]>>(options: {
     action: TAction;
-    object?: ArrayHead<InferPolicyInputs<GetPolicyByAction<T["$$infer"]["policies"], TAction>>>;
+    object?: ArrayHead<InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>>;
     queryOptions?: { signal?: AbortSignal | null | undefined };
   }): Promise<boolean> {
     return this.cache.wrap(

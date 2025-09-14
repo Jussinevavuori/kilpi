@@ -15,5 +15,5 @@ export {
   type Policyset,
   type PolicysetActions,
   type PolicysetActionsWithObject,
-  type PolicySetActionsWithoutObject,
+  type PolicysetActionsWithoutObject,
 } from "./policy";

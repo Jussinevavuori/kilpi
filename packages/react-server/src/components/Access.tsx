@@ -2,8 +2,9 @@ import type {
   GetPolicyByAction,
   InferPolicyInputs,
   KilpiCore,
-  PolicySetActionsWithoutObject,
+  PolicysetActions,
   PolicysetActionsWithObject,
+  PolicysetActionsWithoutObject,
 } from "@kilpi/core";
 import { Suspense } from "react";
 
@@ -38,7 +39,7 @@ type AccessBaseProps = {
 type AccessPropsByAction<TCore extends KilpiCore<any, any>> = {
   // Policies that do not take in an object:
   // Type as { to: "some:action" }, no object required
-  [K in PolicySetActionsWithoutObject<TCore["policies"]>]: {
+  [K in PolicysetActionsWithoutObject<TCore["policies"]>]: {
     to: K;
     on?: never;
   };
@@ -56,15 +57,13 @@ type AccessPropsByAction<TCore extends KilpiCore<any, any>> = {
  */
 type AccessProps<
   TCore extends KilpiCore<any, any>,
-  TAction extends
-    | PolicySetActionsWithoutObject<TCore["policies"]>
-    | PolicysetActionsWithObject<TCore["policies"]>,
+  TAction extends PolicysetActions<TCore["policies"]>,
 > = AccessBaseProps & AccessPropsByAction<TCore>[TAction];
 
 /**
  * Create the <Access /> react server component.
  */
-export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore) {
+export function create_Access<TCore extends KilpiCore<any, any>>(KilpiCore: TCore) {
   /**
    * Render children only if access to={action} (and optionally on={object}) granted to current
    * subject. Supports Loading and Denied components for alternative UIs on suspense and denied
@@ -72,7 +71,7 @@ export function createAccess<TCore extends KilpiCore<any, any>>(KilpiCore: TCore
    */
   function Access<
     TAction extends
-      | PolicySetActionsWithoutObject<TCore["policies"]>
+      | PolicysetActionsWithoutObject<TCore["policies"]>
       | PolicysetActionsWithObject<TCore["policies"]>,
   >(props: AccessProps<TCore, TAction>) {
     // Inner async component to be suspended by parent

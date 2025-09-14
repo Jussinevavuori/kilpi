@@ -1,9 +1,9 @@
 import type { KilpiClient } from "@kilpi/client";
 import { createKilpiClientPlugin } from "@kilpi/client";
 import type { AnyKilpiCore } from "@kilpi/core";
-import { createClientAccess } from "src/components/ClientAccess";
-import { createUseIsAuthorized } from "src/hooks/useIsAuthorized";
-import { createUseSubject } from "src/hooks/useSubject";
+import { create_ClientAccess } from "src/components/ClientAccess";
+import { create_useSubject } from "src/hooks/useSubject";
+import { create_useIsAuthorized } from "../hooks/useIsAuthorized";
 
 /**
  * React server component plugin for automatically providing a Kilpi scope
@@ -15,11 +15,15 @@ export function ReactClientComponentPlugin<T extends AnyKilpiCore>() {
     return {
       ReactClient: {
         createComponents() {
-          return {
-            useSubject: createUseSubject(Client),
-            useIsAuthorized: createUseIsAuthorized(Client),
-            ClientAccess: createClientAccess(Client),
-          };
+          // Create hooks
+          const useSubject = create_useSubject(Client);
+          const useIsAuthorized = create_useIsAuthorized(Client);
+
+          // Create components with hooks
+          const ClientAccess = create_ClientAccess(Client, useIsAuthorized);
+
+          // Return
+          return { useSubject, useIsAuthorized, ClientAccess };
         },
       },
     };

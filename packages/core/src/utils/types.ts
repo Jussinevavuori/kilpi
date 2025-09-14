@@ -14,19 +14,6 @@ export type DeepObject<T> = {
 };
 
 /**
- * Extracts all keys from an object which have a value of type Target.
- */
-export type RecursiveKeysTo<Object, Target, Separator extends string = "."> = Object extends object
-  ? {
-      [Key in keyof Object]: Key extends string | number
-        ? Object[Key] extends Target
-          ? `${Key}`
-          : `${Key}${Separator}${RecursiveKeysTo<Object[Key], Target, Separator>}`
-        : never;
-    }[keyof Object]
-  : never;
-
-/**
  * Extracts all values from an object which have a key of type Target.
  */
 export type RecursiveValueByKey<
