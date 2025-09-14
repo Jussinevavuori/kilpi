@@ -1,5 +1,11 @@
 # @kilpi/client
 
+## 0.15.2
+
+### Patch Changes
+
+- ebac238: improve typings, temporary workaround for react-client plugin
+
 ## 0.15.1
 
 ### Patch Changes
