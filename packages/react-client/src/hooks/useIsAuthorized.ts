@@ -1,5 +1,10 @@
 import type { KilpiClient } from "@kilpi/client";
-import type { AnyKilpiCore, PolicysetActions } from "@kilpi/core";
+import type {
+  AnyKilpiCore,
+  GetPolicyByAction,
+  InferPolicyInputs,
+  PolicysetActions,
+} from "@kilpi/core";
 import { useEffect, useState } from "react";
 import { useCacheClearSignal } from "./useCacheClearSignal";
 
@@ -37,9 +42,7 @@ export function create_useIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilp
    */
   return function useIsAuthorized<TAction extends PolicysetActions<T["policies"]>>(
     action: TAction,
-    // ...inputs: InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...inputs: [] | [any]
+    ...inputs: InferPolicyInputs<GetPolicyByAction<T["policies"], TAction>>
   ) {
     /**
      * Hold current state of useIsAuthorized.
@@ -77,7 +80,8 @@ export function create_useIsAuthorized<T extends AnyKilpiCore>(KilpiClient: Kilp
         try {
           const isAuthorized = await KilpiClient.fetchIsAuthorized({
             action,
-            object,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            object: object as any,
             queryOptions: { signal: abortController.signal },
           });
           if (isMounted) setValue({ status: "success", error: null, isAuthorized });

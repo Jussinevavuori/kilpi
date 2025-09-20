@@ -5,8 +5,8 @@ import type {
   AnyKilpiCore,
   GetPolicyByAction,
   InferPolicyInputs,
-  PolicysetActionsWithoutObject,
   PolicysetActionsWithObject,
+  PolicysetActionsWithoutObject,
 } from "@kilpi/core";
 import type { create_useIsAuthorized } from "../hooks/useIsAuthorized";
 
