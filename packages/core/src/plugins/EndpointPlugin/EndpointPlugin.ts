@@ -1,4 +1,6 @@
+import { KilpiPolicy } from "src/KilpiPolicy";
 import { tryCatch } from "src/utils/tryCatch";
+import type { MaybePromise } from "src/utils/types";
 import * as SuperJSON from "superjson";
 import { z } from "zod";
 import { KilpiCore, type AnyKilpiCore } from "../../KilpiCore";
@@ -9,7 +11,7 @@ import { createKilpiPlugin } from "../../KilpiPlugin";
  */
 export const endpointRequestSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("getIsAuthorized"),
+    type: z.literal("fetchDecision"),
     requestId: z.string(),
     action: z.string(),
     object: z.any(),
@@ -30,7 +32,7 @@ export const endpointRequestSchema = z.discriminatedUnion("type", [
 export function EndpointPlugin<T extends AnyKilpiCore>(options: {
   secret: string;
   getContext?: (req: Request) => T["$$infer"]["context"];
-  onBeforeHandleRequest?: (req: Request) => void;
+  onBeforeHandleRequest?: (req: Request) => MaybePromise<void | never | Response>;
   onBeforeProcessItem?: (request: z.infer<typeof endpointRequestSchema>) => void;
 }) {
   return createKilpiPlugin((Kilpi: T) => {
@@ -55,22 +57,26 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
             return { requestId: request.requestId, data };
           }
 
-          /**
-           * Handle each type of request separately.
-           */
+          // Process requests by type
           switch (request.type) {
             /**
-             * Respond with a boolean for whether the current subject is authorized to
-             * the policy corresponding to the action (on the object if provided).
+             * Fetch the decision for a given policy.
              */
-            case "getIsAuthorized": {
-              // const authorizer = new KilpiAuthorizer(Kilpi, { subject });
-              // const evaluation = await authorizer.evaluate({
-              //   action: request.action as any,
-              //   inputs: [request.object] as any,
-              // });
-              // return createResponse(evaluation.decision);
-              return createResponse(null);
+            case "fetchDecision": {
+              // Initialize policy
+              const policy = new KilpiPolicy({
+                core: Kilpi,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                action: request.action as any,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                inputs: [request.object] as any,
+              });
+
+              // Evaluate policy with pre-resolved subject
+              const decision = await policy.authorize({ subject });
+
+              // Respond with the decision
+              return createResponse({ decision });
             }
           }
         }),
@@ -86,8 +92,9 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
        */
       createPostEndpoint() {
         return async function handle(req: Request) {
-          // Callback
-          options.onBeforeHandleRequest?.(req);
+          // Callback: allow early response or modification of request
+          const earlyResponse = await options.onBeforeHandleRequest?.(req);
+          if (earlyResponse) return earlyResponse;
 
           // Authenticate request: Must have Bearer {secret} in Authorization header.
           if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {

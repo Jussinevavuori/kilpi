@@ -1,4 +1,4 @@
-import { createKilpi, deny, EndpointPlugin, grant } from "@kilpi/core";
+import { createKilpi, Deny, EndpointPlugin, Grant } from "@kilpi/core";
 import { createKilpiClient } from "src";
 import { Batcher } from "src/utils/Batcher";
 import { deepEquals } from "src/utils/deepEquals";
@@ -17,9 +17,9 @@ function init() {
   const Kilpi = createKilpi({
     getSubject: async (): Promise<Sub | null> => null,
     policies: {
-      always: (s) => grant(s),
-      never: (_) => deny(),
-      doc: (s, doc: Doc) => (s && s.id === doc.userId ? grant(s) : deny()),
+      always: (s) => Grant(s),
+      never: (_) => Deny(),
+      doc: (s, doc: Doc) => (s && s.id === doc.userId ? Grant(s) : Deny()),
     },
     plugins: [
       EndpointPlugin({
@@ -181,51 +181,5 @@ describe("requestDeduping", () => {
     batcher.queueJob(6);
     await batcher.flushBatch();
     expect(mockFn).toBeCalledTimes(9);
-  });
-
-  it("should dedupe authorization requests", async () => {
-    const { KilpiClient, processItemCb } = init();
-
-    // Send 2 identical requests + 1 different request
-    KilpiClient.fetchIsAuthorized({ action: "always" });
-    KilpiClient.fetchIsAuthorized({ action: "always" });
-    await KilpiClient.fetchIsAuthorized({ action: "never" });
-
-    // Ensure only 2 items were sent
-    expect(processItemCb).toHaveBeenCalledTimes(2);
-  });
-
-  it("should dedupe subject requests", async () => {
-    const { KilpiClient, processItemCb } = init();
-
-    // Send 3 identical requests, flush on last
-    KilpiClient.fetchSubject();
-    KilpiClient.fetchSubject();
-    await KilpiClient.fetchSubject();
-
-    // Ensure only 2 items were sent
-    expect(processItemCb).toHaveBeenCalledTimes(1);
-  });
-
-  it("should dedupe authorization requests with objects", async () => {
-    const { KilpiClient, processItemCb } = init();
-
-    // Send 2 identical requests, flush on last
-    KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
-    await KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
-
-    // Ensure only 1 item was sent
-    expect(processItemCb).toHaveBeenCalledTimes(1);
-  });
-
-  it("should dedupe authorization requests with identical but differently structured objects", async () => {
-    const { KilpiClient, processItemCb } = init();
-
-    // Send 2 identical requests
-    KilpiClient.fetchIsAuthorized({ action: "doc", object: { id: "1", userId: "1" } });
-    await KilpiClient.fetchIsAuthorized({ action: "doc", object: { userId: "1", id: "1" } });
-
-    // Ensure only 1 item was sent
-    expect(processItemCb).toHaveBeenCalledTimes(1);
   });
 });

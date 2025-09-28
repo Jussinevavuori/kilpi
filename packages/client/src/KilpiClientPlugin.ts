@@ -16,7 +16,7 @@ export type KilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends objec
  * function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
  *   return createKilpiPlugin((Client: KilpiClient<T>) => {
  *     return {
- *       sayHello: () => console.log(`Hello rom ${opts.name}`),
+ *       $sayHello: () => console.log(`Hello rom ${opts.name}`),
  *     };
  *   })
  * }
@@ -27,7 +27,7 @@ export type KilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends objec
  *   ],
  * })
  *
- * Kilpi.sayHello(); // Hello from Kilpi Client Plugin
+ * Kilpi.$sayHello(); // Hello from Kilpi Client Plugin
  * ```
  */
 export function createKilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends object>(

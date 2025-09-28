@@ -81,14 +81,24 @@ export function createKilpi<
   // =========================================================
 
   // Construct base KilpiCore class
-  const core = new KilpiCore(kilpiCoreOptions);
+  const Core = new KilpiCore(kilpiCoreOptions);
 
   // Apply each core plugin and merge them into a single interface (requires type cast)
-  const corePlugins = plugins.map((applyPlugin) => applyPlugin(core));
-  const mergedCorePlugins = corePlugins.reduce((merged, corePlugin) => {
-    return Object.assign(merged, corePlugin);
-  }, {}) as P_00 & P_01 & P_02 & P_03 & P_04 & P_05 & P_06 & P_07 & P_08 & P_09;
-  const coreWithPlugins = Object.assign(core, mergedCorePlugins);
+  const Plugins = plugins
+    // Instantiate each plugin
+    .map((instantiatePlugin) => instantiatePlugin(Core))
+    // Merge all Plugins
+    .reduce((merged, corePlugin) => Object.assign(merged, corePlugin), {}) as P_00 &
+    P_01 &
+    P_02 &
+    P_03 &
+    P_04 &
+    P_05 &
+    P_06 &
+    P_07 &
+    P_08 &
+    P_09;
+  const CoreWithPlugins = Object.assign(Core, Plugins);
 
   // =========================================================
   // IMPLEMENT FLUENT POLICY PROXY API
@@ -98,7 +108,7 @@ export function createKilpi<
   //    implemented via default recursive proxy.
   // =========================================================
 
-  return new Proxy(coreWithPlugins, {
+  return new Proxy(CoreWithPlugins, {
     get(target, prop, receiver) {
       // Reflect core properties (e.g. $hooks, $query, etc.)
       if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
@@ -113,11 +123,11 @@ export function createKilpi<
           >;
 
           // Setup and return the KilpiPolicy instance
-          const policy = new KilpiPolicy({ core, action, inputs });
+          const policy = new KilpiPolicy({ core: Core, action, inputs });
           return policy;
         },
         [String(prop)],
       );
     },
-  }) as FluentPolicyProxyApi<typeof core, TPolicyset> & typeof coreWithPlugins;
+  }) as FluentPolicyProxyApi<typeof Core, TPolicyset> & typeof CoreWithPlugins;
 }

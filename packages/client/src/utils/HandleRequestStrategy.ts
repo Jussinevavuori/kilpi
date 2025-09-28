@@ -2,6 +2,7 @@ import { stringify as superJsonStringify } from "superjson";
 
 type RequestOptions = {
   signal?: AbortSignal | null | undefined;
+  additionalHeaders?: Record<string, string>;
 };
 
 export interface HandleRequestStrategy {
@@ -73,6 +74,7 @@ export class SendRequestToServerEndpointStrategy implements HandleRequestStrateg
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.secret}`,
+        ...options.additionalHeaders,
       },
       body: superJsonStringify(body),
       signal: options?.signal,
@@ -127,6 +129,7 @@ export class HandleRequestCallbackStrategy implements HandleRequestStrategy {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.secret}`,
+          ...options.additionalHeaders,
         },
         signal: options?.signal,
       },

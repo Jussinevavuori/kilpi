@@ -22,6 +22,11 @@ export class KilpiPolicy<
   #core: TCore;
   #inputs: InferPolicyInputs<GetPolicyByAction<TCore["$$infer"]["policies"], TAction>>;
 
+  // Utility to access the first object input (if any)
+  get #object() {
+    return this.#inputs?.[0];
+  }
+
   // Public internals
   $action: TAction;
 
@@ -33,7 +38,7 @@ export class KilpiPolicy<
   }) {
     this.$action = options.action;
     this.#core = options.core;
-    this.#inputs = options.inputs;
+    this.#inputs = options.inputs || []; // Ensure iterable
   }
 
   /**
@@ -66,7 +71,7 @@ export class KilpiPolicy<
 
     // Run `onAfterAuthorization` hooks (do not await)
     this.#core.$hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-      hook({ action: this.$action, subject, decision, object: this.#inputs[0] });
+      hook({ action: this.$action, subject, decision, object: this.#object });
     });
 
     // Return all relevant data on evaluation
@@ -80,7 +85,10 @@ export class KilpiPolicy<
    *
    * @example
    * ```ts
+   * // Access the authorization decision
    * const { granted } = await Kilpi.posts.edit(post).authorize({ ctx });
+   *
+   * // Assert the authorization passes -- always returns granted decision (or throws)
    * const { subject } = await Kilpi.posts.create().authorize().assert();
    * ```
    */
@@ -111,7 +119,7 @@ export class KilpiPolicy<
           subject,
           context,
           action: this.$action,
-          object: this.#inputs[0],
+          object: this.#object,
           onUnauthorized,
         });
       }
