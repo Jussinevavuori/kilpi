@@ -22,8 +22,8 @@ export function AuditPlugin<T extends AnyKilpiCore>(
     filterEvents?: (event: KilpiAuditEvent<T>) => boolean;
 
     /**
-     * Optionally disable initially. Can be re-enabled with `Kilpi.audit.enable()` and
-     * disabled with `Kilpi.audit.disable()`.
+     * Optionally disable initially. Can be re-enabled with `Kilpi.$audit.enable()` and
+     * disabled with `Kilpi.$audit.disable()`.
      */
     disabled?: boolean;
   },
@@ -77,9 +77,9 @@ export function AuditPlugin<T extends AnyKilpiCore>(
     // Enable by default unless explicitly disabled
     if (!options.disabled) enable();
 
-    // Public interface for interacting with the audit plugin, namespaced under "audit".
+    // Public interface for interacting with the audit plugin, namespaced under "$audit".
     return {
-      audit: {
+      $audit: {
         /**
          * Manually trigger a flush.
          */
@@ -94,6 +94,11 @@ export function AuditPlugin<T extends AnyKilpiCore>(
          * Dynamically disable the audit plugin.
          */
         disable,
+
+        /**
+         * Current enabled/disabled status of the audit plugin.
+         */
+        getIsEnabled: () => Boolean(unsubscribe),
       },
     };
   });

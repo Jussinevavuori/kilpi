@@ -58,7 +58,7 @@ describe("AuditPlugin", () => {
     await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
-    await Kilpi.audit.flush();
+    await Kilpi.$audit.flush();
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
   });
 
@@ -158,9 +158,9 @@ describe("AuditPlugin", () => {
     // Ensure manual flushing works
     await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(3);
-    await Kilpi.audit.flush();
+    await Kilpi.$audit.flush();
     expect(mockAuditApi).toHaveBeenCalledTimes(4);
-    await Kilpi.audit.flush();
+    await Kilpi.$audit.flush();
     expect(mockAuditApi).toHaveBeenCalledTimes(4);
   });
 

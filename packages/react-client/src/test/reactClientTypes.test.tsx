@@ -1,57 +1,33 @@
 import { createKilpiClient } from "@kilpi/client";
-import { createKilpi, deny, EndpointPlugin, grant, type Policyset } from "@kilpi/core";
-import { ReactClientComponentPlugin } from "src/plugins/ReactClientComponentPlugin";
+import { createKilpi, Deny, EndpointPlugin, Grant } from "@kilpi/core";
+import { ReactClientPlugin } from "src/plugins/ReactClientPlugin";
 import { describe, expect, it } from "vitest";
 
-type Sub = { id: number };
-const sub = { id: 1 };
-
-type Doc = { id: number; userId: number };
-const doc = { id: 1, userId: 1 };
-
-const policies = {
-  async example(user) {
-    return grant(user);
-  },
-
-  documents: {
-    async read(user, doc: Doc) {
-      if (!user) return deny();
-      if (doc.userId !== user.id) return deny();
-      return grant(user);
+const Kilpi = createKilpi({
+  getSubject: () => ({ id: "1" }),
+  policies: {
+    async always(subject) {
+      return Grant(subject);
+    },
+    async never(subject) {
+      return Deny();
     },
   },
-} satisfies Policyset<Sub | null>;
-
-const Kilpi = createKilpi({
-  getSubject: () => Promise.resolve(sub),
-  policies,
   plugins: [EndpointPlugin({ secret: "secret" })],
 });
 
 const Client = createKilpiClient({
   infer: {} as typeof Kilpi,
-
-  // Connect directly to endpoint
-  connect: { handleRequest: Kilpi.createPostEndpoint(), secret: "secret" },
-
-  plugins: [ReactClientComponentPlugin()],
+  connect: { handleRequest: Kilpi.$createPostEndpoint(), secret: "secret" },
+  plugins: [ReactClientPlugin()],
 });
 
 describe("types", () => {
-  it("should be typesafe and have correct types", async () => {
-    const { ClientAccess, useIsAuthorized, useSubject } = Client.ReactClient.createComponents();
-
-    // These should not throw type errors if all's well - wrapped in function as not to be called
-    void function () {
-      void (<ClientAccess to="example" />);
-      void (<ClientAccess to="documents:read" on={doc} />);
-      void useSubject();
-      void useIsAuthorized("example");
-      void useIsAuthorized("documents:read", doc);
-    };
-
-    // No run-time tests
+  it("should pass", async () => {
     expect(true).toBe(true);
+    const a = Client.always().$sayMyName();
+    const b = Client.never().useAuthorize();
+    void a;
+    void b;
   });
 });

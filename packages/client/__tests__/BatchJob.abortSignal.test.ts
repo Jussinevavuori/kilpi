@@ -27,7 +27,7 @@ function createSquareBatcher(mockFn: ReturnType<typeof vi.fn>, timeoutMs = 0) {
   });
 }
 
-describe("BatchJob.abortSignal", () => {
+describe("BatchJob", () => {
   it("dedupes jobs", async () => {
     const mockFn = vi.fn();
 

@@ -1,49 +1,6 @@
-import { createKilpi, Deny, EndpointPlugin, Grant } from "@kilpi/core";
-import { createKilpiClient } from "src";
 import { Batcher } from "src/utils/Batcher";
 import { deepEquals } from "src/utils/deepEquals";
 import { describe, expect, it, vi } from "vitest";
-
-type Sub = { id: string; name: string };
-type Doc = { id: string; userId: string };
-
-/**
- * Setup a new server and client.
- */
-function init() {
-  const processItemCb = vi.fn();
-
-  // Setup Kilpi server instance
-  const Kilpi = createKilpi({
-    getSubject: async (): Promise<Sub | null> => null,
-    policies: {
-      always: (s) => Grant(s),
-      never: (_) => Deny(),
-      doc: (s, doc: Doc) => (s && s.id === doc.userId ? Grant(s) : Deny()),
-    },
-    plugins: [
-      EndpointPlugin({
-        secret: "secret",
-        onBeforeProcessItem: processItemCb,
-      }),
-    ],
-  });
-
-  const KilpiClient = createKilpiClient({
-    infer: {} as typeof Kilpi,
-
-    // Connect directly to endpoint
-    connect: { handleRequest: Kilpi.createPostEndpoint(), secret: "secret" },
-
-    // Short timeout for local testing
-    batching: { batchDelayMs: 50, jobTimeoutMs: 100 },
-  });
-
-  return {
-    KilpiClient,
-    processItemCb,
-  };
-}
 
 describe("requestDeduping", () => {
   it("should work with primitive comparison", async () => {

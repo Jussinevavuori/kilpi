@@ -35,7 +35,7 @@ function init(options: { subject: Subject | null }) {
 
     // Connect directly to endpoint
     connect: {
-      handleRequest: Kilpi.createPostEndpoint(),
+      handleRequest: Kilpi.$createPostEndpoint(),
       secret: "secret",
     },
 

@@ -1,8 +1,10 @@
 import type { AnyKilpiCore } from "./KilpiCore";
 
-export type KilpiPlugin<TCore extends AnyKilpiCore, TInterface extends object> = (
+export type KilpiPlugin<TCore extends AnyKilpiCore, TCoreExtension extends object> = (
   core: TCore,
-) => TInterface;
+) => {
+  extendCoreApi: TCoreExtension;
+};
 
 /**
  * Kilpi core plugins are functions that take in a KilpiCore instance and can e.g. register hooks,
@@ -18,10 +20,8 @@ export type KilpiPlugin<TCore extends AnyKilpiCore, TInterface extends object> =
  *     Kilpi.$hooks.onAfterAuthorization(() => count++);
  *
  *     return {
- *       $counter: {
- *         log() {
- *           console.log(opts.message.replace("%", count.toString()));
- *         }
+ *       extendCoreApi: {
+ *         $logCount: () => console.log(opts.message.replace("%", count.toString()));
  *       }
  *     };
  *   })
@@ -33,11 +33,11 @@ export type KilpiPlugin<TCore extends AnyKilpiCore, TInterface extends object> =
  *   plugins: [CounterPlugin({ message: "% authorizations made!" })],
  * })
  *
- * Kilpi.$counter.log(); // 10 authorizations made!
+ * Kilpi.$logCount(); // 10 authorizations made!
  * ```
  */
-export function createKilpiPlugin<TCore extends AnyKilpiCore, TCorePluginInterface extends object>(
-  plugin: KilpiPlugin<TCore, TCorePluginInterface>,
+export function createKilpiPlugin<TCore extends AnyKilpiCore, TCoreExtension extends object>(
+  plugin: KilpiPlugin<TCore, TCoreExtension>,
 ) {
   return plugin;
 }

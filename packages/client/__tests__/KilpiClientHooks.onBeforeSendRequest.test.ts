@@ -25,7 +25,7 @@ describe("KilpiClientHooks.onBeforeSendRequest", () => {
     infer: {} as typeof Kilpi,
     batching: { jobTimeoutMs: 0 },
     connect: {
-      handleRequest: Kilpi.createPostEndpoint(),
+      handleRequest: Kilpi.$createPostEndpoint(),
       secret: "secret",
     },
   });

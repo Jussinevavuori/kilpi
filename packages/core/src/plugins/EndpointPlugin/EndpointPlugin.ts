@@ -90,7 +90,7 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
        *
        * @param options Endpoint options.
        */
-      createPostEndpoint() {
+      $createPostEndpoint() {
         return async function handle(req: Request) {
           // Callback: allow early response or modification of request
           const earlyResponse = await options.onBeforeHandleRequest?.(req);

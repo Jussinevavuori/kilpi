@@ -78,23 +78,14 @@ export function createKilpiClient<
   // Construct base KilpiCore class
   const Client = new KilpiClient<T>(options);
 
-  // Apply each core plugin and merge them into a single interface (requires type cast)
-  const Plugins = plugins
-    // Instantiate each plugin
-    .map((instantiatePlugin) => instantiatePlugin(Client))
-    // Merge all plugins
-    .reduce((merged, corePlugin) => Object.assign(merged, corePlugin), {}) as P_00 &
-    P_01 &
-    P_02 &
-    P_03 &
-    P_04 &
-    P_05 &
-    P_06 &
-    P_07 &
-    P_08 &
-    P_09;
-  // Merge each plugin
-  const ClientWithPlugins = Object.assign(Client, Plugins);
+  // Instantiate all plugins
+  const ClientPlugins = plugins.map((instantiatePlugin) => instantiatePlugin(Client));
+
+  // Add plugin interfaces to client
+  const ClientWithPlugins = Object.assign(
+    Client,
+    ...ClientPlugins.map((_) => _.extendClientApi || {}),
+  ) as typeof Client & P_00 & P_01 & P_02 & P_03 & P_04 & P_05 & P_06 & P_07 & P_08 & P_09;
 
   // =========================================================
   // IMPLEMENT FLUENT POLICY PROXY API
@@ -118,9 +109,15 @@ export function createKilpiClient<
             GetPolicyByAction<T["$$infer"]["policies"], typeof action>
           >;
 
-          // Setup and return the KilpiPolicy instance
-          const policy = new KilpiClientPolicy({ client: ClientWithPlugins, action, inputs });
-          return policy;
+          // Setup the KilpiPolicy instance
+          const Policy = new KilpiClientPolicy({ client: ClientWithPlugins, action, inputs });
+
+          // Instantiate all policy plugins
+          const PolicyPlugins = ClientPlugins.map((_) => _.extendPolicyApi?.(Policy));
+
+          // Add plugin interfaces to policy. Type augmentation happens via declaration merging
+          // in the plugin files.
+          return Object.assign(Policy, ...PolicyPlugins) as typeof Policy;
         },
         [String(prop)],
       );

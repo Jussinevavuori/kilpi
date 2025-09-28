@@ -19,8 +19,8 @@ describe("KilpiPlugin.types", () => {
       ],
     });
 
-    Kilpi.audit.flush();
-    Kilpi.createPostEndpoint();
+    Kilpi.$audit.flush();
+    Kilpi.$createPostEndpoint();
 
     expect(true).toBe(true);
   });
