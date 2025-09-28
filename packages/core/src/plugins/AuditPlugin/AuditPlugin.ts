@@ -42,7 +42,7 @@ export function AuditPlugin<T extends AnyKilpiCore>(
 
       // Connect flush strategy to onAfterAuthorization hook to always send an audit event
       // when an authorization event has been performed.
-      unsubscribe = Kilpi.hooks.onAfterAuthorization((event) => {
+      unsubscribe = Kilpi.$hooks.onAfterAuthorization((event) => {
         // Construct audit event
         const auditEvent: KilpiAuditEvent<T> = {
           type: "authorization",
@@ -51,7 +51,6 @@ export function AuditPlugin<T extends AnyKilpiCore>(
           subject: event.subject,
           action: event.action,
           object: event.object,
-          source: event.source,
           timestamp: Date.now(),
         };
 

@@ -1,5 +1,5 @@
-import type { Decision } from "src/decision";
 import type { AnyKilpiCore } from "src/KilpiCore";
+import type { Decision } from "src/types";
 
 export type KilpiAuditEvent<T extends AnyKilpiCore> = {
   /**
@@ -31,9 +31,4 @@ export type KilpiAuditEvent<T extends AnyKilpiCore> = {
    * The action
    */
   action: string;
-
-  /**
-   * Source of the event
-   */
-  source: string;
 };

@@ -1,8 +1,94 @@
-import type { Decision } from "./decision";
-import { KilpiError } from "./error";
 import type { DeepObject, RecursiveValueByKey } from "./utils/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * GrantedDecision represents a passed authorization check. It includes the narrowed down
+ * version of the subject that was passed in.
+ */
+export type GrantedDecision<TSubject> = {
+  granted: true;
+
+  /**
+   * Subject who was granted access.
+   */
+  subject: TSubject;
+};
+
+/**
+ * DeniedDecision represents a failed authorization check. It includes an optional message
+ * to provide context for the denial and an optional reason for the denial.
+ */
+export type DeniedDecision = {
+  granted: false;
+
+  /**
+   * Message to be displayed to the user.
+   */
+  message?: string;
+
+  /**
+   * Reason of denial for distinguishing between different types of denials (e.g. UNAUTHENTICATED
+   * vs. NOT_SUBSCRIBED vs NOT_ENOUGH_CREDITS).
+   */
+  reason?: string;
+
+  /**
+   * Metadata that can optionally be added to the denial.
+   */
+  metadata?: unknown;
+};
+
+/**
+ * A decision object represents the result of an authorization check. It can either be granted
+ * or denied. Each case includes more details about the result of the authorization check.
+ */
+export type Decision<TSubjectOutput> = GrantedDecision<TSubjectOutput> | DeniedDecision;
+
+/**
+ * Handler called when authorization fails and `.require()` is used.
+ */
+export type KilpiOnUnauthorizedHandler = (denial: DeniedDecision) => unknown;
+
+/**
+ * Utility type for whch all getSubject functions extend.
+ */
+export type AnyGetSubject = (ctx?: any) => any;
+
+/**
+ * Utility to infer the context from a getSubject function.
+ */
+export type InferContext<TGetSubject extends AnyGetSubject> = Parameters<TGetSubject>[0];
+
+/**
+ * Arguments passed to construct a KilpiCore instance.
+ */
+export type KilpiConstructorArgs<
+  TGetSubject extends AnyGetSubject,
+  TPolicyset extends Policyset<Awaited<ReturnType<NoInfer<TGetSubject>>>>,
+> = {
+  /**
+   * Connect your own authentication provider (and other subject data / metadata) via a
+   * custom `getSubject` function.
+   *
+   * Tip: Should be cached with e.g. `React.cache()` or similar API as it will be called
+   * during each authorization check.
+   */
+  getSubject: TGetSubject;
+
+  /**
+   * The policies which define the authorization logic of the application.
+   */
+  policies: TPolicyset;
+
+  /**
+   * When `.require()` is called on a denied decision, this handler is invoked if provided.
+   * This handler should typically throw a custom error (redirection, 403, ...) when the
+   * used framework / custom error handler supports throwing errors to signal unauthorized
+   * access.
+   */
+  onUnauthorized?: KilpiOnUnauthorizedHandler;
+};
 
 /**
  * Policy inputs either take in exactly 0 or 1 objects.
@@ -38,12 +124,13 @@ export type InferPolicyInputs<T> = T extends Policy<infer TInputs, any, any> ? T
 /**
  * Utility type for inferring the narrowed down subject of a policy.
  */
-export type InferPolicySubject<T> = T extends Policy<any, any, infer TSubject> ? TSubject : never;
+export type InferPolicySubject<T> =
+  T extends Policy<any, any, infer TSubjectOutput> ? TSubjectOutput : never;
 
 /**
  * Separator for action keys (e.g. "blog:edit").
  */
-const SEPARATOR = ":" as const;
+export const SEPARATOR = "." as const;
 
 /**
  * Specialized version of RecursiveKeysTo that matches by function parameter type instead of
@@ -96,23 +183,3 @@ export type GetPolicyByAction<
   TPolicyset extends Policyset<any>,
   TAction extends PolicysetActions<TPolicyset>,
 > = EnsureTypeIsPolicy<RecursiveValueByKey<TPolicyset, TAction, typeof SEPARATOR>>;
-
-/**
- * Typesafe function to extract a policy from a policyset by the action.
- */
-export function getPolicyByAction<
-  const TPolicyset extends Policyset<any>,
-  TAction extends PolicysetActions<TPolicyset>,
->(policyset: TPolicyset, action: TAction) {
-  // Access policy by action
-  const parts = action.split(SEPARATOR);
-  const policy = parts.reduce<any>((index, k) => index[k], policyset);
-
-  // Ensure policy found
-  if (typeof policy !== "function") {
-    throw new KilpiError.Internal(`Policy not found: "${action}"`);
-  }
-
-  // Typecast as this can not be done type-safely without
-  return policy as GetPolicyByAction<TPolicyset, TAction>;
-}

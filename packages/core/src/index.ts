@@ -1,19 +1,26 @@
 export { createKilpi } from "./createKilpi";
-export { deny, grant, type Decision, type DeniedDecision, type GrantedDecision } from "./decision";
+export { Deny, Grant } from "./decision";
 export { KilpiError } from "./error";
-export { KilpiCore, type AnyKilpiCore, type KilpiConstructorArgs } from "./KilpiCore";
-export { createKilpiPlugin, type KilpiPlugin } from "./KilpiPlugin";
-export { type AnyKilpiScope, type KilpiOnUnauthorizedHandler, type KilpiScope } from "./KilpiScope";
+export { getPolicyByAction } from "./getPolicyByAction";
+export { KilpiCore, type AnyKilpiCore } from "./KilpiCore";
+export {
+  createKilpiPlugin as createKilpiPlugin,
+  type KilpiPlugin as KilpiPlugin,
+} from "./KilpiPlugin";
 export { AuditPlugin } from "./plugins/AuditPlugin/AuditPlugin";
 export { EndpointPlugin, endpointRequestSchema } from "./plugins/EndpointPlugin/EndpointPlugin";
-export {
-  getPolicyByAction,
-  type GetPolicyByAction,
-  type InferPolicyInputs,
-  type InferPolicySubject,
-  type Policy,
-  type Policyset,
-  type PolicysetActions,
-  type PolicysetActionsWithObject,
-  type PolicysetActionsWithoutObject,
-} from "./policy";
+export type {
+  Decision,
+  DeniedDecision,
+  GetPolicyByAction,
+  GrantedDecision,
+  InferPolicyInputs,
+  InferPolicySubject,
+  KilpiConstructorArgs,
+  KilpiOnUnauthorizedHandler,
+  Policy,
+  Policyset,
+  PolicysetActions,
+  PolicysetActionsWithObject,
+  PolicysetActionsWithoutObject,
+} from "./types";

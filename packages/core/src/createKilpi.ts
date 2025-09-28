@@ -1,7 +1,41 @@
-import { KilpiCore, type AnyGetSubject, type KilpiConstructorArgs } from "./KilpiCore";
-import type { KilpiPlugin } from "./KilpiPlugin";
-import type { Policyset } from "./policy";
+import { KilpiCore, type AnyKilpiCore } from "./KilpiCore";
+import { type KilpiPlugin } from "./KilpiPlugin";
+import { KilpiPolicy } from "./KilpiPolicy";
+import type {
+  AnyGetSubject,
+  GetPolicyByAction,
+  InferPolicyInputs,
+  KilpiConstructorArgs,
+  Policy,
+  Policyset,
+  PolicysetActions,
+  SEPARATOR,
+} from "./types";
+import { createRecursiveProxy } from "./utils/proxy";
 import type { AnyLengthHead } from "./utils/types";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Recursive type of fulent proxy API
+ */
+type FluentPolicyProxyApi<TCore extends AnyKilpiCore, T, TPath extends string = ""> = {
+  [TKey in keyof T]: TKey extends string // Only consider string keys
+    ? T[TKey] extends infer $Value // $Value := T[TKey]
+      ? (TPath extends "" ? TKey : `${TPath}${typeof SEPARATOR}${TKey}`) extends infer $TAction // $TAction := TPath ? `TPath.TKey` : TKey
+        ? $Value extends Policy<infer $TInputs, any, any> // $Value is a policy? (Infer policy types)
+          ? // ==== POLICY REACHED: Decorate as KilpiPolicy ====
+            $TAction extends PolicysetActions<TCore["$$infer"]["policies"]>
+            ? (...inputs: $TInputs) => KilpiPolicy<TCore, $TAction> // Decorate policies as KilpiPolicy with plugins
+            : `TS Error: $TAction is invalid (${$TAction extends string ? $TAction : "not-a-string"})` // $TAction not a valid action?
+          : // ==== NAMESPACE REACHED: Recurse without changes ====
+            $TAction extends string
+            ? FluentPolicyProxyApi<TCore, $Value, $TAction> // Recurse
+            : "TS Error: $TAction is not a string"
+        : "TS Error: $Value assignment failed"
+      : "TS Error: $TAction assignment failed"
+    : never; // TKey not string - omit non-string keys
+};
 
 /**
  * Initialize the Kilpi library.
@@ -11,45 +45,79 @@ import type { AnyLengthHead } from "./utils/types";
 export function createKilpi<
   TGetSubject extends AnyGetSubject,
   TPolicyset extends Policyset<Awaited<ReturnType<TGetSubject>>>,
-  P1 extends object,
-  P2 extends object,
-  P3 extends object,
-  P4 extends object,
-  P5 extends object,
-  P6 extends object,
-  P7 extends object,
-  P8 extends object,
-  P9 extends object,
+  // Support up to 10 strongly typed core plugins
+  P_00 extends object,
+  P_01 extends object,
+  P_02 extends object,
+  P_03 extends object,
+  P_04 extends object,
+  P_05 extends object,
+  P_06 extends object,
+  P_07 extends object,
+  P_08 extends object,
+  P_09 extends object,
 >({
   plugins = [],
   ...kilpiCoreOptions
 }: KilpiConstructorArgs<TGetSubject, TPolicyset> & {
-  // Support up to 9 strongly typed plugins
+  // Support up to 10 strongly core and policy plugins
   plugins?: AnyLengthHead<
     [
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P1>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P2>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P3>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P4>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P5>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P6>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P7>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P8>,
-      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P9>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_00>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_01>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_02>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_03>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_04>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_05>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_06>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_07>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_08>,
+      KilpiPlugin<KilpiCore<TGetSubject, TPolicyset>, P_09>,
     ]
   >;
 }) {
+  // =========================================================
+  // INITIALIZE CORE AND PLUGINS
+  // =========================================================
+
   // Construct base KilpiCore class
-  const Kilpi = new KilpiCore(kilpiCoreOptions);
+  const core = new KilpiCore(kilpiCoreOptions);
 
-  // Apply each plugin and get the plugin interfaces
-  const interfaces = plugins.map((applyPlugin) => applyPlugin(Kilpi));
+  // Apply each core plugin and merge them into a single interface (requires type cast)
+  const corePlugins = plugins.map((applyPlugin) => applyPlugin(core));
+  const mergedCorePlugins = corePlugins.reduce((merged, corePlugin) => {
+    return Object.assign(merged, corePlugin);
+  }, {}) as P_00 & P_01 & P_02 & P_03 & P_04 & P_05 & P_06 & P_07 & P_08 & P_09;
+  const coreWithPlugins = Object.assign(core, mergedCorePlugins);
 
-  // Merge all plugin interfaces (This has to be manually typed with `as` for it to work)
-  const mergedInterface = interfaces.reduce((merged, pluginInterface) => {
-    return Object.assign(merged, pluginInterface);
-  }, {}) as P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8 & P9;
+  // =========================================================
+  // IMPLEMENT FLUENT POLICY PROXY API
+  // 1. Root level implemented here to allow reflecting core
+  //    properties.
+  // 2. Rest of policy namespaces in fluent policy proxy API
+  //    implemented via default recursive proxy.
+  // =========================================================
 
-  // Return Kilpi with merged interface
-  return Object.assign(Kilpi, mergedInterface);
+  return new Proxy(coreWithPlugins, {
+    get(target, prop, receiver) {
+      // Reflect core properties (e.g. $hooks, $query, etc.)
+      if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+
+      // Enter dynamic namespace
+      return createRecursiveProxy(
+        (opts) => {
+          // Extract action and inputs from the proxy call
+          const action = opts.path.join(".") as PolicysetActions<TPolicyset>;
+          const inputs = opts.args as InferPolicyInputs<
+            GetPolicyByAction<TPolicyset, typeof action>
+          >;
+
+          // Setup and return the KilpiPolicy instance
+          const policy = new KilpiPolicy({ core, action, inputs });
+          return policy;
+        },
+        [String(prop)],
+      );
+    },
+  }) as FluentPolicyProxyApi<typeof core, TPolicyset> & typeof coreWithPlugins;
 }

@@ -1,34 +1,94 @@
-import { createKilpiPlugin, type AnyKilpiCore, type AnyKilpiScope } from "@kilpi/core";
-import React from "react";
-import { create_Access } from "src/components/Access";
-
-// This is a hack to determine if we are running in a React Server Component context.
-// If a cached random function returns the same result twice, the cache is working
-// and we are in a React Server Component context.
-const rscProbe = React.cache(() => Math.random());
-const isRscContext = () => rscProbe() === rscProbe();
-
-// Using React.cache allows us to keep a mutable value for the current request, but only
-// when inside a React Server Component context.
-const rscCache = React.cache(() => ({ current: {} as AnyKilpiScope }));
+import { createKilpiPlugin, type AnyKilpiCore, type KilpiOnUnauthorizedHandler } from "@kilpi/core";
+import { create_Authorize } from "../components/Authorize";
+import { createRscCache } from "../utils/createRscCache";
 
 /**
  * React server component plugin for automatically providing a Kilpi scope
  * in React Server Components and for creating the React Server Component bindings
  * to work with Kilpi.
  */
-export function ReactServerComponentPlugin<T extends AnyKilpiCore>() {
+export function ReactServerComponentPlugin<T extends AnyKilpiCore>(
+  options: {
+    disableSubjectCaching?: boolean;
+  } = {},
+) {
   return createKilpiPlugin((Kilpi: T) => {
-    // Provide automatic scope when in RSC context
-    Kilpi.hooks.onRequestScope(() => (isRscContext() ? rscCache().current : undefined));
+    // =============================================================================================
+    // AUTOMATIC SUBJECT CACHING (unless disabled)
+    // =============================================================================================
 
+    if (!options.disableSubjectCaching) {
+      // Create React.cache which holds the current subject
+      const subjectCache = createRscCache(null as null | { subject: T["$$infer"]["subject"] });
+
+      // Inject the subject from cache if available
+      Kilpi.$hooks.onSubjectRequestFromCache(() => {
+        const cached = subjectCache().value;
+        if (cached) return cached;
+        else return null;
+      });
+
+      // Update the cache when the subject is resolved
+      Kilpi.$hooks.onSubjectResolved((event) => {
+        subjectCache().value = { subject: event.subject };
+      });
+    }
+
+    // =============================================================================================
+    // PAGE-SPECIFIC ON_UNAUTHORIZED_ASSERT HANDLER
+    // =============================================================================================
+
+    const onUnauthorizedCache = createRscCache(null as null | KilpiOnUnauthorizedHandler);
+    Kilpi.$hooks.onUnauthorizedAssert(async (event) => {
+      await onUnauthorizedCache().value?.(event.decision);
+    });
+
+    /**
+     * Return public API which allows access to components.
+     */
     return {
-      ReactServer: {
-        // Create components
-        createComponents() {
-          const Access = create_Access(Kilpi);
-          return { Access };
-        },
+      /**
+       * Sets a custom onUnauthorized handler in the current React Server Component
+       * context. Primary usage is to allow custom handling of unauthorized access
+       * for each page.
+       *
+       * ## Example usage (Next.js)
+       *
+       * ```tsx
+       * export default async function CreatePostPage() {
+       *   // For this page only, all unauthorized access will redirect to /posts
+       *   Kilpi.$onUnauthorizedRscAssert(() => {
+       *     redirect("/posts");
+       *   })
+       *
+       *   // Assert that the user can create posts -- else the above handler is called
+       *   await Kilpi.posts.create().authorize().assert();
+       *
+       *   return <CreatePostForm />
+       * }
+       */
+      $onUnauthorizedRscAssert(onUnauthorized: KilpiOnUnauthorizedHandler) {
+        onUnauthorizedCache().value = onUnauthorized;
+      },
+
+      /**
+       * Create React Server Component bindings for Kilpi.
+       *
+       * ## Example usage
+       *
+       * ```tsx
+       * const { Authorize } = Kilpi.$createReactServerComponents();
+       *
+       * return (
+       *   <Authorize decision={Kilpi.posts.read({ postId: "1" }).authorize()}>
+       *     <Post postId="1" />
+       *   </Authorize>
+       * )
+       * ```
+       */
+      $createReactServerComponents() {
+        const Authorize = create_Authorize();
+        return { Authorize };
       },
     };
   });

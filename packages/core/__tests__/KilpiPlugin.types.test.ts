@@ -1,10 +1,12 @@
 import { AuditPlugin, createKilpi, EndpointPlugin } from "src";
 import { describe, expect, it } from "vitest";
 
-describe("plugin types", () => {
+describe("KilpiPlugin.types", () => {
   it("should compile with multiple plugins", async () => {
     const Kilpi = createKilpi({
-      getSubject: async () => ({ id: "1" }),
+      async getSubject() {
+        return null;
+      },
       policies: {},
       plugins: [
         AuditPlugin({

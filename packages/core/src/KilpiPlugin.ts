@@ -1,30 +1,26 @@
 import type { AnyKilpiCore } from "./KilpiCore";
 
-export type KilpiPlugin<TIn extends AnyKilpiCore, TExtension extends object> = (
-  core: TIn,
-) => TExtension;
+export type KilpiPlugin<TCore extends AnyKilpiCore, TInterface extends object> = (
+  core: TCore,
+) => TInterface;
 
 /**
- * Kilpi plugins are functions that take in a KilpiCore instance, do something with the instance
- * and finally return the public interface for the plugin (or `{}`).
+ * Kilpi core plugins are functions that take in a KilpiCore instance and can e.g. register hooks,
+ * extend the core interface or extend the policy interface.
  *
  * ## Example
  *
  * @usage
  * ```ts
- * function CountAuthorizationsPlugin<T extends AnyKilpiCore>(opts: { msg: string }) {
- *   return createKilpiPlugin((Kilpi: T) => {
- *
+ * function CounterPlugin<T extends AnyKilpiCore>(opts: { message: string }) {
+ *   return createKilpiCorePlugin((Kilpi: T) => {
  *     let count = 0;
- *
- *     Kilpi.hooks.onAfterAuthorization(() => {
- *       count++;
- *     })
+ *     Kilpi.$hooks.onAfterAuthorization(() => count++);
  *
  *     return {
- *       counter: {
- *         logCount() {
- *           console.log(msg.replace("%", count.toString()));
+ *       $counter: {
+ *         log() {
+ *           console.log(opts.message.replace("%", count.toString()));
  *         }
  *       }
  *     };
@@ -34,18 +30,14 @@ export type KilpiPlugin<TIn extends AnyKilpiCore, TExtension extends object> = (
  * const Kilpi = createKilpi({
  *   getSubject,
  *   policies,
- *   plugins: [
- *     CountAuthorizationsPlugin({ msg: "% authorizations made!" }),
- *   ],
+ *   plugins: [CounterPlugin({ message: "% authorizations made!" })],
  * })
  *
- * Kilpi.authorize("policy");
- *
- * Kilpi.counter.logCount(); // 1 authorizations made!
+ * Kilpi.$counter.log(); // 10 authorizations made!
  * ```
  */
-export function createKilpiPlugin<TIn extends AnyKilpiCore, TExtension extends object>(
-  plugin: KilpiPlugin<TIn, TExtension>,
-): KilpiPlugin<TIn, TExtension> {
+export function createKilpiPlugin<TCore extends AnyKilpiCore, TCorePluginInterface extends object>(
+  plugin: KilpiPlugin<TCore, TCorePluginInterface>,
+) {
   return plugin;
 }

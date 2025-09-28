@@ -1,21 +1,22 @@
-import { AuditPlugin, createKilpi, deny, grant, type Policyset } from "src";
+import { AuditPlugin, createKilpi, Deny, Grant, type Policyset } from "src";
 import { describe, expect, it, vi } from "vitest";
-
-const getSubject = async () => ({
-  id: "1",
-  name: "test",
-});
-
-const policies = {
-  always(subject) {
-    return grant(subject);
-  },
-  never() {
-    return deny();
-  },
-} as const satisfies Policyset<Awaited<ReturnType<typeof getSubject>>>;
+import { TestingUtils, type TestingSubject } from "./TestingUtils";
 
 describe("AuditPlugin", () => {
+  // Subject state
+  const subjectState = TestingUtils.createSubjectState({ userId: "1" });
+
+  // Kilpi constructor params
+  const getSubject = async () => subjectState.getSubject();
+  const policies = {
+    always(subject) {
+      return Grant(subject);
+    },
+    never() {
+      return Deny();
+    },
+  } as const satisfies Policyset<TestingSubject>;
+
   it("should work with immediate strategy", async () => {
     const mockAuditApi = vi.fn();
 
@@ -30,10 +31,10 @@ describe("AuditPlugin", () => {
       ],
     });
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(1);
 
-    await Kilpi.isAuthorized("never");
+    await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
   });
 
@@ -51,10 +52,10 @@ describe("AuditPlugin", () => {
       ],
     });
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
-    await Kilpi.isAuthorized("never");
+    await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
     await Kilpi.audit.flush();
@@ -78,10 +79,10 @@ describe("AuditPlugin", () => {
     });
 
     // Call twice with 50 ms inbetween
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
-    await Kilpi.isAuthorized("never");
+    await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
     // Allow time for flushing
@@ -93,10 +94,10 @@ describe("AuditPlugin", () => {
     expect(Math.abs(timestamps[0] - timestamps[1])).toBeLessThan(50);
 
     // Call again twice with 50 ms inbetween
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
     await new Promise((resolve) => setTimeout(resolve, 50));
-    await Kilpi.isAuthorized("never");
+    await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
 
     // Allow time for flushing
@@ -133,15 +134,15 @@ describe("AuditPlugin", () => {
     // Call three times with 20ms breaks since "start"
     const start = Date.now();
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
@@ -155,7 +156,7 @@ describe("AuditPlugin", () => {
     }
 
     // Ensure manual flushing works
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(3);
     await Kilpi.audit.flush();
     expect(mockAuditApi).toHaveBeenCalledTimes(4);
@@ -180,10 +181,10 @@ describe("AuditPlugin", () => {
       ],
     });
 
-    await Kilpi.isAuthorized("always");
+    await Kilpi.always().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
-    await Kilpi.isAuthorized("never");
+    await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(1);
   });
 });

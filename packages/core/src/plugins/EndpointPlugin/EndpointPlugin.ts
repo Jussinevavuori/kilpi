@@ -1,7 +1,7 @@
 import { tryCatch } from "src/utils/tryCatch";
 import * as SuperJSON from "superjson";
 import { z } from "zod";
-import type { AnyKilpiCore } from "../../KilpiCore";
+import { KilpiCore, type AnyKilpiCore } from "../../KilpiCore";
 import { createKilpiPlugin } from "../../KilpiPlugin";
 
 /**
@@ -13,10 +13,6 @@ export const endpointRequestSchema = z.discriminatedUnion("type", [
     requestId: z.string(),
     action: z.string(),
     object: z.any(),
-  }),
-  z.object({
-    type: z.literal("getSubject"),
-    requestId: z.string(),
   }),
 ]);
 
@@ -33,6 +29,7 @@ export const endpointRequestSchema = z.discriminatedUnion("type", [
  */
 export function EndpointPlugin<T extends AnyKilpiCore>(options: {
   secret: string;
+  getContext?: (req: Request) => T["$$infer"]["context"];
   onBeforeHandleRequest?: (req: Request) => void;
   onBeforeProcessItem?: (request: z.infer<typeof endpointRequestSchema>) => void;
 }) {
@@ -40,14 +37,21 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
     /**
      * Utility function to process requests into a JSON object that can be responded with.
      */
-    async function processRequests(body: Array<z.infer<typeof endpointRequestSchema>>) {
+    async function processRequests(
+      body: Array<z.infer<typeof endpointRequestSchema>>,
+      ctx?: T["$$infer"]["context"],
+    ) {
+      // Resolve shared subject for all requests
+      const subject = await KilpiCore.expose(Kilpi).getSubject(ctx);
+      void subject; // Placeholder
+
       return await Promise.all(
         body.map(async (request) => {
           // Callback
           options.onBeforeProcessItem?.(request);
 
-          // Utility to construct and SuperJSON stringify a response
-          function createResponse(data: unknown) {
+          // Utility to construct a response object
+          function createResponse<T>(data: T) {
             return { requestId: request.requestId, data };
           }
 
@@ -56,22 +60,17 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
            */
           switch (request.type) {
             /**
-             * Respond with the current subject.
-             */
-            case "getSubject": {
-              const subject = await Kilpi.getSubject();
-              return createResponse(subject);
-            }
-
-            /**
              * Respond with a boolean for whether the current subject is authorized to
              * the policy corresponding to the action (on the object if provided).
              */
             case "getIsAuthorized": {
-              const isAuthorized = request.object
-                ? await Kilpi.isAuthorized(request.action, request.object)
-                : await Kilpi.isAuthorized(request.action);
-              return createResponse(isAuthorized);
+              // const authorizer = new KilpiAuthorizer(Kilpi, { subject });
+              // const evaluation = await authorizer.evaluate({
+              //   action: request.action as any,
+              //   inputs: [request.object] as any,
+              // });
+              // return createResponse(evaluation.decision);
+              return createResponse(null);
             }
           }
         }),
@@ -87,32 +86,30 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
        */
       createPostEndpoint() {
         return async function handle(req: Request) {
-          return Kilpi.runInScope(async () => {
-            // Callback
-            options.onBeforeHandleRequest?.(req);
+          // Callback
+          options.onBeforeHandleRequest?.(req);
 
-            // Authenticate request: Must have Bearer {secret} in Authorization header.
-            if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {
-              return Response.json({ message: "Unauthorized" }, { status: 401 });
-            }
+          // Authenticate request: Must have Bearer {secret} in Authorization header.
+          if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {
+            return Response.json({ message: "Unauthorized" }, { status: 401 });
+          }
 
-            // Parse and validate body
-            const body = await tryCatch(
-              req
-                .text()
-                .then((data) => SuperJSON.parse(data))
-                .then((data) => endpointRequestSchema.array().parse(data)),
-            );
+          // Parse and validate body
+          const body = await tryCatch(
+            req
+              .text()
+              .then((data) => SuperJSON.parse(data))
+              .then((data) => endpointRequestSchema.array().parse(data)),
+          );
 
-            // Invalid request body
-            if (body.error) {
-              return Response.json({ message: "Invalid request body" }, { status: 400 });
-            }
+          // Invalid request body
+          if (body.error) {
+            return Response.json({ message: "Invalid request body" }, { status: 400 });
+          }
 
-            // Process each request, and respond with the results as SuperJSON
-            const responses = await processRequests(body.value);
-            return Response.json(SuperJSON.stringify(responses));
-          });
+          // Process each request, and respond with the results as SuperJSON
+          const responses = await processRequests(body.value);
+          return Response.json(SuperJSON.stringify(responses));
         };
       },
     };
