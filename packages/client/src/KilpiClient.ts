@@ -67,7 +67,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
    * type Policyset = (typeof KilpiClient)["$$infer"]["policies"];
    * ```
    */
-  public $$infer: T["$$infer"] = {} as T["$$infer"];
+  public $$infer: T["$$infer"] = {} as T["$$infer"] & { core: T };
 
   constructor(options: KilpiClientOptions) {
     // Initialize hooks

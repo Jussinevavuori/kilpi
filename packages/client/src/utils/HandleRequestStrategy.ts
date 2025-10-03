@@ -131,7 +131,7 @@ export class HandleRequestCallbackStrategy implements HandleRequestStrategy {
           Authorization: `Bearer ${this.secret}`,
           ...options.additionalHeaders,
         },
-        signal: options?.signal,
+        // signal: options?.signal, // Do not pass signal here, pass to handler
       },
     );
 

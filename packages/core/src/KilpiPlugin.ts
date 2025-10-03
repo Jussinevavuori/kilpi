@@ -3,7 +3,7 @@ import type { AnyKilpiCore } from "./KilpiCore";
 export type KilpiPlugin<TCore extends AnyKilpiCore, TCoreExtension extends object> = (
   core: TCore,
 ) => {
-  extendCoreApi: TCoreExtension;
+  extendCore?: () => TCoreExtension;
 };
 
 /**

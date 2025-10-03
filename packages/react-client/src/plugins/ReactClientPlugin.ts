@@ -1,29 +1,9 @@
-import type { AnyKilpiClient, AnyKilpiClientPolicy, KilpiClient } from "@kilpi/client";
+import type { KilpiClient } from "@kilpi/client";
 import { createKilpiClientPlugin } from "@kilpi/client";
 import type { AnyKilpiCore, PolicysetActions } from "@kilpi/core";
-
-/**
- * Type augmentation to add the $sayMyName method to all policies in the client.
- */
-interface KilpiClientPolicyExtension_ReactClientPlugin<
-  TClient extends AnyKilpiClient,
-  TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
-> {
-  $sayMyName: () => TAction;
-
-  useAuthorize: () => null;
-}
-
-/**
- * Type augmentation to add the $sayMyName method to all policies in the client.
- */
-declare module "@kilpi/client" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  export interface IKilpiClientPolicy<
-    TClient extends AnyKilpiClient,
-    TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
-  > extends KilpiClientPolicyExtension_ReactClientPlugin<TClient, TAction> {}
-}
+import { create_AuthorizeClient } from "../components/AuthorizeClient";
+import { create_useAuthorize } from "../hooks/useAuthorize";
+import type { KilpiClientPolicyExtension_ReactClientPlugin } from "../type.extension";
 
 /**
  * React server component plugin for automatically providing a Kilpi scope
@@ -32,20 +12,35 @@ declare module "@kilpi/client" {
  */
 export function ReactClientPlugin<TCore extends AnyKilpiCore>() {
   return createKilpiClientPlugin((Client: KilpiClient<TCore>) => {
-    void Client;
     return {
-      extendClientApi: {
-        $setupReactClient() {},
-      },
-      extendPolicyApi: <TPolicy extends AnyKilpiClientPolicy>(Policy: TPolicy) => {
+      /**
+       * Extend the client to allow creating components.
+       */
+      extendClient() {
         return {
-          $sayMyName() {
-            return Policy.$action;
-          },
-          useAuthorize() {
-            return null;
+          $createReactClientComponents() {
+            const AuthorizeClient = create_AuthorizeClient(Client);
+            return {
+              AuthorizeClient,
+            };
           },
         };
+      },
+
+      /**
+       * Extend policies to add the `useAuthorize` hook. Ensure matches extension type
+       * with the satisfies clause.
+       */
+      extendPolicy(policy) {
+        return {
+          useAuthorize(options) {
+            const useAuthorize = create_useAuthorize(Client, policy);
+            return useAuthorize(options);
+          },
+        } satisfies KilpiClientPolicyExtension_ReactClientPlugin<
+          KilpiClient<TCore>,
+          PolicysetActions<TCore["$$infer"]["policies"]>
+        >;
       },
     };
   });

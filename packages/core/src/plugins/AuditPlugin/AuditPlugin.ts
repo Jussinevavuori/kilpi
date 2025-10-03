@@ -79,26 +79,30 @@ export function AuditPlugin<T extends AnyKilpiCore>(
 
     // Public interface for interacting with the audit plugin, namespaced under "$audit".
     return {
-      $audit: {
-        /**
-         * Manually trigger a flush.
-         */
-        flush: () => flushStrategy.triggerFlush(),
+      extendCore() {
+        return {
+          $audit: {
+            /**
+             * Manually trigger a flush.
+             */
+            flush: () => flushStrategy.triggerFlush(),
 
-        /**
-         * Dynamically enable the audit plugin.
-         */
-        enable,
+            /**
+             * Dynamically enable the audit plugin.
+             */
+            enable,
 
-        /**
-         * Dynamically disable the audit plugin.
-         */
-        disable,
+            /**
+             * Dynamically disable the audit plugin.
+             */
+            disable,
 
-        /**
-         * Current enabled/disabled status of the audit plugin.
-         */
-        getIsEnabled: () => Boolean(unsubscribe),
+            /**
+             * Current enabled/disabled status of the audit plugin.
+             */
+            getIsEnabled: () => Boolean(unsubscribe),
+          },
+        };
       },
     };
   });

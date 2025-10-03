@@ -84,7 +84,7 @@ export function createKilpiClient<
   // Add plugin interfaces to client
   const ClientWithPlugins = Object.assign(
     Client,
-    ...ClientPlugins.map((_) => _.extendClientApi || {}),
+    ...ClientPlugins.map((_) => _.extendClient?.() || {}),
   ) as typeof Client & P_00 & P_01 & P_02 & P_03 & P_04 & P_05 & P_06 & P_07 & P_08 & P_09;
 
   // =========================================================
@@ -110,10 +110,14 @@ export function createKilpiClient<
           >;
 
           // Setup the KilpiPolicy instance
-          const Policy = new KilpiClientPolicy({ client: ClientWithPlugins, action, inputs });
+          const Policy = new KilpiClientPolicy({
+            client: ClientWithPlugins as KilpiClient<T>,
+            action,
+            inputs,
+          });
 
           // Instantiate all policy plugins
-          const PolicyPlugins = ClientPlugins.map((_) => _.extendPolicyApi?.(Policy));
+          const PolicyPlugins = ClientPlugins.map((_) => _.extendPolicy?.(Policy));
 
           // Add plugin interfaces to policy. Type augmentation happens via declaration merging
           // in the plugin files.

@@ -7,7 +7,7 @@ import { createRscCache } from "../utils/createRscCache";
  * in React Server Components and for creating the React Server Component bindings
  * to work with Kilpi.
  */
-export function ReactServerComponentPlugin<T extends AnyKilpiCore>(
+export function ReactServerPlugin<T extends AnyKilpiCore>(
   options: {
     disableSubjectCaching?: boolean;
   } = {},
@@ -47,48 +47,52 @@ export function ReactServerComponentPlugin<T extends AnyKilpiCore>(
      * Return public API which allows access to components.
      */
     return {
-      /**
-       * Sets a custom onUnauthorized handler in the current React Server Component
-       * context. Primary usage is to allow custom handling of unauthorized access
-       * for each page.
-       *
-       * ## Example usage (Next.js)
-       *
-       * ```tsx
-       * export default async function CreatePostPage() {
-       *   // For this page only, all unauthorized access will redirect to /posts
-       *   Kilpi.$onUnauthorizedRscAssert(() => {
-       *     redirect("/posts");
-       *   })
-       *
-       *   // Assert that the user can create posts -- else the above handler is called
-       *   await Kilpi.posts.create().authorize().assert();
-       *
-       *   return <CreatePostForm />
-       * }
-       */
-      $onUnauthorizedRscAssert(onUnauthorized: KilpiOnUnauthorizedHandler) {
-        onUnauthorizedCache().value = onUnauthorized;
-      },
+      extendCore() {
+        return {
+          /**
+           * Sets a custom onUnauthorized handler in the current React Server Component
+           * context. Primary usage is to allow custom handling of unauthorized access
+           * for each page.
+           *
+           * ## Example usage (Next.js)
+           *
+           * ```tsx
+           * export default async function CreatePostPage() {
+           *   // For this page only, all unauthorized access will redirect to /posts
+           *   Kilpi.$onUnauthorizedRscAssert(() => {
+           *     redirect("/posts");
+           *   })
+           *
+           *   // Assert that the user can create posts -- else the above handler is called
+           *   await Kilpi.posts.create().authorize().assert();
+           *
+           *   return <CreatePostForm />
+           * }
+           */
+          $onUnauthorizedRscAssert(onUnauthorized: KilpiOnUnauthorizedHandler) {
+            onUnauthorizedCache().value = onUnauthorized;
+          },
 
-      /**
-       * Create React Server Component bindings for Kilpi.
-       *
-       * ## Example usage
-       *
-       * ```tsx
-       * const { Authorize } = Kilpi.$createReactServerComponents();
-       *
-       * return (
-       *   <Authorize decision={Kilpi.posts.read({ postId: "1" }).authorize()}>
-       *     <Post postId="1" />
-       *   </Authorize>
-       * )
-       * ```
-       */
-      $createReactServerComponents() {
-        const Authorize = create_Authorize();
-        return { Authorize };
+          /**
+           * Create React Server Component bindings for Kilpi.
+           *
+           * ## Example usage
+           *
+           * ```tsx
+           * const { Authorize } = Kilpi.$createReactServerComponents();
+           *
+           * return (
+           *   <Authorize decision={Kilpi.posts.read({ postId: "1" }).authorize()}>
+           *     <Post postId="1" />
+           *   </Authorize>
+           * )
+           * ```
+           */
+          $createReactServerComponents() {
+            const Authorize = create_Authorize();
+            return { Authorize };
+          },
+        };
       },
     };
   });

@@ -1,1 +1,1 @@
-export { ReactServerComponentPlugin } from "./plugins/ReactServerComponentPlugin";
+export { ReactServerPlugin } from "./plugins/ReactServerPlugin";

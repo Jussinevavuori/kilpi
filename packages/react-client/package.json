@@ -22,8 +22,8 @@
 	"scripts": {
 		"build": "tsup src/index.ts --format cjs,esm --dts",
 		"lint": "eslint && tsc",
-		"test": "vitest run",
-		"dev": "vitest watch"
+		"test": "vitest run --config ./vitest.config.ts",
+		"dev": "vitest watch --config ./vitest.config.ts"
 	},
 	"dependencies": {
 		"@kilpi/client": "workspace:*",
@@ -32,7 +32,12 @@
 		"zod": "^3.24.1"
 	},
 	"devDependencies": {
-		"@types/react": "^19.0.0"
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.0",
+		"@testing-library/react-hooks": "^8.0.1",
+		"@testing-library/user-event": "^14.6.1",
+		"@types/react": "^19.0.0",
+		"@vitejs/plugin-react": "^5.0.4"
 	},
 	"author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
 	"homepage": "https://kilpi.vercel.app",

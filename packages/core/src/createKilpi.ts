@@ -87,6 +87,8 @@ export function createKilpi<
   const Plugins = plugins
     // Instantiate each plugin
     .map((instantiatePlugin) => instantiatePlugin(Core))
+    // Extract interface for each plugin
+    .map((plugin) => plugin.extendCore?.() || {})
     // Merge all Plugins
     .reduce((merged, corePlugin) => Object.assign(merged, corePlugin), {}) as P_00 &
     P_01 &

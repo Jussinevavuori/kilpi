@@ -1,14 +1,18 @@
-import type { AnyKilpiCore } from "@kilpi/core";
+import type { AnyKilpiCore, PolicysetActions } from "@kilpi/core";
 import type { KilpiClient } from "./KilpiClient";
+import type { KilpiClientPolicy } from "./KilpiClientPolicy";
 
 // Alternative naming suggestions:
 // - "publicInterface" could be "expose", "api", "methods", or "exports".
 // - "extendPolicy" could be "policyExtension", "extendPolicyApi", or "policyEnhancer".
 
-export type KilpiClientPlugin<TCore extends AnyKilpiCore, TExtension extends object> = (
-  core: KilpiClient<TCore>,
+export type KilpiClientPlugin<TCore extends AnyKilpiCore, TClientExtension extends object> = (
+  client: KilpiClient<TCore>,
 ) => {
-  extendClientApi?: TExtension;
+  extendClient?: () => TClientExtension;
+  extendPolicy?: (
+    policy: KilpiClientPolicy<KilpiClient<TCore>, PolicysetActions<TCore["$$infer"]["policies"]>>,
+  ) => object; // Typed via declaration merging in the plugin files
 };
 
 /**
@@ -18,22 +22,24 @@ export type KilpiClientPlugin<TCore extends AnyKilpiCore, TExtension extends obj
  * ## Example
  *
  * @usage
- * ```ts
+ * ```typescript
  * function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
  *   return createKilpiPlugin((Client: KilpiClient<T>) => {
  *     return {
- *       extendClientApi: {
- *         $sayHello: () => console.log(`Hello rom ${opts.name}`),
- *        }
+ *       extendClient() {
+ *         return {
+ *           $sayHello: () => console.log(`Hello from ${opts.name}`),
+ *         };
+ *       }
  *     };
- *   })
+ *   });
  * }
  *
  * const KilpiClient = createKilpiClient<typeof Kilpi>({
  *   plugins: [
  *     SayHelloPlugin({ name: "Kilpi Client Plugin" }),
  *   ],
- * })
+ * });
  *
  * Kilpi.$sayHello(); // Hello from Kilpi Client Plugin
  * ```

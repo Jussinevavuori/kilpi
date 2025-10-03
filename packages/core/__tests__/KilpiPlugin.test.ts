@@ -14,19 +14,23 @@ describe("plugin", () => {
       });
 
       return {
-        $test: {
-          get() {
-            return value;
-          },
-          set(v: number) {
-            value = v;
-          },
-          countRootlevelPolicyKeys() {
-            return Object.keys(KilpiCore.expose(Kilpi).policies).length;
-          },
-          getAuthorizationsCount() {
-            return authorizationCount;
-          },
+        extendCore() {
+          return {
+            $test: {
+              get() {
+                return value;
+              },
+              set(v: number) {
+                value = v;
+              },
+              countRootlevelPolicyKeys() {
+                return Object.keys(KilpiCore.expose(Kilpi).policies).length;
+              },
+              getAuthorizationsCount() {
+                return authorizationCount;
+              },
+            },
+          };
         },
       };
     });

@@ -1,7 +1,7 @@
 import { createKilpi, Deny, Grant } from "@kilpi/core";
 import { beforeEach } from "node:test";
 import { describe, expect, it, vi } from "vitest";
-import { ReactServerComponentPlugin } from "../plugins/ReactServerComponentPlugin";
+import { ReactServerPlugin } from "../plugins/ReactServerPlugin";
 
 // =================================================================================================
 // IMPORTANT NOTE:
@@ -40,7 +40,7 @@ describe("types", () => {
         },
       },
     },
-    plugins: [ReactServerComponentPlugin()],
+    plugins: [ReactServerPlugin()],
   });
 
   beforeEach(() => {
@@ -101,7 +101,7 @@ describe("types", () => {
     void createKilpi({
       getSubject: () => null,
       policies: {},
-      plugins: [ReactServerComponentPlugin({ disableSubjectCaching: true })],
+      plugins: [ReactServerPlugin({ disableSubjectCaching: true })],
     });
     expect(true).toBe(true);
   });

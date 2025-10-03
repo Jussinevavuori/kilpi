@@ -1,1 +1,1 @@
-export { ReactClientComponentPlugin } from "./plugins/ReactClientPlugin";
+export { ReactClientPlugin } from "./plugins/ReactClientPlugin";

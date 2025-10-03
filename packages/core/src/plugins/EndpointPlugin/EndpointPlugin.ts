@@ -84,39 +84,43 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
     }
 
     return {
-      /**
-       * Create endpoint using a web standard request-response handler. Must be used as a POST
-       * endpoint.
-       *
-       * @param options Endpoint options.
-       */
-      $createPostEndpoint() {
-        return async function handle(req: Request) {
-          // Callback: allow early response or modification of request
-          const earlyResponse = await options.onBeforeHandleRequest?.(req);
-          if (earlyResponse) return earlyResponse;
+      extendCore() {
+        return {
+          /**
+           * Create endpoint using a web standard request-response handler. Must be used as a POST
+           * endpoint.
+           *
+           * @param options Endpoint options.
+           */
+          $createPostEndpoint() {
+            return async function handle(req: Request) {
+              // Callback: allow early response or modification of request
+              const earlyResponse = await options.onBeforeHandleRequest?.(req);
+              if (earlyResponse) return earlyResponse;
 
-          // Authenticate request: Must have Bearer {secret} in Authorization header.
-          if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {
-            return Response.json({ message: "Unauthorized" }, { status: 401 });
-          }
+              // Authenticate request: Must have Bearer {secret} in Authorization header.
+              if (req.headers.get("Authorization") !== `Bearer ${options.secret}`) {
+                return Response.json({ message: "Unauthorized" }, { status: 401 });
+              }
 
-          // Parse and validate body
-          const body = await tryCatch(
-            req
-              .text()
-              .then((data) => SuperJSON.parse(data))
-              .then((data) => endpointRequestSchema.array().parse(data)),
-          );
+              // Parse and validate body
+              const body = await tryCatch(
+                req
+                  .text()
+                  .then((data) => SuperJSON.parse(data))
+                  .then((data) => endpointRequestSchema.array().parse(data)),
+              );
 
-          // Invalid request body
-          if (body.error) {
-            return Response.json({ message: "Invalid request body" }, { status: 400 });
-          }
+              // Invalid request body
+              if (body.error) {
+                return Response.json({ message: "Invalid request body" }, { status: 400 });
+              }
 
-          // Process each request, and respond with the results as SuperJSON
-          const responses = await processRequests(body.value);
-          return Response.json(SuperJSON.stringify(responses));
+              // Process each request, and respond with the results as SuperJSON
+              const responses = await processRequests(body.value);
+              return Response.json(SuperJSON.stringify(responses));
+            };
+          },
         };
       },
     };

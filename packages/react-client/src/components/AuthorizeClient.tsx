@@ -1,16 +1,26 @@
-import type { Decision } from "@kilpi/core";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { AnyKilpiClient, KilpiClientPolicy } from "@kilpi/client";
+import type { PolicysetActions } from "@kilpi/core";
+import type { UseAuthorizeReturn } from "../hooks/useAuthorize";
+import "../type.extension.ts";
+import type { KilpiClientPolicyExtension_ReactClientPlugin } from "../type.extension.ts";
 
 /**
  * The <Authorize /> component renders either children, Unauthorized or Pending
  * based on the state of an authorization decision.
  */
-export type AuthorizeProps<TDecision extends Decision<any>> = {
+export type AuthorizeClientProps<
+  TClient extends AnyKilpiClient,
+  TPolicy extends KilpiClientPolicy<TClient, TClient["$$infer"]["policies"]>,
+> = {
   /**
-   * The decision to base the authorization on.
+   * The policy to evaluate.
    */
-  decision: TDecision | Promise<TDecision>;
+  policy: TPolicy;
+
+  /**
+   * Disables the authorization check when true.
+   */
+  isDisabled?: boolean;
 
   /**
    * Children that are rendered when the caller is authorized. May be a dynamic function
@@ -18,7 +28,7 @@ export type AuthorizeProps<TDecision extends Decision<any>> = {
    */
   children?:
     | React.ReactNode
-    | ((decision: Extract<TDecision, { granted: true }>) => React.ReactNode);
+    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
 
   /**
    * Children that are rendered when the caller is not authorized. May be a dynamic function
@@ -26,52 +36,77 @@ export type AuthorizeProps<TDecision extends Decision<any>> = {
    */
   Unauthorized?:
     | React.ReactNode
-    | ((decision: Extract<TDecision, { granted: false }>) => React.ReactNode);
+    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
 
   /**
    * Children that are rendered while the authorization decision is pending.
    */
-  Pending?: React.ReactNode;
+  Pending?:
+    | React.ReactNode
+    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+
+  /**
+   * Children that are rendered while the authorization decision is idle (disabled).
+   */
+  Idle?:
+    | React.ReactNode
+    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+
+  /**
+   * Children that are rendered while the authorization decision is error.
+   */
+  Error?:
+    | React.ReactNode
+    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
 };
 
 /**
- * Factory function for the <Authorize /> component.
+ * Factory function for the <AuthorizeClient /> component.
  */
-export function create_Authorize() {
+export function create_AuthorizeClient<TClient extends AnyKilpiClient>(client: TClient) {
+  void client; // Unused but might be used in future
+
   /**
-   * The inner implementation which is rendered within a suspense boundary by the main component.
+   * Implement Authorize_Client
    */
-  async function Authorize_Inner<TDecision extends Decision<any>>({
-    decision: decisionPromise,
+  return function AuthorizeClient<
+    TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
+    TPolicy extends KilpiClientPolicy<TClient, TAction> &
+      KilpiClientPolicyExtension_ReactClientPlugin<TClient, TAction>,
+  >({
+    policy,
     children,
     Unauthorized,
-  }: AuthorizeProps<TDecision>) {
-    // Note: For some reason, TS is not able to narrow the type of decision according to the
-    // union discriminator "granted", so we need to use type assertions below.
+    Idle,
+    Pending,
+    Error,
+    isDisabled,
+  }: AuthorizeClientProps<TClient, TPolicy>) {
+    // Fetch using useAuthorize
+    const query = policy.useAuthorize({ isDisabled });
 
-    // Await the decision
-    const decision = await decisionPromise;
+    switch (query.status) {
+      // Handle pending, idle and error states with custom functions
+      case "pending": {
+        return typeof Pending === "function" ? Pending(query) : (Pending ?? null);
+      }
+      case "idle": {
+        return typeof Idle === "function" ? Idle(query) : (Idle ?? null);
+      }
+      case "error": {
+        return typeof Error === "function" ? Error(query) : (Error ?? null);
+      }
 
-    // Not authorized
-    if (decision.granted === false) {
-      return typeof Unauthorized === "function"
-        ? Unauthorized(decision as Extract<TDecision, { granted: false }>)
-        : Unauthorized;
+      // Success: Decide component to render based on granted
+      case "success": {
+        // Granted: Render authorized children
+        if (query.decision?.granted) {
+          return typeof children === "function" ? children(query) : (children ?? null);
+        }
+
+        // Not granted: Render unauthorized children
+        return typeof Unauthorized === "function" ? Unauthorized(query) : (Unauthorized ?? null);
+      }
     }
-
-    // Authorized: render children
-    return typeof children === "function"
-      ? children(decision as Extract<TDecision, { granted: true }>)
-      : children;
-  }
-
-  /**
-   * The <Authorize /> component is used for conditionally rendering children based on
-   * an authorization decision. It supports Pending and Unauthorized states.
-   */
-  return async function Authorize<TDecision extends Decision<any>>(
-    props: AuthorizeProps<TDecision>,
-  ) {
-    return <Authorize_Inner {...props} />;
   };
 }
