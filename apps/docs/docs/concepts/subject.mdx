@@ -4,17 +4,17 @@ sidebar:
   order: 3
 ---
 
-**The subject** represents the current **user**† as well as any of their authorization-related data, such as permissions and memberships.
+**The subject** represents the current **user** as well as any of their authorization-related data, such as permissions and memberships.
+
+<Aside>
+  **Subject ≈ user**, however the term **subject** is more commonly used in authorization systems,
+  as it may also refer to e.g. external systems, applications or AI agents, which may access your
+  application.
+</Aside>
 
 The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider.
 
 Kilpi calls `getSubject` for you as **authentication** always occurs before **authorization**. This removes unnecessary and duplicated authenticatin logic from your code.
-
-<Aside>
-  †**Subject ≈ user**, however the term **subject** is more commonly used in authorization systems,
-  as it may also refer to e.g. external systems, applications or AI agents, which may access your
-  application.
-</Aside>
 
 ## Defining a `getSubject` adapter
 
@@ -47,7 +47,9 @@ export const Kilpi = createKilpi({ getSubject, ... })
 
 </Aside>
 
-### Context
+---
+
+## Passing a context argument
 
 Commonly, your `getSubject` may require additional **context** (e.g. the current `request`).
 
@@ -73,7 +75,9 @@ You can then pass this `ctx` object when authorizing using the `authorize()` API
 Kilpi.some.policy.authorize({ ctx: request });
 ```
 
-### Additional data
+---
+
+## Additional data
 
 Very commonly, your subject has other authorization-related properties not received directly from your authentication provider. These include e.g. permissions, roles, and memberships. It is often practical and efficient to include them in your `getSubject` instead of fetching in policies.
 
@@ -89,7 +93,9 @@ export const Kilpi = createKilpi({
 });
 ```
 
-### Performance considerations and caching
+---
+
+## Performance considerations and caching
 
 Kilpi calls `getSubject` for you on every single `authorize()` call. Especially, if your `getSubject` is an expensive or slow function, you should consider caching it for each request.
 
