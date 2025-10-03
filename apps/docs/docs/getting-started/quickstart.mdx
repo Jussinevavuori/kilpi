@@ -4,16 +4,7 @@ sidebar:
   order: 2
 ---
 
-Follow this guide to get started using Kilpi fast from installation to first protected function.
-
-<Collapsible title="Incremental adoption for existing projects">
-**You can adopt Kilpi incrementally into an existing project.**
-
-Kilpi does not require a rewrite of your codebase to start using. Instead, you can test Kilpi out by moving one policy at a time and by protecting one mutation, query, or page at a time. Get started by following this guide.
-
-If you run into issues migrating any existing applications, you are welcome to [file a new issue on GitHub](https://github.com/Jussinevavuori/kilpi/issues/new).
-
-</Collapsible>
+Follow this guide to protect your first functionality in 5 minutes.
 
 ---
 
@@ -21,6 +12,8 @@ If you run into issues migrating any existing applications, you are welcome to [
 
   <Step>
   ### Install Kilpi
+
+Install the Kilpi core library.
 
   <Tabs syncKey="package-manager">
     <Tab label="npm">
@@ -51,142 +44,60 @@ If you run into issues migrating any existing applications, you are welcome to [
   </Tabs>
 
   </Step>
+
   <Step>
-    ### Project structure
+    ### Instantiate Kilpi
 
-    Create a `kilpi` directory (e.g. directly under your `/src` folder) with the following file structure.
-
-{" "}
-
-<FileTree>
-  - src - kilpi - policies.ts Define your policies here - subject.ts Define your subject here -
-  kilpi.ts Define your Kilpi instance here
-</FileTree>
-
-  <Collapsible title="Project structure for larger projects">
-    As your project grows, you may start extracting policies into their own files by domain, using e.g. a `policies` directory (below) or feature-based architecture.
-
-{" "}
-
-<FileTree>
-  - src - kilpi - policies - organizations.policies.ts - documents.policies.ts - media.policies.ts -
-  subject.ts - kilpi.ts
-</FileTree>
-
-    You would then import these policies in a `policies.ts` file or directly in your `kilpi.ts` file.
+    Copy and paste the code below and replace the `getSubject` implementation to fetch the current subject (≈ user) from your authentication provider.
 
     ```ts
-    // kilpi.ts
-    import { createKilpi } from '@kilpi/core';
-    import { organizationPolicies } from './policies/organizations.policies';
-    import { documentPolicies } from './policies/documents.policies';
-    import { mediaPolicies } from './policies/media.policies';
+    // src/kilpi.ts
+    import { createKilpi, Grant, Deny } from "@kilpi/core";
 
     export const Kilpi = createKilpi({
-      policies: {
-        organizations: organizationPolicies,
-        documents: documentPolicies,
-        media: mediaPolicies,
+      // (1) Your subject adapter with optional `ctx` param.
+      async getSubject(ctx: MyContextType) {
+        return myAuthenticationProvider.getCurrentUser(ctx);
       },
-      // ...
-    })
-    ```
 
-  </Collapsible>
-  </Step>
-
-  <Step>
-    ### Create your subject
-
-    Create `subject.ts` and create a `Subject` type and a `getSubject` function to wrap your authentication provider and return the current user (and optionally any other data about the caller for the policies).
-
-    This function will automatically be called (and [cached](/docs/concepts/subject#subject-caching)) by Kilpi while authorizing.
-
-    <Aside type="tip">
-      This guide assumes you have setup authentication and have a `getSession()` function or similar available on the server.
-    </Aside>
-
-    ```ts
-    // src/kilpi/subject.ts
-    export type Subject = { id: string, email: string, name: string };
-
-    export async function getSubject(): Promise<Subject | null> {
-      const session = await getSession(); // From your auth provider
-      if (!session) return null;
-      return { id: session.id, email: session.email, name: session.name };
-    }
-    ```
-
-    <Aside>
-      The term **user** can be used interchangeably with **subject**.
-    </Aside>
-
-    [Read more about subjects](/docs/concepts/subject).
-
-  </Step>
-
-  <Step>
-    ### Create your policies
-
-    Create `policies.ts` where you define all your policies as functions that take in the `user` and optionally an object, and return `grant(user)` or `deny()`.
-
-    [Read more about policies](/docs/concepts/policy).
-
-    <Aside type="tip">
-      Add `as const satisfies Policyset<YourSubjectType>` to type-check your return types and automatically infer the `user` parameter.
-    </Aside>
-
-    ```ts
-    // src/kilpi/policies.ts
-    import { type Policyset, deny, grant } from "@kilpi/core";
-    import type { Subject } from "./subject";
-
-    const policies = {
-      documents: {
-        // All authed users can read documents they own or public documents
-        read(user, document: Document) {
-          if (!user) return deny({ message: "Unauthenticated" });
-          if (document.isPublic) return grant(user);
-          if (user.id === document.ownerId) return grant(user);
-          return deny();
+      // (2) Your policies
+      policies: {
+        posts: {
+          // "All authenticated users can create posts"
+          async create(subject) {
+            if (!subject) return Deny()
+            return Grant(subject);
+          },
+          // "Only author can delete own post"
+          async delete(subject, post: { authorId: string }) {
+            if (!subject) return Deny();
+            if (subject.userId !== post.authorId) return Deny();
+            return Grant(subject);
+          },
         },
       },
-    } as const satisfies Policyset<Subject | null>
-    ```
-
-  </Step>
-
-  <Step>
-    ### Create your Kilpi instance
-
-    Create `kilpi.ts` where you create your Kilpi instance from your subject and policies. The `Kilpi` object will be used primarily for authorization.
-
-    ```ts
-    // src/kilpi/kilpi.ts
-    import { createKilpi } from "@kilpi/core";
-    import { getSubject } from "./subject";
-    import { policies } from "./policies";
-
-    export const Kilpi = createKilpi({
-      getSubject,
-      policies,
     });
     ```
 
-    Also list any plugins, default behaviours and other configuration here.
+    Read more about the [subject](/docs/concepts/subject) and [policies](/docs/concepts/policy).
 
   </Step>
 
   <Step>
-    ### Protect your first function
+    ### Authorize your first function
 
-    Create a function that you want to protect with Kilpi, using for example the `Kilpi.authorize` method. Read more about [authorizing](/docs/concepts/authorizing).
+    Reference a policy e.g. `Kilpi.posts.delete(myPost)` and receive an authorization decision using `.authorize()`. If your `getSubject` adapter takes in a `ctx` parameter, pass it as shown below.
 
     ```ts
-    // myFunction.ts
-    export async function myFunction() {
-      await Kilpi.authorize("documents:create");
-      // Your logic here ...
+    import { Kilpi } from "...";
+
+    const { granted } = await Kilpi
+      .posts                       // (Policy namespace)
+      .delete({ authorId: "123" }) // Reference policy with object
+      .authorize({ ctx });         // Run the authorization check
+
+    if (granted) {
+      await deletePost(myPost.id);
     }
     ```
 

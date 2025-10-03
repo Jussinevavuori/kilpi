@@ -4,183 +4,151 @@ sidebar:
   order: 1
 ---
 
-Learn how to authorize and protect actions, pages, mutations, and more in your application.
+All server-side authorizations happen with the `authorize()` API.
 
-## Authorization APIs
+## Authorization using `authorize()`
 
-Using Kilpi, there are several APIs for performing authorizations. They can all be used to protect your application, with slightly different behaviour.
-
-### `Kilpi.isAuthorized`
-
-The simplest way to check for authorizations is to use `Kilpi.isAuthorized`. It returns a `Promise<boolean>` indicating whether the user is authorized or not. Pass it the action and an object, if the policy requires one.
-
-Unlike with `Kilpi.authorize`, you must also handle the unauthorized case manually.
+Reference a policy as e.g. `Kilpi.posts.edit(post)` and chain the `.authorize()` call. This evaluates the policy and returns an **authorization decision**.
 
 ```ts
-if (await Kilpi.isAuthorized("documents:create")) {
-  await createDocument();
-} else {
-  // Handle unauthorized here...
-}
-
-if (await Kilpi.isAuthorized("documents:delete", document)) {
-  await deleteDocument(document.id);
-} else {
-  // Handle unauthorized here...
+const decision = await Kilpi.posts.edit(post).authorize();
+if (decision.granted) {
+  await db.posts.update(...);
 }
 ```
 
-### `Kilpi.authorize`
-
-In some cases, **throwing on unauthorized** is the simplest way to protect your application, e.g. to automatically always throw a 403 error when an authorization check fails.
-
-`Kilpi.authorize` also takes in the action and optionally an object if the policy requires one.
+The decision is either a **granted** or a **denied** decision.
 
 ```ts
-// Both will throw if not authorized
-await Kilpi.authorize("documents:create");
-await Kilpi.authorize("documents:delete", document);
+{
+  granted: true; // Signals "granted decision" (Discriminator)
+  subject: TSubject; // The subject from the policy's Grant(subject)
+} | {
+  granted: false; // Signals "denied decision" (Discriminator)
+  message?: string; // User-facing message, e.g. "You are not signed in"
+  reason?: string; // System-facing reason, e.g. "UNAUTHORIZED"
+  metadata?: unknown; // Optional metadata about the denial
+}
 ```
 
-### Handling unauthorized errors
+<Aside type="tip">
+  The decision is a [discriminated
+  union](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions) based
+  on the `granted` property. You have to check whether `granted` is `true` or `false` before
+  accessing any other properties.
+</Aside>
 
-Instead of the default behaviour (throws a `KilpiError.AuthorizationDenied` error), setup error handling to automatically handle unauthorized errors.
+### Reference policies
 
-<Steps>
-<Step>
-#### Setup a global error handler
-
-Start by setting up a global error handler in `createKilpi`.
+To reference a policy, access it via dot notation and call it to "instantiate" it (optionally provide the object if the policy requires one).
 
 ```ts
 export const Kilpi = createKilpi({
-  ...,
-  settings: {
-    defaultOnUnauthorized(error) {
-      throw new HTTPException(403, error.message);
-    }
-  }
-})
-
-// Will throw a 403 error if not authorized
-await Kilpi.authorize("documents:create");
-```
-
-</Step>
-<Step>
-#### Setup a handler for each request (Optional)
-
-For more control over your error handling, you can setup a handler for each request using `Kilpi.onUnauthorized`.
-
-<Aside type="tip">
-**The error handler is stored in the [current scope](/docs/concepts/scope)**. A scope is required for `Kilpi.onUnauthorized` (a warning will be shown if no scope is available).
-
-See available installation guides for how to set up a scope for each request using your framework of choice.
-
-</Aside>
-
-```ts {3-5}
-export default async function CreateDocumentPage() {
-  // Any unauthorized error anywhere on this page should redirect to login
-  Kilpi.onUnauthorized((error) => {
-    redirect("/login"); // Redirect via throw, e.g. in Next.js
-  });
-
-  // Will redirect to login if not authorized
-  await Kilpi.authorize("documents:create");
-
   // ...
-}
-```
-
-</Step>
-<Step>
-#### Optional: Handle different types of unauthorizations
-
-To differentiate between different types of unauthorized errors, you can provide a `type` while denying authorizations and use the `Kilpi.onUnauthorized` method to handle different types of errors differently.
-
-**1. Deny with `type` (or `metadata`) in denial**
-
-```ts
-export const policies = {
-  exmaple(user, doc: Document) {
-    if (!user) return deny({ message: "Unauthenticated", type: "unauthenticated" });
-
-    if (!user.isSubscribed) {
-      return deny({
-        message: "Not subscribed",
-        type: "not_subscribed",
-        metadata: { required_subscription: "premium" },
-      });
-    }
-
-    return grant(user);
+  policies: {
+    async never(subject) {...},                // Root-level policy
+    posts: {                                   // Namespace
+      async create(subject) {...},             // No object
+      write: {                                 // Nested namespaces
+        async edit(subject, post: Post) {...}, // Needs "Post" object
+      }
+    },
   },
-};
+});
+
+// Use as follows
+await Kilpi.never().authorize();
+await Kilpi.posts.create().authorize();
+await Kilpi.posts.write.edit(post).authorize();
 ```
 
-**2. Handle different types of errors based on `error.type`**
+### Context
+
+If your `getSubject` adapter requires a `ctx` parameter (e.g. the current `Request`), you can pass it as follows.
 
 ```ts
-Kilpi.onUnauthorized((error) => {
-  switch (error.type) {
-    case "unauthenticated":
-      throw new HTTPRedirect(302, "/login");
-    case "not_subscribed":
-      throw new HTTPRedirect(302, "/billing");
-    default:
-      throw new HTTPException(403, error.message);
-  }
+await Kilpi.myPolicy.authorize({ ctx });
+```
+
+You can even override the `getSubject` adapter and pass your own subject.
+
+```ts
+await Kilpi.myPolicy.authorize({ subject: mySubject });
+```
+
+---
+
+## Throw on unauthorized with `assert()`
+
+In very many cases, you want to **throw on unauthorized**, especially when your framework supports throwing e.g. HTTP errors or redirections. For this purpose, you can use the `assert()` API as follows.
+
+```ts
+// Always returns a granted decision (or throws)
+const { subject } = await Kilpi.myPolicy.authorize().assert();
+```
+
+An assertion **always returns a granted decision** or throws. For this reason, you can always destructure the `subject`.
+
+By default, Kilpi throws a `KilpiUnauthorizedError`. To customize what is thrown, you can provide a global `onUnauthorized` handler.
+
+```ts
+export const Kilpi = createKilpi({
+  // ...
+  // Called when `.assert()` denies access.
+  async onUnauthorized(denial) {
+    console.log(`Denied: ${denial.message}`);
+    throw new HttpForbiddenError();
+  },
 });
 ```
 
-</Step>
-</Steps>
-
-### `Kilpi.getAuthorizationDecision`
-
-Similarly to `Kilpi.isAuthorized`, `Kilpi.getAuthorizationDecision` allows you to manually control your authorizations but returns an **decision object**, with more data about the result of the authorization check.
-
-Granted decisions contain the **narrowed down** `subject`. Denied decisions contain the `message` and optional `type` and `metadata` fields.
+To override the default behavior, you can also provide an `onUnauthorized` callback to the assertion to run before the global handler.
 
 ```ts
-const decision = await Kilpi.getAuthorizationDecision("documents:create");
-
-if (decision.granted) {
-  const user = decision.subject;
-} else {
-  console.error("Unauthorized", decision.error);
-}
+await Kilpi.myPolicy.authorize().assert(async (denial) => {
+  throw HttpRedirect("/sign-in");
+});
 ```
 
-### `Kilpi.unauthorized`
+Both handlers can even run side-effects before throwing. Additionally, you can register more custom `onUnauthorized` handlers with the [`Kilpi.$hooks.onUnauthorizedAssert` API](/docs/concepts/hooks).
 
-If you want to throw similarly as `Kilpi.authorize` and trigger the default or request-level error handler, you can call `Kilpi.unauthorized`. It works the same way as a failed `Kilpi.authorize` check.
+---
+
+## Different types of denials
+
+The `Deny()` function can provide additional data about the reason of the denial, which can further be used to customize the behavior of `onUnauthorized`. See the following example.
 
 ```ts
-const isAllowed = await Kilpi.isAuthorized("documents:create");
-if (!isAllowed) {
-  Kilpi.unauthorized("Unauthorized"); // Throws
-}
+const Kilpi = createKilpi({
+  // ...
+  policies: {
+    posts: {
+      // Only signed-in premium users can save posts
+      async save(subject, post: Post) {
+        if (!subject) {
+          return Deny({ reason: "UNAUTHENTICATED" });
+        }
+        if (subject.tier !== "premium") {
+          return Deny({
+            reason: "NOT_SUBSCRIBED",
+            metadata: { requiredTier: "premium" },
+          });
+        }
+        return Grant(subject);
+      },
+    },
+  },
 
-// Equivalent to
-await Kilpi.authorize("documents:create");
+  // Customize behavior based on reason
+  async onUnauthorized(denial) {
+    switch (denial.reason) {
+      case "UNAUTHENTICATED":
+        throw new HttpRedirect("/sign-in");
+      case "NOT_SUBSCRIBED":
+        throw new HttpRedirect(`/subscribe?tier=${denial.metadata?.requiredTier}`);
+      default:
+        throw new HttpForbiddenError();
+    }
+  },
+});
 ```
-
-## Protecting queries
-
-The above APIs can be used to protect all parts of your application, even queries.
-
-Kilpi however offers an optional `Kilpi.query` API for creating **protected queries**. This API allows for co-locating your queries with the authorization logic. Read more below.
-
-<LinkCard
-  title="Protected Queries"
-  description="Learn how to protect queries and mutations in your application."
-  href="/docs/concepts/protected-queries"
-/>
-
-<LinkCard
-  title="Introducing the Protected Query Pattern for secure data access"
-  description="Read the article on protected queries"
-  href="/blog/2025-03-27-introducing-the-protected-query-pattern"
-/>

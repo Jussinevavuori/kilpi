@@ -9,7 +9,11 @@ sidebar:
 
 ## What is Kilpi?
 
-Kilpi is an authorization framework for implementing a robust authorization layer in your application.
+Kilpi is an authorization framework for implementing a robust authorization layer in your application — it's designed to help you define your policies and apply them in all parts of a web application.
+
+## What is authorization?
+
+...
 
 ---
 
@@ -17,53 +21,33 @@ Kilpi is an authorization framework for implementing a robust authorization laye
 
 Kilpi is designed to follow several guidelines and principles. The aim of these principles is to make Kilpi **easy to use** and **extremely flexible**.
 
+### Functional Policy-Based Access Control (FPBAC)
+
+...
+
 ### Centralized authorization layer
 
-Kilpi is designed around a centralized authorization layer consisting of a set of policies, uniquely mapping each action, such as `documents:update`, to a functional policy. Reducing duplicated code makes your authorization logic easier to maintain and understand.
+...
 
 ### Policies as code
 
-Policies are defined as code instead of using a no-code interface or a domain-specific language. This ensures type safety, an easy learning curve, and version controlled policies. In addition, policies can be async and fetch data during evaluation for even more flexibility.
+...
 
 ### Short and expressive API
 
-Kilpi aims to provide the shortest and most expressive API possible, often aiming for a single line of code to protect an action, mutation, query or UI component. Examples include
+...
 
-```ts
-const doc = await getDocument.protect("1");
-Kilpi.authorize("documents:update", doc);
-```
+### Server-first authorization
 
-### Server-side authorization
+...
 
-All authorization checks are evaluated on the server for security, making Kilpi well suited for modern full-stack & server-side applications such as Express, Next.js and many others.
+### Framework and runtime agnostic
 
-### Framework agnostic
-
-Kilpi is designed to be framework agnostic and can be applied to any technology (with or without plugins). See the installation guides for how to make Kilpi work with your framework of choice.
+...
 
 ### Bring your own auth
 
-Kilpi is designed around the concept of a **subject**, which can be used to wrap any auth provider or data source. This means you can even change authentication providers without changing your authorization layer.
-
-### Works with all authorization schemes
-
-Kilpi does **not** implement any advanced authorization concepts (roles, permissions, organizations, memberships, ...), nor does it enforce any single implementation. This enables Kilpi to work with all different applications, requirements, and implementations of the same basic concepts such as permissions.
-
-Instead, Kilpi is designed to be flexible enough to facilitate any authorization model, such as [custom permissions](/docs/advanced/permissions), [ABAC](/docs/advanced/abac), [RBAC](/docs/advanced/rbac) and [ReBAC](/docs/advanced/rebac) using Kilpi.
-
----
-
-## Who is Kilpi not designed for?
-
-Kilpi may not suit you, if you...
-
-- Do not work in a full TypeScript (or JavaScript) project.
-- Do not require authorization.
-- Do not want a centralized authorization layer.
-- Require a ready-made no-code interface or a domain-specific language for policies.
-- Require an authorization model that provides its own implementation for roles, permissions, etc.
-- Are working in a **client-only** application.
+...
 
 ---
 
@@ -71,19 +55,15 @@ Kilpi may not suit you, if you...
 
 I've built over a dozen applications throughout my career. And I've built authorization into them time after time. And I've created half-baked abstractions for authorization way too often trying to refactor countless `if (user.role === "admin" && ...)` statements littered throughout my pages, mutations, queries and UI components.
 
-This has made maintenance troublesome, bug-prone and time-consuming, when new features are added or the authorization logic requires changing.
-
-I knew I wasn't alone.
+This has made maintenance troublesome, error-prone and time-consuming, when new features are added or especially when the authorization logic requires changing.
 
 Kilpi is an attempt to solve this problem once and for all. It aims to be a generic solution to suit all use cases, no matter your authorization needs.
 
-### No expensive lock-in
+### No vendor lock-in
 
-Many paid authentication services (Clerk, Auth0, Kinde, ...) also offer their own fine-grained authorization solutions.
+Kilpi allows you to not opt in to any authentication or authorization provider's proprietary solutions and gives you authorization for free, without vendor lock-in.
 
-However, they can be problematic as they lock you in to their product, migrating out of which can be difficult and expensive.
-
-The benefit of using an explicit authorization layer, such as Kilpi, is that you are much less locked in to a specific provider, even if implementing your auth and policies using their SDKs.
+It has for example greatly reduced the work required to change authentication providers in a production application, thanks to the `getSubject` adapter pattern.
 
 ### Addressing OWASP top ten security risks
 
