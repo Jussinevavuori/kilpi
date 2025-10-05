@@ -7,14 +7,12 @@ sidebar:
 **The subject** represents the current **user** as well as any of their authorization-related data, such as permissions and memberships.
 
 <Aside>
-  **Subject ≈ user**, however the term **subject** is more commonly used in authorization systems,
-  as it may also refer to e.g. external systems, applications or AI agents, which may access your
-  application.
+  **Subject ≈ user**, however the term **subject** is more commonly used in
+  authorization systems, as it may also refer to e.g. external systems,
+  applications or AI agents, which may access your application.
 </Aside>
 
-The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider.
-
-Kilpi calls `getSubject` for you as **authentication** always occurs before **authorization**. This removes unnecessary and duplicated authenticatin logic from your code.
+The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider. Because authentication always comes before authorization, Kilpi reduces boilerplate and calls `getSubject` for you.
 
 ## Defining a `getSubject` adapter
 
@@ -36,13 +34,12 @@ The `subject`'s type is automatically inferred by your `policies`.
 <Aside type="tip">
   You can extract `getSubject` into its own function to infer the `Subject` type. This is especially useful when defining policies in separate objects.
 
-```ts
+```ts {3}
 async function getSubject() { ... }
 
 export type Subject = Awaited<ReturnType<typeof getSubject>>;
 
 export const Kilpi = createKilpi({ getSubject, ... })
-
 ```
 
 </Aside>
@@ -54,10 +51,11 @@ export const Kilpi = createKilpi({ getSubject, ... })
 Commonly, your `getSubject` may require additional **context** (e.g. the current `request`).
 
 <Aside>
-  When accepting the `ctx` parameter, ensure it is made optional with `?` as shown below.
+  When accepting the `ctx` parameter, ensure it is made optional with `?` as
+  shown below.
 </Aside>
 
-```ts {2-4}
+```ts {2-4} "ctx"
 export const Kilpi = createKilpi({
   async getSubject(ctx?: Request) {
     if (!ctx) return null;
@@ -71,9 +69,44 @@ export const Kilpi = createKilpi({
 
 You can then pass this `ctx` object when authorizing using the `authorize()` API.
 
-```ts
-Kilpi.some.policy.authorize({ ctx: request });
+```ts "ctx: request"
+await Kilpi.some.policy().authorize({ ctx: request });
 ```
+
+<Collapsible title="Alternative to the ctx argument">
+<Aside type="tip">
+As an alternative to directly always providing the `ctx` argument, you may also pass it down via
+`AsyncLocalStorage` if your runtime supports `async_hooks`. This requires some setup but may
+reduce boilerplate.
+</Aside>
+
+Below is an example implementation using a global middleware to provide the `ctx`.
+
+```ts
+// app.ts
+import { AsyncLocalStorage } from "async_hooks";
+
+// Create an AsyncLocalStorage which can provide the `ctx`
+export const ctxStorage = new AsyncLocalStorage<Context>();
+
+// Provide the `ctx` in a middleware -- all code running inside
+// this block has access to `const ctx = ctxStorage.getStore()`.
+app.use(async (ctx, next) => {
+  await ctxStorage.run(ctx, () => {
+    await next();
+  });
+});
+
+// Later getSubject can use the ctxStorage to consume the ctx
+async function getSubject() {
+  const ctx = ctxStorage.getStore();
+  if (!ctx) return null;
+
+  // ...
+}
+```
+
+</Collapsible>
 
 ---
 
@@ -81,7 +114,7 @@ Kilpi.some.policy.authorize({ ctx: request });
 
 Very commonly, your subject has other authorization-related properties not received directly from your authentication provider. These include e.g. permissions, roles, and memberships. It is often practical and efficient to include them in your `getSubject` instead of fetching in policies.
 
-```ts
+```ts "memberships" {5}
 export const Kilpi = createKilpi({
   async getSubject() {
     const user = await myAuthenticationProvider.getCurrentUser(ctx);
@@ -95,49 +128,72 @@ export const Kilpi = createKilpi({
 
 ---
 
-## Performance considerations and caching
+## Performance considerations and caching / deduping
 
-Kilpi calls `getSubject` for you on every single `authorize()` call. Especially, if your `getSubject` is an expensive or slow function, you should consider caching it for each request.
+Kilpi calls `getSubject` for you on every single `authorize()` call. Especially, if your `getSubject` is an expensive or slow function, you should consider caching it for each request (deduplicating).
 
-<Aside type="warning">The cache **must not** leak the cached subject to other requests.</Aside>
+<Aside type="warning">
+  The deduplication cache **must not** leak the cached subject to other
+  requests.
+</Aside>
 
-This can be done in multiple ways, and some plugins (such as [`ReactServerPlugin`](/docs/plugins/react-server-plugin)) even automatically cache the subject.
+This can be done in multiple ways, and some plugins (such as [`ReactServerPlugin`](/docs/plugins/react-server-plugin)) even automatically caches the subject for each request.
 
-<Collapsible title="Example of subject caching">
+<Collapsible title="Example: Cache subject with AsyncLocalStorage">
 
-Simple example based on modifying the current `request` object.
-
-```ts
-async function getSubject(ctx?: Request & { cachedSubject?: Subject }) {
-  if (!ctx) return null;
-
-  // Cache hit
-  if (ctx.cachedSubject) return ctx.cachedSubject;
-
-  // Cache miss: Get subject and store it in cache
-  const subject = await getCurrentUser(ctx);
-  ctx.cachedSubject = subject;
-  return subject;
-}
-```
-
-Example using hooks and another per-request caching system, such as `React.cache`.
+If your runtime supports `async_hooks` and you have access to your application's entrypoints (such as with a global middleware), you can use the following solution based on `AsyncLocalStorage`.
 
 ```ts
-// Save to cache
-Kilpi.$hooks.onSubjectResolved(async (event) => {
-  await requestCache.set("subject", event.subject);
+import { AsyncLocalStorage } from "async_hooks";
+
+// Create AsyncLocalStorage for providing the cached subject
+const subjectStorage = new AsyncLocalStorage<{
+  value?: { subject: Subject };
+}>();
+
+// Store subject in AsyncLocalStorage
+Kilpi.$hooks.onSubjectResolved((event) => {
+  subjectStorage.set({ value: { subject: event.subject } });
 });
 
-// Read from cache
-Kilpi.$hooks.onSubjectRequestFromCache(async (event) => {
-  const subject = await requestCache.get("subject", event.subject);
-  if (subject) return { subject };
+// Inject subject from cache before `getSubject` is called
+Kilpi.$hooks.onSubjectRequestFromCache(() => {
+  return subjectStorage.get()?.value;
+});
+
+// Wrap your application entrypoint with the AsyncLocalStorage, e.g.
+// using a middleware or similar solution
+app.use(async (ctx, next) => {
+  await subjectStorage.run({}, () => {
+    await next();
+  });
 });
 ```
 
 </Collapsible>
 
-<br />
+<Collapsible title="Example: Cache subject in request object">
 
-Additionally, a `@kilpi/subject-cache` package is currently in development which would allow you to wrap your application's entry point with an `async_hooks` based API which automatically caches your subject.
+You might in some contexts with a mutable `request` object be able to store the subject directly in the request.
+
+```ts
+type SubjectCache = { subjectCache?: { subject: Subject } };
+
+async function getSubject(
+  ctx?: Request & {
+    subjectCache?: { subject: Subject };
+  },
+) {
+  if (!ctx) return null;
+
+  // Cache hit
+  if (ctx.subjectCache) return ctx.subjectCache.subject;
+
+  // Cache miss: Get subject and store it in cache
+  const subject = await getCurrentUser(ctx);
+  ctx.subjectCache = { subject };
+  return subject;
+}
+```
+
+</Collapsible>

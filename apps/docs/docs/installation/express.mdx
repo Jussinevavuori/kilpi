@@ -5,48 +5,39 @@ description: Install Kilpi for Express
 
 <Steps>
 <Step>
-### Install & setup Kilpi
+### Install and setup Kilpi
 
 Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
 
 ```ts
-export const Kilpi = createKilpi({
-  getSubject,
-  policies,
-  ...
-})
+export const Kilpi = createKilpi({ ... })
 ```
+
 </Step>
 
 <Step>
-### [Provide scope](/docs/concepts/scope)
+### Handle unauthorized errors from `.assert()`
 
-To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+The `.assert()` method throws an error when authorization is denied.
 
-```ts
-app.use((req, res, next) => {
-  Kilpi.runInScope(async () => {
-    next();
+In Express, the easiest way to handle these errors is to allow Kilpi to throw the default `KilpiError.Unauthorized` error and handle it in a global error handler.
+
+```diff lang="ts"
+  import { KilpiError } from "@kilpi/core";
+
+  // Global error handler
+  app.use((err, req, res, next) => {
++   if (err instanceof KilpiError.Unauthorized) {
++     // Optionally customize behavior based on the decision
++     switch (err.decision.reason) { ... }
++
++     // By default, send a HTTP 403 Forbidden response
++     return res.status(403).json({ error: err.decision.message });
++   }
+
+    // Handle other errors ...
   });
-})
 ```
-</Step>
 
-<Step>
-### Handle unauthorized errors
-
-To handle unauthorized errors in Express, we recommend the following approach with a global error handler **after** all route definitions.
-
-```ts
-import { KilpiError } from '@kilpi/core';
-
-app.use((err, req, res, next) => {
-  if (err instanceof KilpiError.AuthorizationDenied) {
-    return res.status(403).json({ error: err.message });
-  }
-
-  // Handle other errors ...
-});
-```
 </Step>
 </Steps>

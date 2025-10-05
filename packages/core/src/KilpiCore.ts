@@ -1,4 +1,4 @@
-import { KilpiError } from "./error";
+import { KilpiError } from "./KilpiError";
 import { KilpiHooks } from "./KilpiHooks";
 import type { KilpiQueryAuthorizeFn } from "./KilpiQuery";
 import { KilpiQuery } from "./KilpiQuery";
@@ -7,7 +7,7 @@ import type {
   DeniedDecision,
   InferContext,
   KilpiConstructorArgs,
-  KilpiOnUnauthorizedHandler,
+  KilpiOnUnauthorizedAssertHandler,
   Policyset,
   PolicysetActions,
 } from "./types";
@@ -19,7 +19,7 @@ import type {
  */
 const KilpiCoreSymbol_Policies = Symbol("KilpiCore.policies");
 const KilpiCoreSymbol_GetSubject = Symbol("KilpiCore.getSubject");
-const KilpiCoreSymbol_OnUnauthorized = Symbol("KilpiCore.onUnauthorized");
+const KilpiCoreSymbol_OnUnauthorizedAssert = Symbol("KilpiCore.onUnauthorizedAssert");
 const KilpiCoreSymbol_HandleUnauthorizedAssert = Symbol("KilpiCore.handleUnauthorizedAssert");
 
 /**
@@ -27,7 +27,7 @@ const KilpiCoreSymbol_HandleUnauthorizedAssert = Symbol("KilpiCore.handleUnautho
  *
  * The fluent policy proxy API and plugins are attached to this class in the `createKilpi` method.
  * This class holds the core configuration, including the `getSubject` function, policy set, and
- * global `onUnauthorized` handler.
+ * global `onUnauthorizedAssert` handler.
  */
 export class KilpiCore<
   TGetSubject extends AnyGetSubject,
@@ -50,9 +50,9 @@ export class KilpiCore<
   /**
    * Global handler for when unauthorized (and .require() is used).
    *
-   * Not exposed to consumer in public API. Use via `KilpiCore.expose(instance).onUnauthorized` instead.
+   * Not exposed to consumer in public API. Use via `KilpiCore.expose(instance).onUnauthorizedAssert` instead.
    */
-  [KilpiCoreSymbol_OnUnauthorized]: KilpiOnUnauthorizedHandler | undefined;
+  [KilpiCoreSymbol_OnUnauthorizedAssert]: KilpiOnUnauthorizedAssertHandler | undefined;
 
   /**
    * Hooks API. Used to register and unregister Kilpi hooks.
@@ -91,7 +91,7 @@ export class KilpiCore<
 
     // Assign private properties
     this[KilpiCoreSymbol_Policies] = args.policies;
-    this[KilpiCoreSymbol_OnUnauthorized] = args.onUnauthorized;
+    this[KilpiCoreSymbol_OnUnauthorizedAssert] = args.onUnauthorizedAssert;
 
     // Wrap getSubject with caching hooks
     this[KilpiCoreSymbol_GetSubject] = (async (context?: InferContext<TGetSubject>) => {
@@ -155,7 +155,7 @@ export class KilpiCore<
     decision: DeniedDecision;
 
     // Additional custom handler to call first.
-    onUnauthorized?: KilpiOnUnauthorizedHandler;
+    onUnauthorizedAssert?: KilpiOnUnauthorizedAssertHandler;
 
     // Optionally also include subject in the event.
     subject?: Awaited<ReturnType<TGetSubject>>;
@@ -175,16 +175,16 @@ export class KilpiCore<
     // Run the custom provided handler first (if any).
     // Collect thrown errors for later throwing, but run all other handlers first as well.
     try {
-      await options.onUnauthorized?.(options.decision);
+      await options.onUnauthorizedAssert?.(options.decision);
     } catch (err) {
       thrownErrors.push(err);
     }
 
     // Then run all handlers registered via the onUnauthorizedAssert hook.
     // Collect thrown errors for later throwing, but run all other handlers first as well.
-    for (const onUnauthorizedHook of this.$hooks.registeredHooks.onUnauthorizedAssert) {
+    for (const onUnauthorizedAssertHook of this.$hooks.registeredHooks.onUnauthorizedAssert) {
       try {
-        await onUnauthorizedHook({
+        await onUnauthorizedAssertHook({
           decision: options.decision,
           action: options.action,
           subject: options.subject ?? null,
@@ -196,11 +196,19 @@ export class KilpiCore<
       }
     }
 
+    // Run global onUnauthorizedAssert
+    const globalOnUnauthorizedAssert = this[KilpiCoreSymbol_OnUnauthorizedAssert];
+    try {
+      await globalOnUnauthorizedAssert?.(options.decision);
+    } catch (err) {
+      thrownErrors.push(err);
+    }
+
     // If any hook threw, throw the first thrown error.
     if (thrownErrors.length > 0) throw thrownErrors[0];
 
     // Finally if no other handler threw an error, throw default KilpiError.Unauthorized
-    throw new KilpiError.Unauthorized(options.decision.message);
+    throw new KilpiError.Unauthorized(options.decision);
   }
 
   /**
@@ -216,7 +224,7 @@ export class KilpiCore<
     return {
       getSubject: core[KilpiCoreSymbol_GetSubject],
       policies: core[KilpiCoreSymbol_Policies],
-      onUnauthorized: core[KilpiCoreSymbol_OnUnauthorized],
+      onUnauthorizedAssert: core[KilpiCoreSymbol_OnUnauthorizedAssert],
 
       // When accessing methods, ensure `this` is bound correctly
       handleUnauthorizedAssert: core[KilpiCoreSymbol_HandleUnauthorizedAssert].bind(core),

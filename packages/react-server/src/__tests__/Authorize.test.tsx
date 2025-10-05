@@ -52,7 +52,7 @@ describe("types", () => {
 
     void (await (
       <Authorize
-        decision={Kilpi.always().authorize()}
+        policy={Kilpi.always()}
         Pending={<p>PENDING</p>}
         Unauthorized={<p>UNAUTHORIZED</p>}
       >
@@ -62,7 +62,7 @@ describe("types", () => {
 
     void (await (
       <Authorize
-        decision={Kilpi.posts.read({ userId: "1" }).authorize()}
+        policy={Kilpi.posts.read({ userId: "1" })}
         Pending={<p>PENDING</p>}
         Unauthorized={(decision) => <p>UNAUTHORIZED: {decision.message || "Just because"}</p>}
       >
@@ -78,9 +78,9 @@ describe("types", () => {
     //
     // const { Authorize } = Kilpi.$createReactServerComponents();
     //
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
     //
     // expect(mockGetSubject).toHaveBeenCalledTimes(1);
     expect(true).toBe(true);
@@ -91,9 +91,9 @@ describe("types", () => {
     //
     // const { Authorize } = Kilpi.$createReactServerComponents({ disableSubjectCaching: true });
     //
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
-    // void (await (<Authorize decision={Kilpi.always().authorize()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
+    // void (await (<Authorize policy={Kilpi.always()} />));
     //
     // expect(mockGetSubject).toHaveBeenCalledTimes(3);
 

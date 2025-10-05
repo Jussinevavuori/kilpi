@@ -1,4 +1,8 @@
-import { createKilpiPlugin, type AnyKilpiCore, type KilpiOnUnauthorizedHandler } from "@kilpi/core";
+import {
+  createKilpiPlugin,
+  type AnyKilpiCore,
+  type KilpiOnUnauthorizedAssertHandler,
+} from "@kilpi/core";
 import { create_Authorize } from "../components/Authorize";
 import { createRscCache } from "../utils/createRscCache";
 
@@ -7,19 +11,19 @@ import { createRscCache } from "../utils/createRscCache";
  * in React Server Components and for creating the React Server Component bindings
  * to work with Kilpi.
  */
-export function ReactServerPlugin<T extends AnyKilpiCore>(
+export function ReactServerPlugin<TCore extends AnyKilpiCore>(
   options: {
     disableSubjectCaching?: boolean;
   } = {},
 ) {
-  return createKilpiPlugin((Kilpi: T) => {
+  return createKilpiPlugin((Kilpi: TCore) => {
     // =============================================================================================
     // AUTOMATIC SUBJECT CACHING (unless disabled)
     // =============================================================================================
 
     if (!options.disableSubjectCaching) {
       // Create React.cache which holds the current subject
-      const subjectCache = createRscCache(null as null | { subject: T["$$infer"]["subject"] });
+      const subjectCache = createRscCache(null as null | { subject: TCore["$$infer"]["subject"] });
 
       // Inject the subject from cache if available
       Kilpi.$hooks.onSubjectRequestFromCache(() => {
@@ -38,9 +42,11 @@ export function ReactServerPlugin<T extends AnyKilpiCore>(
     // PAGE-SPECIFIC ON_UNAUTHORIZED_ASSERT HANDLER
     // =============================================================================================
 
-    const onUnauthorizedCache = createRscCache(null as null | KilpiOnUnauthorizedHandler);
+    const onUnauthorizedAssertCache = createRscCache(
+      null as null | KilpiOnUnauthorizedAssertHandler,
+    );
     Kilpi.$hooks.onUnauthorizedAssert(async (event) => {
-      await onUnauthorizedCache().value?.(event.decision);
+      await onUnauthorizedAssertCache().value?.(event.decision);
     });
 
     /**
@@ -50,7 +56,7 @@ export function ReactServerPlugin<T extends AnyKilpiCore>(
       extendCore() {
         return {
           /**
-           * Sets a custom onUnauthorized handler in the current React Server Component
+           * Sets a custom onUnauthorizedAssert handler in the current React Server Component
            * context. Primary usage is to allow custom handling of unauthorized access
            * for each page.
            *
@@ -69,8 +75,8 @@ export function ReactServerPlugin<T extends AnyKilpiCore>(
            *   return <CreatePostForm />
            * }
            */
-          $onUnauthorizedRscAssert(onUnauthorized: KilpiOnUnauthorizedHandler) {
-            onUnauthorizedCache().value = onUnauthorized;
+          $onUnauthorizedRscAssert(onUnauthorizedAssert: KilpiOnUnauthorizedAssertHandler) {
+            onUnauthorizedAssertCache().value = onUnauthorizedAssert;
           },
 
           /**
@@ -89,7 +95,7 @@ export function ReactServerPlugin<T extends AnyKilpiCore>(
            * ```
            */
           $createReactServerComponents() {
-            const Authorize = create_Authorize();
+            const Authorize = create_Authorize(Kilpi);
             return { Authorize };
           },
         };

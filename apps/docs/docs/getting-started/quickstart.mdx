@@ -46,9 +46,12 @@ Install the Kilpi core library.
   </Step>
 
   <Step>
-    ### Instantiate Kilpi
+    ### Create your Kilpi authorization system
 
-    Copy and paste the code below and replace the `getSubject` implementation to fetch the current subject (≈ user) from your authentication provider.
+    Copy and paste the code below and...
+
+    1. Replace the `getSubject` implementation with a call to your authentication provider which returns the current **subject** *(≈ user)*.
+    2. Add your policies or test with the example policies.
 
     ```ts
     // src/kilpi.ts
@@ -56,7 +59,7 @@ Install the Kilpi core library.
 
     export const Kilpi = createKilpi({
       // (1) Your subject adapter with optional `ctx` param.
-      async getSubject(ctx: MyContextType) {
+      async getSubject(ctx?: MyContextType) {
         return myAuthenticationProvider.getCurrentUser(ctx);
       },
 
@@ -68,7 +71,7 @@ Install the Kilpi core library.
             if (!subject) return Deny()
             return Grant(subject);
           },
-          // "Only author can delete own post"
+          // "Post can only be deleted by the author"
           async delete(subject, post: { authorId: string }) {
             if (!subject) return Deny();
             if (subject.userId !== post.authorId) return Deny();
@@ -91,15 +94,32 @@ Install the Kilpi core library.
     ```ts
     import { Kilpi } from "...";
 
-    const { granted } = await Kilpi
-      .posts                       // (Policy namespace)
-      .delete({ authorId: "123" }) // Reference policy with object
-      .authorize({ ctx });         // Run the authorization check
+    async function deletePost(post: Post) {
+      const { granted } = await Kilpi
+        .posts               // (Policy namespace)
+        .delete(post)        // Instantiate polict with object
+        .authorize({ ctx }); // Run the authorization check
 
-    if (granted) {
-      await deletePost(myPost.id);
+      if (granted) await db.posts.delete(post.id);
     }
+
     ```
+
+    Read more about the [authorization APIs](/docs/concepts/authorizing).
+
+  </Step>
+
+  <Step>
+    ### Framework specific tips
+
+    You are ready, however we offer some additional tips on how to best use Kilpi with specific frameworks, such as plugins or useful configurations.
+
+    - [Express](/docs/installation/express)
+    - [Hono](/docs/installation/hono)
+    - [Nest.js](/docs/installation/nest-js)
+    - [Koa](/docs/installation/koa)
+    - [Next.js](/docs/installation/next-js)
+    - [Oak](/docs/installation/oak)
 
   </Step>
 </Steps>

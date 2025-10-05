@@ -4,9 +4,9 @@ sidebar:
   order: 2
 ---
 
-**A policy** is an asynchronous function that receives the [**subject**](/docs/concepts/subject) and optionally an **object** and returns an **authorization decision**, either granted or denied using either `Grant(...)` or `Deny(...)`. Policies always run on the server.
+**A policy** is an asynchronous function. It receives the [**subject**](/docs/concepts/subject) and optionally an **object**, then returns an **authorization decision**. The decision is either granted with `Grant(...)` or denied with `Deny(...)`. Policies are always run on the server.
 
-Each policy corresponds to an **action** that can be taken in your application (optionally **on an object**), such as `posts.edit`.
+Each policy uniquely corresponds to an **action**, such as `posts.edit`.
 
 ## Defining policies
 
@@ -16,9 +16,9 @@ Define policies as the `policies` argument to `createKilpi`. Each policy functio
 export const Kilpi = createKilpi({
   // ...
   policies: {
-    // Root-level policy without object (1)
-    async always(subject) {
-      return Grant(subject);
+    // Root-level policy without object
+    async admin(subject) {
+      return subject?.isAdmin ? Grant(subject) : Deny();
     },
 
     // Nested policy with object
@@ -54,15 +54,20 @@ Kilpi.organizations.members.delete({ orgId });
 ```
 
 <Aside type="tip">
-  It is often smart to separate common logic into utility functions, such as `isAdmin(subject)` or
-  `hasMembership(subject, orgId)`.
+  It is often smart to separate common logic into utility functions, such as
+  `isAdmin(subject)` or `hasMembership(subject, orgId)`.
 </Aside>
 
-### Subject narrowing
+<Aside type="note">
+  Do not start your policy or namespace names with `$` to avoid naming
+  conflicts. E.g. `Kilpi.$posts.$edit(post)` is discouraged.
+</Aside>
 
-Instead of returning `true`, the function returns `Grant(subject)`. This allows Kilpi to infer the narrowed down type subject type when authorizing.
+### `Grant(subject)`: Subject narrowing
 
-```ts
+Instead of returning `true`, the function returns `Grant(subject)`. This allows Kilpi to infer the narrowed down type subject type when authorizing and reduce boilerplate.
+
+```ts {5,6,15,20}
 export const Kilpi = createKilpi({
   // ...
   policies: {
@@ -74,7 +79,7 @@ export const Kilpi = createKilpi({
 });
 
 // TS also infers that subject is not null here, no
-// `if (decision.subject)` clauses required.
+// `if (decision.subject)` or `subject?.id` required.
 const decision = await Kilpi.authenticated().authorize();
 if (decision.granted) {
   console.log(decision.subject.id);
@@ -82,14 +87,14 @@ if (decision.granted) {
 
 // Similarly for assertions
 const { subject } = await Kilpi.authenticated().authorize().assert();
-console.log(decision.subject.id);
+console.log(subject.id);
 ```
 
-### Additional denial data
+### `Deny(...)`: Additional denial data
 
 Similarly, instead of returning `false`, the policy function returns `Deny(...)`. The denial can be provided additional data about why the policy failed. All metadata is optional and you can simply `return Deny()` when no additional data is required.
 
-```ts
+```ts "message" "decision.message" "reason" "decision.reason" ""NOT_SUBSCRIBED"" ""UNAUTHENTICATED"" "requiredTier" "metadata"
 export const Kilpi = createKilpi({
   // ...
   policies: {
@@ -97,8 +102,8 @@ export const Kilpi = createKilpi({
       async edit(subject, post: Post) {
         if (!subject) {
           return Deny({
-            message: "Unauthenticated",
-            reason: "UNAUTHENTICATED",
+            message: "You are not signed in", // User-facing
+            reason: "UNAUTHENTICATED", // System-facing
           });
         }
 
@@ -118,8 +123,8 @@ export const Kilpi = createKilpi({
   },
 });
 
-// Customize unauthorized behavior based on denial metadata
-const decision = await Kilpi.postts.edit(post).authorize();
+// Customize unauthorized behavior based on denial details
+const decision = await Kilpi.posts.edit(post).authorize();
 if (!decision.granted) {
   showMessage(decision.message);
   if (decision.reason === "NOT_SUBSCRIBED") {
@@ -128,11 +133,13 @@ if (!decision.granted) {
 }
 ```
 
-### Data fetching
+---
 
-Policies are asynchronous and run on the server. This means they can fetch data from the database or any other source.
+## Data fetching
 
-```ts
+Policies are asynchronous and run on the server. This means they can fetch data from the database or any other source, allowing you to create a _stateful authorization system_.
+
+```ts {11}
 export const Kilpi = createKilpi({
   // ...
   policies: {
@@ -152,50 +159,93 @@ export const Kilpi = createKilpi({
 ```
 
 <Aside type="tip">
-  Remember to consider performance. The policy is evaluated (and therefore the fetch) during the
-  `authorize()` call.
+  Remember to consider performance. The policy and the fetch are ran on the
+  server during the `authorize()` call.
 </Aside>
+
+---
+
+## Structuring policies
+
+You can structure your policies in any way you'd like. However, as a starting point, we recommend a combination of two methods:
+
+### Root-level utility policies
+
+Sometimes you don't need to specify an action. You just want to check the user is authenticated or an admin. For this case, you may define root-level policies such as `authed` or `admin`.
+
+```ts {4,5,11}
+export const Kilpi = createKilpi({ /* ... */,
+  // ...
+  policies: {
+    authed: (subject) => subject ? Grant(subject) : Deny(),
+    admin: (subject) => subject?.isAdmin ? Grant(subject) : Deny(),
+    // ...
+  }
+})
+
+// Get the current user (we can be sure they are an admin)
+const { subject } = await Kilpi.admin().authorize().assert();
+```
+
+### Domain policies
+
+The rest of your policies are recommended to belong to a domain or an "object type", such as `posts` or `organizations`, which includes all the available actions for that domain.
+
+```ts {6-11}
+export const Kilpi = createKilpi({ /* ... */,
+  // ...
+  policies: {
+    // ...
+    posts: {
+      async read(subject, post: Post) { ... },
+      async list(subject)  { ... },
+      async create(subject) { ... },
+      async update(subject, post: Post) { ... },
+      async delete(subject, post: Post) { ... },
+      async archive(subject, post: Post) { ... },
+      // ...
+    }
+  }
+})
+```
+
+---
 
 ## Scaling policies to larger projects
 
 Instead of defining all policies inside the `createKilpi` body, it is usually a more scalable approach to split them into multiple files.
 
 <Aside type="tip">
-When doing this, remember to add `as const satisfies Policyset<MySubject>` (with your `MySubject` type) to ensure the types are correct and the subject is automatically inferred.
+
+When doing this, remember to add `as const satisfies Policyset<MySubject>` (with your `MySubject` type).
+
+This both ensures your types are correct and automatically infers the type of `subject`.
+
 </Aside>
 
-```ts
+```ts {4,7}
 // src/posts.policies.ts
 import type { Policyset } from "@kilpi/core";
-import type { MySubject } from "..."; // Your code
 
 export const postPolicies = {
-  async create(subject) {
-    // ...
-  },
-  // ...
+  async create(subject) { ... },
+  async update(subject, post: Post) { ... },
 } as const satisfies Policyset<MySubject>;
 ```
 
-```ts
-// src/orgs.polciies.ts
+```ts {4,7}
+// src/orgs.policies.ts
 import type { Policyset } from "@kilpi/core";
-import type { MySubject } from "..."; // Your code
 
 export const orgPolicies = {
-  async create(subject) {
-    // ...
-  },
-  // ...
+  async create(subject) { ... },
+  async update(subject, org: Organization) { ... },
 } as const satisfies Policyset<MySubject>;
 ```
 
-Then finally combine them in `createKilpi` as
+Then finally combine them in `createKilpi`.
 
-```ts
-import { postPolicies } from ".../posts.policies.ts";
-import { orgPolicies } from ".../orgs.policies.ts";
-
+```ts {4,5}
 export const Kilpi = createKilpi({
   // ...,
   policies: {
@@ -205,4 +255,4 @@ export const Kilpi = createKilpi({
 });
 ```
 
-You can take this nesting as deep as you want, e.g. `orgs.memberships.invites.create()`, by nesting `invitePolicies` under `membershipPolicies`, which is then under `orgPolicies`.
+You can take this nesting as deep as you want, e.g. `Kilpi.orgs.memberships.invites.create()`.

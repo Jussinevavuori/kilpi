@@ -1,0 +1,171 @@
+---
+title: Plugins
+---
+
+Plugins are used to extend the functionality of both `Kilpi` and `KilpiClient`. They can access the instance themselves, extend their public interface and e.g. access hooks for any custom functionality.
+
+---
+
+## Available plugins
+
+List of all available first-party plugins.
+
+<LinkCard
+  title="Audit Plugin"
+  description="Utility for auditing your authorizations."
+  href="/docs/plugins/audit"
+/>
+<LinkCard
+  title="Endpoint Plugin"
+  description="Create a web standard endpoint for requesting authorization decisions, used with the Kilpi client."
+  href="/docs/plugins/endpoint"
+/>
+<LinkCard
+  title="React Server Components Plugin"
+  description="React Server Components for working with Kilpi and automatic RSC scope."
+  href="/docs/plugins/react-server-components"
+/>
+<LinkCard
+  title="React Client Plugin"
+  description="React Client components for working with Kilpi client."
+  href="/docs/plugins/react-client"
+/>
+
+---
+
+## Creating custom plugins
+
+You are welcome to create custom plugins for Kilpi for use in your own application and as packages
+for the community. Please share your public community plugins on
+[Github](https://github.com/Jussinevavuori/kilpi/issues) and they can be added to the
+documentation.
+
+### Creating custom server-side plugins
+
+Let's create an utility plugin for counting the total number of authorizations as an example.
+
+```ts
+import { createKilpiCorePlugin, type AnyKilpiCore } from "@kilpi/core";
+
+// Plugin constructor is a generic function of <T extends AnyKilpiCore>
+// and can take any configuration options needed.
+function CounterPlugin<T extends AnyKilpiCore>(opts: { message: string }) {
+  // The constructor must return a kilpi core plugin with the `createKilpiCorePlugin`
+  // function which provides the Kilpi instance as an argument.
+  return createKilpiCorePlugin((Kilpi: T) => {
+    // Internal state
+    let count = 0;
+
+    // Access hooks on the Kilpi instance itself
+    Kilpi.$hooks.onAfterAuthorization(() => {
+      count++;
+    });
+
+    // Return optional extensions on the public Kilpi interface.
+    // Please prefix at least your root-level APIs with "$" to avoid
+    // naming conflicts.
+    return {
+      // Function which returns an extension on the Kilpi instance itself
+      extendCoreApi() {
+        return {
+          $logCount() {
+            console.log(opts.message.replace("%", count.toString()));
+          },
+        };
+      },
+    };
+  });
+}
+
+// Install the plugin
+const Kilpi = createKilpi({
+  getSubject,
+  policies,
+  plugins: [CounterPlugin({ message: "% authorizations made!" })],
+});
+
+// Use the plugin
+Kilpi.$logCount(); // "10 authorizations made!"
+```
+
+<Aside>
+  Unlike for client-side plugins, server-side plugins don't yet have a method of
+  extending the policy interfaces (e.g. as `Kilpi.posts.create().$logCount()`).
+</Aside>
+
+### Creating custom client-side plugins
+
+Let's create an utility plugin for KilpiClient.
+
+```ts
+import { createKilpiCorePlugin, type AnyKilpiCore } from "@kilpi/core";
+import type { KilpiClient } from "@kilpi/client";
+
+// Boilerplate if exteending the policy interface:
+//   The type of a KilpiClientPolicy extension
+export interface KilpiClientPolicyExtension_SayHelloPlugin<
+  TClient extends AnyKilpiClient,
+  TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
+> {
+  sayHello(): void;
+}
+
+// Boilerplate if exteending the policy interface:
+//   Augment KilpiClientPolicy with extension.
+declare module "@kilpi/client" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface IKilpiClientPolicy<
+    TClient extends AnyKilpiClient,
+    TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
+  > extends KilpiClientPolicyExtension_SayHelloPlugin<TClient, TAction> {}
+}
+
+// Plugin constructor is a generic function of <T extends AnyKilpiCore>
+// and can take any configuration options needed.
+function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
+  // The constructor must return a kilpi client plugin with the `createKilpiClientPlugin`
+  // function which provides the KilpiClient as an argument.
+  return createKilpiClientPlugin((Client: KilpiClient<T>) => {
+    // Return optional extensions on the public KilpiClient interface
+    // and the policy interfaces.Please prefix at least your root-level APIs
+    // with "$" to avoid naming conflicts (not requred for policies).
+    return {
+      // Function which returns an extension on the KilpiClient
+      // instance itself.
+      extendClient() {
+        return {
+          $sayHello() {
+            console.log(`Hello from ${opts.name}`);
+          },
+        };
+      },
+
+      // Function which returns an extension on the policies.
+      // This function must implement the extension defined in
+      // `KilpiClientPolicyExtension_SayHelloPlugin` with access
+      // to the policy.
+      extendPolicy(policy) {
+        return {
+          sayHello() {
+            console.log(`Hello from ${policy.$action}`);
+          },
+        } satisfies KilpiClientPolicyExtension_SayHelloPlugin<
+          // Required TypeScript boilerplate
+          KilpiClient<TCore>,
+          PolicysetActions<TCore["$$infer"]["policies"]>
+        >;
+      },
+    };
+  });
+}
+
+// Install the plugin
+const Kilpi = createKilpiClient({
+  ...,
+  plugins: [SayHelloPlugin({ name: "MyKilpiClient" })],
+});
+
+// Use the plugin
+Kilpi.$sayHello(); // Hello from MyKilpiClient
+Kilpi.posts.edit(post).sayHello(); // Hello from posts.edit
+```

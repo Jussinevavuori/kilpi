@@ -1,3 +1,5 @@
+import type { DeniedDecision } from "./types";
+
 /**
  * Error thrown when the Kilpi library encounters an internal error.
  */
@@ -12,9 +14,11 @@ class KilpiInternalError extends Error {
  * Error thrown when an authorization check fails.
  */
 class KilpiUnauthorizedError extends Error {
-  constructor(message = "Unauthorized") {
-    super(message);
+  decision: DeniedDecision;
+  constructor(decision: DeniedDecision) {
+    super(decision.message);
     this.name = "KilpiUnauthorizedError";
+    this.decision = decision;
   }
 }
 

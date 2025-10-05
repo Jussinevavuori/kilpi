@@ -5,7 +5,7 @@ import type {
   GetPolicyByAction,
   InferPolicyInputs,
   InferPolicySubject,
-  KilpiOnUnauthorizedHandler,
+  KilpiOnUnauthorizedAssertHandler,
   PolicysetActions,
 } from "./types";
 
@@ -71,7 +71,7 @@ export class KilpiPolicy<
 
     // Run `onAfterAuthorization` hooks (do not await)
     this.#core.$hooks.registeredHooks.onAfterAuthorization.forEach((hook) => {
-      hook({ action: this.$action, subject, decision, object: this.#object });
+      hook({ action: this.$action, subject, decision, object: this.#object, context: options.ctx });
     });
 
     // Return all relevant data on evaluation
@@ -103,13 +103,12 @@ export class KilpiPolicy<
     const promise = this.evaluate(options);
 
     /**
-     * Assertion function. Throws if not authorized (either from onUnauthorized provided to the
-     * `.assert()` method or to the `createKilpi()` constructor function).
+     * Assertion function. Throws if not authorized.
      *
-     * @param onUnauthorized Optional extra onUnauthorized handler for this specific authorization.
+     * @param onUnauthorizedAssert Optional extra handler for this specific authorization.
      * @returns Granted decision if authorized.
      */
-    const assert = async (onUnauthorized?: KilpiOnUnauthorizedHandler) => {
+    const assert = async (onUnauthorizedAssert?: KilpiOnUnauthorizedAssertHandler) => {
       const { decision, subject, context } = await promise;
 
       // Not granted: Throw using the core's handler.
@@ -120,7 +119,7 @@ export class KilpiPolicy<
           context,
           action: this.$action,
           object: this.#object,
-          onUnauthorized,
+          onUnauthorizedAssert,
         });
       }
 

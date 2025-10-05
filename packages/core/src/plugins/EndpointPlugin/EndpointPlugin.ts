@@ -33,7 +33,7 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
   secret: string;
   getContext?: (req: Request) => T["$$infer"]["context"];
   onBeforeHandleRequest?: (req: Request) => MaybePromise<void | never | Response>;
-  onBeforeProcessItem?: (request: z.infer<typeof endpointRequestSchema>) => void;
+  onBeforeProcessItem?: (request: z.infer<typeof endpointRequestSchema>) => MaybePromise<void>;
 }) {
   return createKilpiPlugin((Kilpi: T) => {
     /**
@@ -50,7 +50,7 @@ export function EndpointPlugin<T extends AnyKilpiCore>(options: {
       return await Promise.all(
         body.map(async (request) => {
           // Callback
-          options.onBeforeProcessItem?.(request);
+          await options.onBeforeProcessItem?.(request);
 
           // Utility to construct a response object
           function createResponse<T>(data: T) {

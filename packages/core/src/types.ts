@@ -48,7 +48,7 @@ export type Decision<TSubjectOutput> = GrantedDecision<TSubjectOutput> | DeniedD
 /**
  * Handler called when authorization fails and `.require()` is used.
  */
-export type KilpiOnUnauthorizedHandler = (denial: DeniedDecision) => unknown;
+export type KilpiOnUnauthorizedAssertHandler = (denial: DeniedDecision) => unknown;
 
 /**
  * Utility type for whch all getSubject functions extend.
@@ -87,7 +87,7 @@ export type KilpiConstructorArgs<
    * used framework / custom error handler supports throwing errors to signal unauthorized
    * access.
    */
-  onUnauthorized?: KilpiOnUnauthorizedHandler;
+  onUnauthorizedAssert?: KilpiOnUnauthorizedAssertHandler;
 };
 
 /**

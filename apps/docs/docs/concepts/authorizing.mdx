@@ -8,9 +8,9 @@ All server-side authorizations happen with the `authorize()` API.
 
 ## Authorization using `authorize()`
 
-Reference a policy as e.g. `Kilpi.posts.edit(post)` and chain the `.authorize()` call. This evaluates the policy and returns an **authorization decision**.
+Reference a policy as e.g. `Kilpi.posts.edit(post)` and call the policy's `authorize()` method. This evaluates the policy and returns an **authorization decision**. In many cases, this API is all you need.
 
-```ts
+```ts ".authorize()"
 const decision = await Kilpi.posts.edit(post).authorize();
 if (decision.granted) {
   await db.posts.update(...);
@@ -19,62 +19,71 @@ if (decision.granted) {
 
 The decision is either a **granted** or a **denied** decision.
 
-```ts
-{
-  granted: true; // Signals "granted decision" (Discriminator)
-  subject: TSubject; // The subject from the policy's Grant(subject)
-} | {
-  granted: false; // Signals "denied decision" (Discriminator)
-  message?: string; // User-facing message, e.g. "You are not signed in"
-  reason?: string; // System-facing reason, e.g. "UNAUTHORIZED"
-  metadata?: unknown; // Optional metadata about the denial
-}
+```ts {3,7}
+type Decision<TSubject> =
+  | {
+      granted: true; // Signals "granted decision" (Discriminator)
+      subject: TSubject; // The subject from the policy's Grant(subject)
+    }
+  | {
+      granted: false; // Signals "denied decision" (Discriminator)
+      message?: string; // User-facing message, e.g. "You are not signed in"
+      reason?: string; // System-facing reason, e.g. "UNAUTHORIZED"
+      metadata?: unknown; // Optional metadata about the denial
+    };
 ```
 
 <Aside type="tip">
   The decision is a [discriminated
-  union](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions) based
-  on the `granted` property. You have to check whether `granted` is `true` or `false` before
-  accessing any other properties.
+  union](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions)
+  based on the `granted` property. You have to check whether `granted` is `true`
+  or `false` before accessing any other properties.
 </Aside>
 
-### Reference policies
+<Collapsible title="Specifying the policy">
 
-To reference a policy, access it via dot notation and call it to "instantiate" it (optionally provide the object if the policy requires one).
+To specify a policy, access it via dot notation and call it to "instantiate" it (optionally provide the object if the policy requires one). This returns you the policy object, which has e.g. the `authorize` method.
 
 ```ts
-export const Kilpi = createKilpi({
-  // ...
+export const Kilpi = createKilpi({ /* ... */
   policies: {
-    async never(subject) {...},                // Root-level policy
+    async admin(subject) {...},                // Root-level policy
     posts: {                                   // Namespace
       async create(subject) {...},             // No object
       write: {                                 // Nested namespaces
         async edit(subject, post: Post) {...}, // Needs "Post" object
       }
     },
-  },
+  }
 });
 
 // Use as follows
-await Kilpi.never().authorize();
+await Kilpi.admin().authorize();
 await Kilpi.posts.create().authorize();
 await Kilpi.posts.write.edit(post).authorize();
 ```
 
-### Context
+</Collapsible>
+
+## Providing a context
 
 If your `getSubject` adapter requires a `ctx` parameter (e.g. the current `Request`), you can pass it as follows.
 
 ```ts
-await Kilpi.myPolicy.authorize({ ctx });
+await Kilpi.myPolicy().authorize({ ctx });
 ```
 
-You can even override the `getSubject` adapter and pass your own subject.
+<Collapsible title="Overriding the subject">
+
+In rare cases, you can even override the `getSubject` adapter and pass your own subject.
 
 ```ts
-await Kilpi.myPolicy.authorize({ subject: mySubject });
+await Kilpi.myPolicy().authorize({ subject: mySubject });
 ```
+
+This may be useful for e.g. testing or admin functionality, where an admin (the subject) wants to check the access of another user.
+
+</Collapsible>
 
 ---
 
@@ -82,43 +91,70 @@ await Kilpi.myPolicy.authorize({ subject: mySubject });
 
 In very many cases, you want to **throw on unauthorized**, especially when your framework supports throwing e.g. HTTP errors or redirections. For this purpose, you can use the `assert()` API as follows.
 
-```ts
+```ts ".assert()"
 // Always returns a granted decision (or throws)
-const { subject } = await Kilpi.myPolicy.authorize().assert();
+const { subject } = await Kilpi.myPolicy().authorize().assert();
 ```
 
-An assertion **always returns a granted decision** or throws. For this reason, you can always destructure the `subject`.
+<Aside type="note">
+  
+  An assertion **always returns a granted decision** or throws. For this reason, you can always
+  destructure the `subject`.
 
-By default, Kilpi throws a `KilpiUnauthorizedError`. To customize what is thrown, you can provide a global `onUnauthorized` handler.
+</Aside>
+
+When on `onUnauthorizedAssert` handlers are defined, Kilpi throws a `KilpiUnauthorizedError`. To customize what is thrown (or to run side effects), you can provide a global `onUnauthorizedAssert` handler.
 
 ```ts
 export const Kilpi = createKilpi({
   // ...
   // Called when `.assert()` denies access.
-  async onUnauthorized(denial) {
+  async onUnauthorizedAssert(denial) {
     console.log(`Denied: ${denial.message}`);
     throw new HttpForbiddenError();
   },
 });
 ```
 
-To override the default behavior, you can also provide an `onUnauthorized` callback to the assertion to run before the global handler.
+To override the default behavior, you can also provide an `onUnauthorizedAssert` callback to the assertion to run before the global handler.
 
 ```ts
-await Kilpi.myPolicy.authorize().assert(async (denial) => {
-  throw HttpRedirect("/sign-in");
-});
+await Kilpi.usePremiumFeature()
+  .authorize()
+  .assert(async (denial) => {
+    throw HttpRedirect(`/subscribe?message=${denial.message}`);
+  });
 ```
 
-Both handlers can even run side-effects before throwing. Additionally, you can register more custom `onUnauthorized` handlers with the [`Kilpi.$hooks.onUnauthorizedAssert` API](/docs/concepts/hooks).
+<Collapsible title="All onUnauthorizedAssert handlers in more detail">
+
+Kilpi has three types of `onUnauthorizedAssert` handlers, which run when `assert()` denies access.
+
+```ts
+// Called first: Assertion-specific override
+await Kilpi.some.policy().authorize().assert((denial) => { ... });
+
+// Called in-between: onUnauthorizedAssert hooks
+// (If multiple hooks registered, they can be called in any order)
+Kilpi.$hooks.onUnauthorizedAssert((denial) => { ... })
+
+// Called last: global onUnauthorizedAssert
+export const Kilpi = createKilpi({
+  async onUnauthorizedAssert(denial) { ... }
+})
+```
+
+All of these handlers can run side-effects and throw. Importantly, Kilpi will run **all** of the handlers, even if one of them throws. After all handlers are run, the **first encountered thrown exception** is rethrown. If none threw, Kilpi defaults to throwing a `KilpiUnauthorizedError`.
+
+</Collapsible>
 
 ---
 
-## Different types of denials
+## Handling different types of denials
 
-The `Deny()` function can provide additional data about the reason of the denial, which can further be used to customize the behavior of `onUnauthorized`. See the following example.
+The `Deny()` function can provide additional data about the reason of the denial. This data can then be used anywhere you have the denied decision, such as in the global `onUnauthorizedAssert` handler as shown below.
 
-```ts
+```ts ""UNAUTHENTICATED"" ""NOT_SUBSCRIBED"" "requiredTier"
 const Kilpi = createKilpi({
   // ...
   policies: {
@@ -140,12 +176,13 @@ const Kilpi = createKilpi({
   },
 
   // Customize behavior based on reason
-  async onUnauthorized(denial) {
+  async onUnauthorizedAssert(denial) {
     switch (denial.reason) {
       case "UNAUTHENTICATED":
         throw new HttpRedirect("/sign-in");
       case "NOT_SUBSCRIBED":
-        throw new HttpRedirect(`/subscribe?tier=${denial.metadata?.requiredTier}`);
+        const tier = denial.metadata?.requiredTier;
+        throw new HttpRedirect(`/subscribe?tier=${tier}`);
       default:
         throw new HttpForbiddenError();
     }

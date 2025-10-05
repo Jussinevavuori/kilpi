@@ -24,7 +24,7 @@ export type KilpiClientPlugin<TCore extends AnyKilpiCore, TClientExtension exten
  * @usage
  * ```typescript
  * function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
- *   return createKilpiPlugin((Client: KilpiClient<T>) => {
+ *   return createKilpiClientPlugin((Client: KilpiClient<T>) => {
  *     return {
  *       extendClient() {
  *         return {

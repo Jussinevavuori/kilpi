@@ -5,49 +5,35 @@ description: Install Kilpi for Hono
 
 <Steps>
 <Step>
-### Install & setup Kilpi
+### Install and setup Kilpi
 
 Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
 
 ```ts
-export const Kilpi = createKilpi({
-  getSubject,
-  policies,
-  ...
-})
+export const Kilpi = createKilpi({ ... })
 ```
+
 </Step>
 
 <Step>
-### [Provide scope](/docs/concepts/scope)
+### Handle unauthorized errors from `.assert()`
 
-To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+The `.assert()` method throws an error when authorization is denied.
 
-```ts
-app.use(async (_, next) => {
-  await Kilpi.runInScope(async () => {
-    await next();
-  })
-})
-```
-</Step>
-
-<Step>
-### Handle unauthorized errors
-
-Since Hono supports throwing HTTP exceptions, handling errors is straightforward with a middleware.
+Since Hono supports throwing HTTP exceptions, handling unauthorized exceptions is easiest with a global `onUnauthorizedAssert` handler.
 
 ```diff lang="ts"
-  app.use(async (_, next) => {
-+   Kilpi.onUnauthorized(({ message }) => {
-+     throw new HTTPException(403, { message })
-+   })
-
-    await Kilpi.runInScope(async () => {
-      await next();
-    })
+  export const Kilpi = createKilpi({
+    // ...
++   async onUnauthorizedAssert(decision)  {
++     // Optionally customize behavior based on the decision
++     switch (decision.reason) { ... }
++
++     // By default, throw a HTTP 403 Forbidden exception
++     throw new HTTPException(403, { message: decision.message });
++   }
   })
 ```
+
 </Step>
 </Steps>
-

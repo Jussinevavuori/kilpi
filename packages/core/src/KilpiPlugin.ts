@@ -20,8 +20,10 @@ export type KilpiPlugin<TCore extends AnyKilpiCore, TCoreExtension extends objec
  *     Kilpi.$hooks.onAfterAuthorization(() => count++);
  *
  *     return {
- *       extendCoreApi: {
- *         $logCount: () => console.log(opts.message.replace("%", count.toString()));
+ *       extendCoreApi() {
+ *         return {
+ *           $logCount: () => console.log(opts.message.replace("%", count.toString()));
+ *         }
  *       }
  *     };
  *   })

@@ -29,6 +29,11 @@ export type KilpiOnAfterAuthorizationEvent<T extends AnyKilpiCore> = {
    * The object being authorized
    */
   object?: unknown;
+
+  /**
+   * The context used to resolve the subject (if provided)
+   */
+  context?: T["$$infer"]["context"];
 };
 
 /**
@@ -46,7 +51,7 @@ export type KilpiOnSubjectResolvedEvent<T extends AnyKilpiCore> = {
   fromCache: boolean;
 
   /**
-   * The context used to resolve the subject
+   * The context used to resolve the subject (if provided)
    */
   context?: T["$$infer"]["context"];
 };
@@ -56,7 +61,7 @@ export type KilpiOnSubjectResolvedEvent<T extends AnyKilpiCore> = {
  */
 export type KilpiOnSubjectRequestFromCacheEvent<T extends AnyKilpiCore> = {
   /**
-   * The context used to resolve the subject
+   * The context used to resolve the subject (if provided)
    */
   context?: T["$$infer"]["context"];
 };

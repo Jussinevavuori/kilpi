@@ -19,7 +19,7 @@ export function AuditPlugin<T extends AnyKilpiCore>(
      * Optionally filter events. If provided, only events that pass the filter will be sent to the
      * flush strategy.
      */
-    filterEvents?: (event: KilpiAuditEvent<T>) => boolean;
+    shouldIncludeEvent?: (event: KilpiAuditEvent<T>) => boolean;
 
     /**
      * Optionally disable initially. Can be re-enabled with `Kilpi.$audit.enable()` and
@@ -54,8 +54,8 @@ export function AuditPlugin<T extends AnyKilpiCore>(
           timestamp: Date.now(),
         };
 
-        // Omit audit events based on options.filterEvents
-        if (options.filterEvents && options.filterEvents(auditEvent) === false) {
+        // Omit audit events based on options.shouldIncludeEvent
+        if (options.shouldIncludeEvent && options.shouldIncludeEvent(auditEvent) === false) {
           return;
         }
 

@@ -1,4 +1,4 @@
-import { KilpiError } from "./error";
+import { KilpiError } from "./KilpiError";
 import { SEPARATOR, type GetPolicyByAction, type Policyset, type PolicysetActions } from "./types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

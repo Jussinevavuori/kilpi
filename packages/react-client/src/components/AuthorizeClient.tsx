@@ -64,7 +64,7 @@ export type AuthorizeClientProps<
  * Factory function for the <AuthorizeClient /> component.
  */
 export function create_AuthorizeClient<TClient extends AnyKilpiClient>(client: TClient) {
-  void client; // Unused but might be used in future
+  void client;
 
   /**
    * Implement Authorize_Client

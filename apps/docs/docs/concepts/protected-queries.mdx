@@ -4,462 +4,138 @@ sidebar:
   order: 5
 ---
 
-Kilpi offers an optional but powerful `Kilpi.query` API for creating **protected queries** for co-locating your queries with the authorization logic.
+You can protect queries in any way you'd like, however Kilpi offers **protected queries** created using `Kilpi.$query` as a solution to co-locate your queries and authorization logic.
 
 <Aside type="tip">
-  Especially when using throw-based authorization APIs, such as `Kilpi.authorize` with custom error
-  handling, protected queries can become very powerful, as you'll see later on this page.
+
+Co-locating queries and authorization logic maintaining and developing applications easier. However, queries are easier to e.g. dedupe or cache if authorization logic is separate from the query function (the query should be kept **pure** — authorization logic is impure).
+
 </Aside>
 
-## What is a protected query and why?
+## Defining a protected query
 
-A protected query is a way to co-locate your queries with the authorization logic. It consists of a **query function** (often a pure function) and a **protector function**.
-
-When calling a protected query, the query function is called first, and the result is passed through the protector function. The protector is responsible for authorizing the data. On unauthorized, it may throw, return `null` or return partial data.
-
-### Example query
-
-Below is an example protected query to retrieve a document by ID, which in this case throws when unauthorized.
+To define a protected query, pass the query function as the first argument to `Kilpi.$query`. As the second argument, provide an object with the `authorize` method. The `authorize` function receives the `input` to the query as well as its `output` and the current `subject`. It then returns the output to which the subject is authorized.
 
 ```ts
-const getDocument = Kilpi.query(
+const getPost = Kilpi.$query(
+  // Query function
   async (id: string) => {
-    return await db.documents.get(id);
+    return await db.posts.findById(id);
   },
+  // Separate but co-located authorization which runs after the query
   {
-    async protector({ input: [id], output: document, subject }) {
-      if (document) await Kilpi.authorize("documents:read", document);
-      return document;
-    },
-  },
-);
-
-await getDocument.protect("123"); // Call with protector
-await getDocument.unsafe("123"); // Or skip the protector
-await getDocument("123"); // Type error (to enforce communicating intent)
-```
-
-### Motivation for proteted queries
-
-In many applications, queries and authorization logic are separated, and every time a query is called, you have to authorize the caller to the data (see example below).
-
-This often leads to duplicated and hard to maintain authorization logic and handling of unauthorized casess, and you may forget to authorize the data or update the logic when requirements change.
-
-```ts {7-9}
-export async function getDocument(id: string) {
-  return await db.documents.get(id);
-}
-
-export default async function DocumentPage({ id }) {
-  const document = await getDocument(id);
-  if (!(await Kilpi.isAuthorized("documents:read", document))) {
-    redirect("/login");
-  }
-  return <Document document={document} />;
-}
-```
-
-To reduce this duplication and make the code more maintainable, you may attempt co-locating your queries with the authorization logic as follows.
-
-```ts
-export async function getDocument(id: string) {
-  const document = await db.documents.get(id);
-  return await Kilpi.isAuthorized("documents:read", document)
-    ? document
-    : null;
-}
-
-export default async function DocumentPage({ id }) {
-  const document = await getDocument(id);
-  if (!document) redirect("/login");
-  return <Document document={document} />;
-}
-```
-
-However, this approach has some downsides that `Kilpi.query` can solve.
-
-<Collapsible title="1. Reusability: You can't call getDocument() without authorization">
-
-In some contexts (e.g. a cron job), you may want to call the query without authorization. Instead of e.g. baking in custom `skipAuthorization` parameters, `Kilpi.query` allows you to call the query without authorization with `.unsafe()`.
-
-```ts
-export async function createDocumentPdfCronJob({ id }) {
-  const document = await getDocument.unsafe(id);
-  const pdf = await createPdf(document);
-  await savePdf(pdf);
-}
-```
-
-</Collapsible>
-
-<Collapsible title="2. Purity: The function cant't be made pure">
-
-In some cases you want your functions to be pure (for example with Next.js pure functions can be cached with `"use cache"`). Running authorization logic, which depends on the caller makes your functions inherently impure.
-
-With `Kilpi.query`, you can make the inner function pure (and e.g. cacheable).
-
-```diff lang="ts"
-  const getDocument = Kilpi.query(
-    async (id: string) => {
-+     "use cache"; // <-- Works because the function is pure
-      return await db.documents.get(id);
-    },
-    { async protector({ ... }) { ...} },
-  );
-```
-
-</Collapsible>
-
-<Collapsible title="3. Communicating intent: Authorization is not made explicit" >
-
-When collaborating with other developers, communicating intent in your code is important. For example, guess whether the following endpoint is safe?
-
-```ts {2}
-app.get("/documents/:id", async (req, res) => {
-  const document = await getDocument(req.params.id);
-  if (!document) return res.status(404).send("Not found");
-  return res.send(document);
-});
-```
-
-Protected queries enforce explicilty communicating your intent by selecting either `.protect()` or `.unsafe()` when calling the query. This makes it very clear to yourself and other developers that the following query is safe.
-
-```diff lang="ts"
-  app.get("/documents/:id", async (req, res) => {
--   const document = await getDocument(req.params.id);
-+   const document = await getDocument.protect(req.params.id);
-    if (!document) return res.status(404).send("Not found");
-    return res.send(document);
-  });
-```
-
-And even more so with `.unsafe()`, which immediately signals to others that the data from the query should not be exposed to users.
-
-```ts {2}
-export async function backupDocumentDataCronJob(id: string) {
-  const document = await getDocument.unsafe(id);
-  await backup(document);
-}
-```
-
-</Collapsible>
-
-<Collapsible title="4. Duplication: Unauthorized logic is always duplicated">
-
-In all these examples, you have to duplicate the unauthorized logic every time. When a page starts to have multiple queries and authorizations scattered across multiple functions or components, this can lead to a lot of duplicated code.
-
-```ts {3,6,13}
-export default async function DocumentPage({ id }) {
-  const isAuthed = await isAuthenticated();
-  if (!isAuthed) redirect("/login");
-
-  const document = await getDocument(id);
-  if (!document) redirect("/login");
-
-  return <Document document={document} />;
-}
-
-function Document({ document, comments }) {
-  const comments = await getComments(document.id);
-  if (!comments) redirect("/login");
-
-  return (...);
-}
-```
-
-Especially when using protectors that throw on unauthorized (using e.g. `Kilpi.authorize` or `Kilpi.unauthorized`) you can write your unauthorized logic once, either as a default error handler or a request level error handler. This allows for simpler code with less duplication.
-
-```ts
-// Option 1. Use default error handler
-export const Kilpi = await createKilpi({
-  // ...
-  settings: {
-    defaultOnUnauthorized(error) {
-      redirect(`/login?message=${error.message}`);
-    },
-  },
-});
-
-export default async function DocumentPage({ id }) {
-  // Option 2. Use request level error handler
-  Kilpi.onUnauthorized((error) => redirect(`/login?message=${error.message}`));
-
-  // No need for unauthorized logic
-  await Kilpi.authorize("authenticated");
-  const document = await getDocument.protect(id);
-
-  return <Document document={document} />;
-}
-
-function Document({ document, comments }) {
-  // No need for unauthorized logic even in nested functions
-  const comments = await getComments.protect(document.id);
-
-  return (...);
-}
-```
-
-</Collapsible>
-
----
-
-## Defining protected queries
-
-Defining a protected query is done by wrapping an existing query with `Kilpi.query`.
-
-<Steps>
-<Step>
-
-### Wrap a query function with `Kilpi.query`
-
-Create a protected query (without a protector) by wrapping the query function with `Kilpi.query`. The query can be any asynchronous function.
-
-```ts
-export const getDocument = Kilpi.query(
-  // Any asynchronous function
-  async (id: string) => await db.documents.get(id),
-);
-```
-
-</Step>
-
-<Step>
-
-### Create a protector
-
-As the second argument, provide an object with a `protector` function. It is an asynchronous function that receives the input, output and subject as arguments and returns the authorized output.
-
-Read [designing protectors](#defining-protectors) below for more information on how to define protectors.
-
-```ts
-export const getDocument = Kilpi.query(
-  async (id: string) => await db.documents.get(id),
-  // Add a protector
-  {
-    async protector({
-      input: [id], // The input to the query function
-      output: document, // The output of the query function
-      subject, // The current subject (user)
-    }) {
-      // Example: Throw on unauthorized
-      if (output) await Kilpi.authorize("documents:read", output);
-      return output;
+    async authorize({ input: [id], output: post, subject }) {
+      if (!post) return null;
+      const { granted } = await Kilpi.posts.read(post).authorize();
+      if (!granted) return null;
+      return post;
     },
   },
 );
 ```
 
-</Step>
-
-<Step>
-
-### Call the protected query
-
-Call the protected query with `.protect()` to run the query function and pass the result through the protector.
+You call the protected query using the `authorized` method as follows.
 
 ```ts
-const document = await getDocument.protect("123");
+// Post or null
+const post = await getPost.authorized("123");
 ```
 
-In special cases, you may optionally skip the protector with `.unsafe()` and call the inner query function directly.
+<Aside type="note">
 
-```ts
-const document = await getDocument.unsafe("123");
-```
-
-</Step>
-
-</Steps>
-
----
-
-## Designing protectors
-
-There are several ways to design your protectors, depending on your use case.
-
-<Steps>
-
-<Step>
-
-### Throw on unauthorized
-
-<Aside>
-
-Throwing on unauthorized requires either a [scope](/docs/concepts/scopes) with an error handler set via `Kilpi.onUnauthorized` or a global default error handler passed to `createKilpi` as `settings.defaultOnUnauthorized`.
+Instead of calling `getPost` directly, the `.authorized(...)` API makes the developer's intent to others (and future you) much clearer. It is immediately clear to the reader that `post` is safe to reveal to the user.
 
 </Aside>
 
-The most powerful method is to throw on unauthorized. This allows you to define your error handlers once, either as a default error handler or as request level error handlers. [Read more about handling unauthorized errors](/docs/concepts/authorizing#handling-unauthorized-errors).
+<Aside type="tip">
+
+You can bypass the `authorize` function by calling `.unauthorized(...)`.
 
 ```ts
-Kilpi.query(..., {
-  async protector({ input, output: doc, subject }) {
-    if (doc && await Kilpi.isAuthorized("docs:read", doc)) {
-      return doc;
-    }
-    return null;
-  }
-})
+const post = await getPost.unauthorized("123");
 ```
 
-If not using `Kilpi.authorize`, you can manually trigger the error handlers using `Kilpi.unauthorized`.
+This is useful when you e.g. need to query data which will not be exposed to the user or there is no subject, such as with cron jobs.
 
-```ts {4}
-Kilpi.query(..., {
-  async protector({ input, output: doc, subject }) {
-    if (!doc) return null;
-    if (doc.userId !== subject.id) Kilpi.unauthorized();
-    return doc;
-  }
-})
-```
+Again, this clearly communicates developer intent.
 
-This enables you to write your unauthorized logic once (globally or per request), and call your queries from your functions without having to worry about unauthorized logic.
+</Aside>
 
-```tsx
-export async function Page({ id }) {
-  // Specify request level error handler (or use global default error handler)
-  Kilpi.onUnauthorized((error) => redirect(`/login?message=${error.message}`));
+<Collapsible title="Visualization of how Kilpi.$query works">
 
-  // No need to handle unauthorized errors
-  const document = await getDocument.protect(id);
-  const comments = await getComments.protect(document.id);
+The following pseudocode might make it easier to conceptualize how the `.authorized()` and `.unauthorized()` APIs work.
 
-  // Children can also call .protect() without handling unauthorized cases
-  return <Document document={document} />;
+```ts
+function unauthorized(input) {
+  return query(input);
+}
+
+function authorized(input) {
+  const output = query(input);
+  const subject = getSubject();
+  return authorize({ input, subject, output });
 }
 ```
 
-</Step>
+</Collapsible>
 
-<Step>
+## Redacting data
 
-### Return null on unauthorized
-
-If you are unable to throw on unauthorized, you can return `null` (or other value) to signal unauthorized and handle it when calling the query.
+A common issue with authorization is redacting data in a type-safe way. This is easy with the `Kilpi.$query` API.
 
 ```ts
-Kilpi.query(..., {
-  async protector({ input, output: doc, subject }) {
-    if (doc && await Kilpi.isAuthorized("docs:read", doc)) {
-      return doc;
-    }
-    return null;
-  }
-})
-```
-
-You then have to handle the unauthorized case when calling the query.
-
-```tsx
-export async function Page({ id }) {
-  const document = await getDocument.protect(id);
-  if (!document) redirect("/documents");
-  return <Document document={document} />;
-}
-```
-
-</Step>
-
-<Step>
-
-### Redact data
-
-In special cases, you may also want to return redacted (or filtered) data. You can return partial data from the protector. This pattern enables you to get easy typesafety for your redacted data.
-
-```ts
-const getUser = Kilpi.query(
-  // Get full user details
-  async (id: string) => await db.users.get(id),
+const getUserDetails = Kilpi.$query(
+  async (userId: string) => {
+    return await db.users.findById(userId);
+  },
   {
-    async protector({ input: [id], output: user, subject }) {
+    async authorize({ output: user }) {
       if (!user) return null;
+      const { granted } = await Kilpi.users.readPrivate(user).authorize();
 
-      // Authorized to full user data
-      if (await Kilpi.isAuthorized("users:read", user)) return user;
+      // Unauthorized: Only return public fields
+      if (!granted) return { userId: user.id, name: user.name };
 
-      // Only show public data
-      return { id: user.id, name: user.name };
+      // Authorized: Return also private fields
+      return { userId: user.id, name: user.name, email: user.email };
     },
   },
 );
+
+// TS knows email is optional, as it may be redacted away
+const userDetails = await getUserDetails.authorized(userId);
+userDetails.email; // string | undefined
 ```
 
-</Step>
+## Throwing on unauthorized
 
-<Step>
+Commonly, instead of `return null` you want to throw and stop execution on unauthorized. Using the `assert()` API (or throwing your own exceptions) works very well with protected queries.
 
-### Filter data
-
-In addition to returning partial data, you can also return filtered data either manually or by using `Kilpi.filter` to filter a set of objects to only the ones passing a specific policy.
-
-1. Define a policy that accepts an object.
-
-   ```ts "doc: Document"
-   docs: {
-     read(user, doc: Document) {
-       return user.id === doc.userId ? grant(user) : deny();
-     },
-   },
-   ```
-
-2. Call `Kilpi.filter` to get only the objects that pass the policy for the current subject.
-
-   ```ts
-   const docs = await listAllDocuments();
-   const authorizedDocs = await Kilpi.filter("docs:read", docs);
-   ```
-
-3. Apply `Kilpi.filter` in your protector to filter the data to only the authorized entries.
-
-   ```ts
-   Kilpi.query(..., {
-     async protector({ output }) {
-       return Kilpi.filter("docs:read", output);
-     },
-   });
-   ```
-
-<Aside type="warning">
-  
-  Do not rely on your protector to filter the data to authorized entries only for performance
-  reasons. Instead, your query should always attempt to return only the required data.
-
-For example, this is **very** inefficient.
-
-```ts
-export const listDocuments = Kilpi.query(
-  // Fetch all documents
-  async () => await db.documents.list(),
-  {
-    // Return only authorized documents
-    async protector({ output: documents, subject }) {
-      return Kilpi.filter("documents:read", documents);
-    },
-  },
-);
+```ts "assert()"
+const getPost = Kilpi.$query(..., {
+  async authorize({ output: post }) {
+    // Throws on unauthorized
+    if (post) await Kilpi.posts.read(post).authorize().assert();
+    return posts;
+  }
+});
 ```
 
-To improve performance, you should always try to return only the relevant data in the first place. In the best case scenario, your query is efficient enough that it doesn't end up filtering any data out.
+<Collapsible title="Why throw on unauthorized?">
 
-```ts
-export const listDocuments = Kilpi.query(
-  // Fetch only user's documents
-  async (userId: string) =>
-    await db.documents.list({
-      where: { userId: userId },
-    }),
-  {
-    // Ensure authorized to the documents
-    async protector({ output: documents, subject }) {
-      return Kilpi.filter("documents:read", documents);
-    },
-  },
-);
+If you have setup `onUnauthorizedAssert` handlers, throwing on unauthorized can remove a lot of boilerplate. See this example of a Next.js page using protected queries and throwing. Note how little `if (...) redirect(...)` authorization logic is required.
+
+```ts ".authorized(id)" {4}
+export default async function PostPage(props: PageProps<"/posts/[id]">) {
+  const { id } = await props.params;
+
+  const { subject } = await Kilpi.authed().authorize().assert();
+
+  const post = await getPost.authorized(id);
+  const comments = await listComments.authorized(id);
+
+  return (...);
+}
 ```
 
-</Aside>
-
-</Step>
-
-</Steps>
+</Collapsible>
