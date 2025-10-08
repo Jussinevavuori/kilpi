@@ -9,6 +9,8 @@ const blogs = await getCollection("blog", ({ data }) => {
   return import.meta.env.PROD ? data.draft !== true : true;
 });
 blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const shownBlogs = blogs.filter((_) => !_.data.archivedAt);
 ---
 
 <Layout>
@@ -24,9 +26,21 @@ blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
     </div>
   </Section>
 
-  <Section class="py-0" style={{ maxWidth: "660px" }}>
-    {blogs.map((blog) => <BlogPost blog={blog} />)}
-  </Section>
+  {
+    shownBlogs.length === 0 ? (
+      <Section class="py-0" style={{ maxWidth: "660px" }}>
+        <div class="p-16 rounded border border-dashed text-black/50 text-center">
+          No articles to show
+        </div>{" "}
+      </Section>
+    ) : (
+      <Section class="py-0" style={{ maxWidth: "660px" }}>
+        {shownBlogs.map((blog) => (
+          <BlogPost blog={blog} />
+        ))}
+      </Section>
+    )
+  }
 
   <div class="h-32"></div>
 </Layout>

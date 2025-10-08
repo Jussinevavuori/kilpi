@@ -37,7 +37,8 @@
 		"@testing-library/react-hooks": "^8.0.1",
 		"@testing-library/user-event": "^14.6.1",
 		"@types/react": "^19.0.0",
-		"@vitejs/plugin-react": "^5.0.4"
+		"@vitejs/plugin-react": "^5.0.4",
+		"react-dom": "19"
 	},
 	"author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
 	"homepage": "https://kilpi.vercel.app",

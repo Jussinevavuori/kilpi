@@ -95,9 +95,7 @@ describe("<AuthorizeClient />", () => {
 
     render(
       <AuthorizeClient policy={Client.always()}>
-        {(q) => (
-          <p data-testid={"subject-" + (q.decision?.granted ? q.decision.subject.id : "0")} />
-        )}
+        {(q) => <p data-testid={"subject-" + q.decision.subject.id} />}
       </AuthorizeClient>,
     );
 

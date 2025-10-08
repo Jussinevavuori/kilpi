@@ -1,8 +1,7 @@
 import type { AnyKilpiClient, KilpiClientPolicy } from "@kilpi/client";
 import type { PolicysetActions } from "@kilpi/core";
 import type { UseAuthorizeReturn } from "../hooks/useAuthorize";
-import "../type.extension.ts";
-import type { KilpiClientPolicyExtension_ReactClientPlugin } from "../type.extension.ts";
+import type { KilpiClientPolicyExtension_ReactClientPlugin } from "../type.extension";
 
 /**
  * The <Authorize /> component renders either children, Unauthorized or Pending
@@ -28,7 +27,12 @@ export type AuthorizeClientProps<
    */
   children?:
     | React.ReactNode
-    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+    | ((
+        query: Extract<
+          UseAuthorizeReturn<TClient, TPolicy["$action"]>,
+          { status: "success"; granted: true }
+        >,
+      ) => React.ReactNode);
 
   /**
    * Children that are rendered when the caller is not authorized. May be a dynamic function
@@ -36,28 +40,39 @@ export type AuthorizeClientProps<
    */
   Unauthorized?:
     | React.ReactNode
-    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+    | ((
+        query: Extract<
+          UseAuthorizeReturn<TClient, TPolicy["$action"]>,
+          { status: "success"; granted: false }
+        >,
+      ) => React.ReactNode);
 
   /**
    * Children that are rendered while the authorization decision is pending.
    */
   Pending?:
     | React.ReactNode
-    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+    | ((
+        query: Extract<UseAuthorizeReturn<TClient, TPolicy["$action"]>, { status: "pending" }>,
+      ) => React.ReactNode);
 
   /**
    * Children that are rendered while the authorization decision is idle (disabled).
    */
   Idle?:
     | React.ReactNode
-    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+    | ((
+        query: Extract<UseAuthorizeReturn<TClient, TPolicy["$action"]>, { status: "idle" }>,
+      ) => React.ReactNode);
 
   /**
    * Children that are rendered while the authorization decision is error.
    */
   Error?:
     | React.ReactNode
-    | ((query: UseAuthorizeReturn<TClient, TPolicy["$action"]>) => React.ReactNode);
+    | ((
+        query: Extract<UseAuthorizeReturn<TClient, TPolicy["$action"]>, { status: "error" }>,
+      ) => React.ReactNode);
 };
 
 /**
@@ -85,6 +100,7 @@ export function create_AuthorizeClient<TClient extends AnyKilpiClient>(client: T
     // Fetch using useAuthorize
     const query = policy.useAuthorize({ isDisabled });
 
+    // Render based on query status
     switch (query.status) {
       // Handle pending, idle and error states with custom functions
       case "pending": {
@@ -100,7 +116,7 @@ export function create_AuthorizeClient<TClient extends AnyKilpiClient>(client: T
       // Success: Decide component to render based on granted
       case "success": {
         // Granted: Render authorized children
-        if (query.decision?.granted) {
+        if (query.granted) {
           return typeof children === "function" ? children(query) : (children ?? null);
         }
 
