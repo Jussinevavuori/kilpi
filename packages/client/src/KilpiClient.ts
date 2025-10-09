@@ -1,6 +1,7 @@
 import type { AnyKilpiCore } from "@kilpi/core";
 import { parse as superJsonParse } from "superjson";
 import { z } from "zod";
+import { KilpiClientCache } from "./KilpiClientCache";
 import { KilpiClientHooks } from "./KilpiClientHooks";
 import type { KilpiClientOptions, KilpiClientRequest } from "./types";
 import { AbortSignalAll } from "./utils/AbortSignalAll";
@@ -47,6 +48,11 @@ export class KilpiClient<T extends AnyKilpiCore> {
   private [KilpiClientSymbol_Batcher]: Batcher<KilpiClientRequest>;
 
   /**
+   * Cache utility
+   */
+  public $cache: KilpiClientCache<typeof this>;
+
+  /**
    * Hooks API. Used to register and unregister Kilpi hooks.
    *
    * ```ts
@@ -72,6 +78,9 @@ export class KilpiClient<T extends AnyKilpiCore> {
   constructor(options: KilpiClientOptions) {
     // Initialize hooks
     this.$hooks = new KilpiClientHooks();
+
+    // Initialize cache
+    this.$cache = new KilpiClientCache(this.$hooks);
 
     // Setup request handler strategy with factory
     this[KilpiClientSymbol_HandleRequestStrategy] = createHandleRequestStrategy(options.connect);

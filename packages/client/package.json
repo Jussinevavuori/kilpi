@@ -30,6 +30,7 @@
     "dev": "vitest watch"
   },
   "dependencies": {
+    "fast-json-stable-stringify": "^2.1.0",
     "nanoid": "^5.1.5",
     "superjson": "^2.2.2",
     "zod": "^3.24.1"

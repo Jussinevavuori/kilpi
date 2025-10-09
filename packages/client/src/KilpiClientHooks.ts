@@ -13,6 +13,11 @@ import type { MaybePromise } from "./types";
  */
 export type KilpiOnBeforeSendRequestEvent<T extends AnyKilpiClient> = {};
 
+/**
+ * On cache invalidate event
+ */
+export type KilpiOnCacheInvalidateEvent<T extends AnyKilpiClient> = {};
+
 // =================================================================================================
 // HOOK TYPES fn: (Event => Return Type)
 // =================================================================================================
@@ -24,6 +29,13 @@ export type KilpiOnBeforeSendRequestEvent<T extends AnyKilpiClient> = {};
 export type KilpiOnBeforeSendRequestHook<T extends AnyKilpiClient> = (
   event: KilpiOnBeforeSendRequestEvent<T>,
 ) => MaybePromise<void | undefined | Partial<{ headers: Record<string, string> }>>;
+
+/**
+ * Type of hook which is called when the cache is invalidated.
+ */
+export type KilpiOnCacheInvalidateHook<T extends AnyKilpiClient> = (
+  event: KilpiOnCacheInvalidateEvent<T>,
+) => MaybePromise<void | undefined>;
 
 // =================================================================================================
 // KILPI HOOKS CLASS
@@ -38,12 +50,14 @@ export class KilpiClientHooks<T extends AnyKilpiClient> {
    */
   public registeredHooks: {
     onBeforeSendRequest: Set<KilpiOnBeforeSendRequestHook<T>>;
+    onCacheInvalidate: Set<KilpiOnCacheInvalidateHook<T>>;
   };
 
   // Initialize with empty hooks.
   constructor() {
     this.registeredHooks = {
       onBeforeSendRequest: new Set<KilpiOnBeforeSendRequestHook<T>>(),
+      onCacheInvalidate: new Set<KilpiOnCacheInvalidateHook<T>>(),
     };
   }
 
@@ -53,6 +67,14 @@ export class KilpiClientHooks<T extends AnyKilpiClient> {
   public onBeforeSendRequest(hook: KilpiOnBeforeSendRequestHook<T>) {
     this.registeredHooks.onBeforeSendRequest.add(hook);
     return () => this.registeredHooks.onBeforeSendRequest.delete(hook);
+  }
+
+  /**
+   * Register a new `onCacheInvalidate` hook. Returns an unsubscribe function.
+   */
+  public onCacheInvalidate(hook: KilpiOnCacheInvalidateHook<T>) {
+    this.registeredHooks.onCacheInvalidate.add(hook);
+    return () => this.registeredHooks.onCacheInvalidate.delete(hook);
   }
 
   /**

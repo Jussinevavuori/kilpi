@@ -196,6 +196,9 @@ importers:
 
   packages/client:
     dependencies:
+      fast-json-stable-stringify:
+        specifier: ^2.1.0
+        version: 2.1.0
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5
