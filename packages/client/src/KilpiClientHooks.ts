@@ -66,7 +66,7 @@ export class KilpiClientHooks<T extends AnyKilpiClient> {
    */
   public onBeforeSendRequest(hook: KilpiOnBeforeSendRequestHook<T>) {
     this.registeredHooks.onBeforeSendRequest.add(hook);
-    return () => this.registeredHooks.onBeforeSendRequest.delete(hook);
+    return () => void this.registeredHooks.onBeforeSendRequest.delete(hook);
   }
 
   /**
@@ -74,7 +74,7 @@ export class KilpiClientHooks<T extends AnyKilpiClient> {
    */
   public onCacheInvalidate(hook: KilpiOnCacheInvalidateHook<T>) {
     this.registeredHooks.onCacheInvalidate.add(hook);
-    return () => this.registeredHooks.onCacheInvalidate.delete(hook);
+    return () => void this.registeredHooks.onCacheInvalidate.delete(hook);
   }
 
   /**

@@ -96,6 +96,15 @@ export function create_useAuthorize<
     // Get abort signal that aborts on unmount
     const signalRef = useUnmountAbortSignalRef();
 
+    // Reset state on cache invalidate, automatically triggers re-fetch (unless disabled)
+    useEffect(() => {
+      return Client.$hooks.onCacheInvalidate(() => {
+        setStatus("idle");
+        setError(null);
+        setDecision(null);
+      });
+    }, []);
+
     // Run fetch
     useEffect(() => {
       // If disabled, reset to initial idle state
