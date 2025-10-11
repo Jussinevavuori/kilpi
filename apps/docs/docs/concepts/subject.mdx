@@ -134,6 +134,16 @@ export const Kilpi = createKilpi({
 
 ---
 
+## Accessing the subject
+
+To access the subject, you can get it from the result of `authorize()` when the decision is granted (or when using `.assert()`) **or by using the `Kilpi.$getSubject()` utility**.
+
+```ts
+const subject = await Kilpi.$getSubject();
+```
+
+---
+
 ## Performance considerations and caching / deduping
 
 Kilpi calls `getSubject` for you on every single `authorize()` call. Especially, if your `getSubject` is an expensive or slow function, you should consider caching it for each request (deduplicating).
