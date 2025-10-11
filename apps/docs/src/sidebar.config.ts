@@ -27,4 +27,8 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     id: "advanced",
     name: "Advanced",
   },
+  {
+    id: "upgrade",
+    name: "Upgrading",
+  },
 ];
