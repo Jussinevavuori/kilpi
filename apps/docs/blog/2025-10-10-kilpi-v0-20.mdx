@@ -1,13 +1,13 @@
 ---
-title: Kilpi 0.20 and the new Kilpi API
+title: Kilpi 1.0 and the new Kilpi API
 author: Jussi Nevavuori
 authorUrl: https://jussinevavuori.com
 authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
 date: 2025-03-24
-summary: Kilpi 0.20 brings with it massive improvements in developer experience and simplifies integrating Kilpi.
+summary: Kilpi 1.0 brings with it massive improvements in developer experience and simplifies integrating Kilpi.
 ---
 
-After months of work on redesigning and simplifying Kilpi and its documentation, I am proud to announce that Kilpi 0.20 has been released.
+After months of work on redesigning and simplifying Kilpi and its documentation, I am proud to announce that Kilpi 1.0 has been released.
 
 The new version brings with it major overhauls in the API and feature set in order to make Kilpi even simpler to install and use. For this reason, it also introduces **major breaking changes**.
 
@@ -226,7 +226,7 @@ const { Authorize } = Kilpi.$createReactServerComponents();
 
 <Authorize policy={Kilpi.posts.edit(post)}>
   <PostEditForm post={post} />
-</Authorize>
+</Authorize>;
 ```
 
 It can additionally be provided the `Unauthorized` and `Pending` components.
@@ -252,7 +252,7 @@ const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
 
 <AuthorizeClient policy={KilpiClient.posts.edit(post)}>
   <PostEditForm post={post} />
-</AuthorizeClient>
+</AuthorizeClient>;
 ```
 
 Which supports `Unauthorized`, `Error`, `Pending` and `Idle` components, all of which can again be type-safe functions that accept the current `useAuthorize()` query as render props.
