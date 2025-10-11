@@ -53,16 +53,25 @@ export type AuthorizeClientProps<
   Pending?:
     | React.ReactNode
     | ((
-        query: Extract<UseAuthorizeReturn<TClient, TPolicy["$action"]>, { status: "pending" }>,
+        query: Extract<
+          UseAuthorizeReturn<TClient, TPolicy["$action"]>,
+          { status: "pending" | "idle" }
+        >,
       ) => React.ReactNode);
 
   /**
    * Children that are rendered while the authorization decision is idle (disabled).
+   *
+   * Unless idle is specifically overrided or set to `null`, will use the `Pending` component
+   * instead.
    */
   Idle?:
     | React.ReactNode
     | ((
-        query: Extract<UseAuthorizeReturn<TClient, TPolicy["$action"]>, { status: "idle" }>,
+        query: Extract<
+          UseAuthorizeReturn<TClient, TPolicy["$action"]>,
+          { status: "pending" | "idle" }
+        >,
       ) => React.ReactNode);
 
   /**
@@ -107,6 +116,11 @@ export function create_AuthorizeClient<TClient extends AnyKilpiClient>(client: T
         return typeof Pending === "function" ? Pending(query) : (Pending ?? null);
       }
       case "idle": {
+        // If Idle is not defined or explicitly set to null, fallback to Pending
+        if (Idle === undefined) {
+          return typeof Pending === "function" ? Pending(query) : (Pending ?? null);
+        }
+
         return typeof Idle === "function" ? Idle(query) : (Idle ?? null);
       }
       case "error": {

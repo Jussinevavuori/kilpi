@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# News App — Kilpi Next.js RSC Demo
 
-## Getting Started
+This is an example project on how to use Kilpi in a Next.js full-stack application.
 
-First, run the development server:
+## Setup
+
+Run the project using `bun run bootstrap` and visit `http://localhost:3000`. Requires [Bun](https://bun.sh/docs/docs/installation).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun run bootstrap
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will initialize `.env`, migrate and seed the local SQLite database at `demo-db.sqlite`, install all dependencies, then build and start the Next.js application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Description & features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project is a simple news application to demo basic authorization concepts and patterns with Kilpi.
 
-## Learn More
+- You can sign up & sign in with email and password.
+- All users can read published articles.
+- All authenticated users can post articles.
+- Admins and article authors can delete articles.
+- Article authors can publish or unpublish their articles.
+- For demo purposes, authenticated users can change their role on the fly.
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This example uses the following technologies.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Purpose        | Technology                                                                     |
+| -------------- | ------------------------------------------------------------------------------ |
+| Framework      | Next.js, React & RSC                                                           |
+| Authentication | [Better Auth](https://www.better-auth.com/)                                    |
+| Authorization  | [Kilpi](https://kilpi.vercel.app)                                              |
+| Database       | [Bun SQLite](https://bun.sh/docs/api/sqlite)                                   |
+| Server Actions | [next-safe-action](https://next-safe-action.dev/)                              |
+| UI             | [Shadcn/UI](https://ui.shadcn.com/) & [Tailwind CSS](https://tailwindcss.com/) |
+| Forms          | [React Hook Form](https://react-hook-form.com/)                                |
+| Validation     | [Zod](https://zod.dev)                                                         |

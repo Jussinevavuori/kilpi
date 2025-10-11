@@ -103,6 +103,11 @@ Additionally, you can provide optional unauthorized, pending, error and idle UIs
 </AuthorizeClient>
 ```
 
+<Aside>
+  If `Idle` is not provided or explicitly set to `null`, it will fallback to the
+  `Pending` component.
+</Aside>
+
 You can even use render props to access the query to render the authorized and unauthorized UIs or disable the query entirely.
 
 <Aside>
