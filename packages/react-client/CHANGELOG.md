@@ -1,5 +1,11 @@
 # @kilpi/react-client
 
+## 1.0.1
+
+### Patch Changes
+
+- 459a953: AuthorizeClient Idle component uses Pending unless defined or unll
+
 ## 1.0.0
 
 ### Major Changes
