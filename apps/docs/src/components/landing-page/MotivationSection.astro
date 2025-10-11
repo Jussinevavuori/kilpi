@@ -61,22 +61,26 @@ import Section from "@/components/layout/Section.astro";
     </p>
   </article>
   <div class="flex items-center gap-4">
-    <img
-      alt="Jussi Nevavuori"
-      src="https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg"
-      class="rounded-full size-16"
-    />
+    <a href="https://www.jussinevavuori.com/" target="_blank" rel="noopener noreferrer">
+      <img
+        alt="Jussi Nevavuori"
+        src="https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg"
+        class="rounded-full size-16"
+      />
+    </a>
 
     <div class="max-w-sm">
       <a
-        class="leading-tight text-xl font-bold underline text-foreground"
+        class="leading-tight text-xl font-bold hover:underline text-foreground"
         href="https://www.jussinevavuori.com/"
         target="_blank"
         rel="noopener noreferrer"
       >
         Jussi Nevavuori
       </a>
-      <p>Author of Kilpi, full-stack software developer & designer, entrepreneur & MSc. (Tech).</p>
+      <p class="text-muted-fg">
+        Author of Kilpi, full-stack software developer & designer, entrepreneur & MSc. (Tech).
+      </p>
     </div>
   </div>
 </Section>
