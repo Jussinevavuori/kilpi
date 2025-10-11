@@ -7,6 +7,6 @@ type Props = HTMLAttributes<"li">;
 const { class: className, ...props } = Astro.props;
 ---
 
-<li class={cn("space-y-2", className)} {...props}>
+<li class={cn("space-y-2 [&>ul]:mt-3 [&>ol]:mt-3", className)} {...props}>
   <slot />
 </li>

@@ -8,7 +8,9 @@ You can protect queries in any way you'd like, however Kilpi offers **protected 
 
 <Aside type="tip">
 
-Co-locating queries and authorization logic maintaining and developing applications easier. However, queries are easier to e.g. dedupe or cache if authorization logic is separate from the query function (the query should be kept **pure** — authorization logic is impure).
+Co-locating queries and authorization logic makes maintaining and developing applications easier.
+
+However, queries are easier to e.g. dedupe or cache if authorization logic is separate from the query function (the query should be kept **pure** — authorization logic is impure).
 
 </Aside>
 
@@ -116,7 +118,7 @@ const getPost = Kilpi.$query(..., {
   async authorize({ output: post }) {
     // Throws on unauthorized
     if (post) await Kilpi.posts.read(post).authorize().assert();
-    return posts;
+    return post;
   }
 });
 ```

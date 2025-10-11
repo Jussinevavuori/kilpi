@@ -50,7 +50,7 @@ You can provide additional configuration to `EndpointPlugin` to customize its be
 EndpointPlugin({
   secret: "...",
 
-  // Extract the `ctx` paremeter from the request for `getSubject`
+  // Extract the `ctx` parameter from the request for `getSubject`
   // if required.
   getContext(req) {
     return req;
@@ -89,7 +89,7 @@ import z from "zod";
 // Utility method you can call to fetch decisions from Kilpi. Supports
 // batching by sending multiple queries at once.
 export function callKilpiApiEndpoint(body: Array<{
-  type: "fetchDecision" // May support other types of requests in the future, e.g. fetchSUbject
+  type: "fetchDecision"; // May support other types of requests in the future, e.g. fetchSubject
   requestId: string; // Generate a unique ID for this item in the array to find the corresponding response
   action: string; // The action, e.g. "posts.edit"
   object: unknown; // The corresponding object, e.g. the post object
@@ -111,7 +111,7 @@ export function callKilpiApiEndpoint(body: Array<{
   const responseSchema =  z.object({
     // Used to match which request from the body array each
     // response item corresponds to.
-    requestId: z.string();
+    requestId: z.string(),
 
     // The actual response data for that request.
     data:  z.object({

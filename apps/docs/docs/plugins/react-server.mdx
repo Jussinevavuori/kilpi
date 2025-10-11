@@ -5,6 +5,8 @@ sidebar:
   label: React Server Plugin
 ---
 
+The **React Server Plugin** provides **authorization components** as well as other utilities such as automatic subject caching and per-page `onUnauthorizedAssert` handlers.
+
 ## Installation
 
 Install the plugin with your package manager of choice.
@@ -83,7 +85,7 @@ ReactServerPlugin({ disableSubjectCaching: true });
 
 ### The `<Authorize />` component
 
-The ReactServerPlugin provides the `<Authorize />` component to authorize and conditionally render your server-side UI.
+The `ReactServerPlugin` provides the `<Authorize />` component to authorize and conditionally render your server-side UI.
 
 ```ts
 const { Authorize } = Kilpi.$createReactServerComponents();
@@ -106,7 +108,7 @@ Additionally, you can provide optional unauthorized and pending (Suspense fallba
   Pending={<p>Loading...</p>}
   Unauthorized={<p>You are not allowed to delete this post</p>}
 >
-  <DeletePostForm post={post}>
+  <DeletePostForm post={post} />
 </Authorize>
 ```
 
@@ -140,7 +142,7 @@ export default async function PostPage(props: PageProps) {
   });
 
   // Either a protected query which calls .assert()
-  const post = await getPost.authorized();
+  const post = await getPost.authorized(id);
 
   // Or calling .assert() directly somewhere on the page
   await Kilpi.posts.read(post).authorize().assert();

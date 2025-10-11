@@ -39,6 +39,13 @@ export class KilpiClientPolicy<
   }
 
   /**
+   * The cache key for this policy + inputs.
+   */
+  public get $cacheKey() {
+    return [this.$action, this.#object];
+  }
+
+  /**
    * Fetch the authorization decision from the Kilpi server. Cached.
    */
   public async authorize(
@@ -48,7 +55,7 @@ export class KilpiClientPolicy<
       // Cache options
       {
         // Ensure unique cache key per action + inputs
-        key: [this.$action, this.#object],
+        key: this.$cacheKey,
         client: this.#client,
       },
       // Cached value resolver
@@ -128,6 +135,13 @@ export class KilpiClientPolicy<
         }
       },
     );
+  }
+
+  /**
+   * Allow fine-grained invalidation of the cache for this specific policy + inputs.
+   */
+  public invalidate() {
+    this.#client.$cache.invalidateKey(this.$cacheKey);
   }
 }
 

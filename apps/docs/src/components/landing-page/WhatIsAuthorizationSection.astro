@@ -1,0 +1,150 @@
+---
+import Section from "@/components/layout/Section.astro";
+import { Code } from "astro-expressive-code/components";
+import dedent from "dedent";
+---
+
+<Section id="what-is-authorization" class="py-64 flex flex-col gap-24">
+  <div class="space-y-4">
+    <h2 class="text-4xl sm:text-5xl sm:text-center font-bold">What is authorization?</h2>
+  </div>
+
+  <div class="flex flex-col lg:flex-row [&>div]:flex-1 gap-8">
+    <div>
+      <h3 class="text-muted-fg text-2xl font-bold tracking-tight">
+        <span class="size-2 -translate-y-1 rounded-full bg-accent inline-block mr-2 relative">
+          <span class="inset-0 absolute animate-ping rounded-full bg-accent"></span>
+        </span>
+        Identify
+      </h3>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Authentication</h2>
+      <hr class="my-6" />
+      <div class="space-y-6 text-lg opacity-80">
+        <p>
+          <strong>Authentication</strong>
+          <em>(not authorization)</em> is asking <strong>"Who are you?"</strong> to recognize and verify
+          the identity of the <strong>subject</strong>
+          <em>(i.e. user, service, AI agent, ...)</em>.
+        </p>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-muted-fg text-2xl font-bold tracking-tight">
+        <span class="size-2 -translate-y-1 rounded-full bg-accent inline-block mr-2 relative">
+          <span class="inset-0 absolute animate-ping rounded-full bg-accent"></span>
+        </span>
+        Ask
+      </h3>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Enforcement</h2>
+      <hr class="my-6" />
+      <div class="space-y-6 text-lg opacity-80">
+        <p>
+          <strong>Authorization</strong> and enforcement is asking a <strong>question</strong> before
+          proceeding, for example
+        </p>
+        <p class="flex flex-row items-center gap-1">
+          <span> Can </span>
+          <span class="inline-flex flex-col border px-1 bg-muted-bg rounded">
+            <span class="text-sm text-muted-fg font-mono">Subject</span>
+            <span class="font-semibold">User Alice</span>
+          </span>
+          <span class="inline-flex flex-col border px-1 bg-muted-bg rounded">
+            <span class="text-sm text-muted-fg font-mono">Action</span>
+            <span class="font-semibold">Delete</span>
+          </span>
+          <span> the </span>
+          <span class="inline-flex flex-col border px-1 bg-muted-bg rounded">
+            <span class="text-sm text-muted-fg font-mono">Object</span>
+            <span class="font-semibold">Post #7</span>
+          </span>
+          <span>?</span>
+        </p>
+      </div>
+    </div>
+    <div>
+      <h3 class="text-muted-fg text-2xl font-bold tracking-tight">
+        <span class="size-2 -translate-y-1 rounded-full bg-accent inline-block mr-2 relative">
+          <span class="inset-0 absolute animate-ping rounded-full bg-accent"></span>
+        </span>
+        Answer
+      </h3>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Policy</h2>
+      <hr class="my-6" />
+      <div class="space-y-6 text-lg opacity-80">
+        <p>
+          The <strong>answers</strong> to those questions are based on the <strong>policies</strong
+          >.
+        </p>
+        <div>
+          <p class="text-sm font-semibold">The delete post policy</p>
+          <p class="italic">
+            "A <strong>post</strong> can be deleted if the user is <strong>authenticated</strong>
+            and they are either an <strong>admin</strong> or the <strong>author</strong> of the post."
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex lg:flex-row flex-col justify-between gap-16">
+    <div class="space-y-12">
+      <h2 class="font-bold text-4xl flex-1">Kilpi is built on these concepts.</h2>
+      <div class="space-y-6">
+        <div class="space-y-1">
+          <p class="text-lg font-semibold">Authentication</p>
+          <p class="opacity-80">
+            Define your subject by fetching it from any authentication system.
+          </p>
+        </div>
+        <div class="space-y-1">
+          <p class="text-lg font-semibold">Policy</p>
+          <p class="opacity-80">
+            Define your policies in the simplest way possible — as TypeScript functions.
+          </p>
+        </div>
+        <div class="space-y-1">
+          <p class="text-lg font-semibold">Enforcement</p>
+          <p class="opacity-80">
+            The universal <code>.authorize()</code> method is all you need.
+          </p>
+        </div>
+      </div>
+      <div class="space-y-2">
+        <hr class="max-w-16" />
+        <p class="italic text-muted-fg text-sm">
+          And there's so much more to make this 10x more powerful! Just wait until you see the <code
+            >{"<Authorize />"}</code
+          > component for example.
+        </p>
+      </div>
+    </div>
+    <Code
+      lang="ts"
+      meta="{2,7,20}"
+      class="flex-1"
+      code={dedent`
+				export const Kilpi = createKilpi({
+					// AUTHENTICATION
+					async getSubject() {
+						return await getCurrentUser();
+					},
+
+					// POLICY
+					policies: {
+						posts: {
+							async delete(subject, post: Post) {
+								if (!subject) return Deny();
+								if (subject.role === "admin") return Grant(subject);
+								if (subject.id === post.userId) return Grant(subject);
+								return Deny();
+							}
+						}
+					}
+				})
+
+				// ENFORCEMENT
+				const { granted } = await Kilpi.posts.delete(post).authorize();
+				if (granted) { ... }
+			`}
+    />
+  </div>
+</Section>

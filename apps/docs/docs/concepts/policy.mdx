@@ -107,7 +107,7 @@ export const Kilpi = createKilpi({
           });
         }
 
-        if (!subject.tier === "premium") {
+        if (subject.tier !== "premium") {
           return Deny({
             message: "Not subscribed", // User-facing
             reason: "NOT_SUBSCRIBED", // System-facing
@@ -187,7 +187,7 @@ export const Kilpi = createKilpi({ /* ... */,
 const { subject } = await Kilpi.admin().authorize().assert();
 ```
 
-### Domain policies
+### Domain-specific policies
 
 The rest of your policies are recommended to belong to a domain or an "object type", such as `posts` or `organizations`, which includes all the available actions for that domain.
 

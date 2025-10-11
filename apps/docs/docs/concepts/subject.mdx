@@ -12,7 +12,12 @@ sidebar:
   applications or AI agents, which may access your application.
 </Aside>
 
-The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider. Because authentication always comes before authorization, Kilpi reduces boilerplate and calls `getSubject` for you.
+The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider.
+
+<Aside>
+  Because authentication always comes before authorization, Kilpi reduces
+  boilerplate and calls `getSubject` for you.
+</Aside>
 
 ## Defining a `getSubject` adapter
 
@@ -92,7 +97,7 @@ export const ctxStorage = new AsyncLocalStorage<Context>();
 // Provide the `ctx` in a middleware -- all code running inside
 // this block has access to `const ctx = ctxStorage.getStore()`.
 app.use(async (ctx, next) => {
-  await ctxStorage.run(ctx, () => {
+  await ctxStorage.run(ctx, async () => {
     await next();
   });
 });
@@ -116,7 +121,7 @@ Very commonly, your subject has other authorization-related properties not recei
 
 ```ts "memberships" {5}
 export const Kilpi = createKilpi({
-  async getSubject() {
+  async getSubject(ctx?: Request) {
     const user = await myAuthenticationProvider.getCurrentUser(ctx);
     if (!user) return null;
     const memberships = await db.listMembershipsForUser(user);
@@ -137,7 +142,7 @@ Kilpi calls `getSubject` for you on every single `authorize()` call. Especially,
   requests.
 </Aside>
 
-This can be done in multiple ways, and some plugins (such as [`ReactServerPlugin`](/docs/plugins/react-server-plugin)) even automatically caches the subject for each request.
+This can be done in multiple ways, and some plugins (such as [`ReactServerPlugin`](/docs/plugins/react-server)) even automatically cache the subject for each request.
 
 <Collapsible title="Example: Cache subject with AsyncLocalStorage">
 
@@ -153,18 +158,20 @@ const subjectStorage = new AsyncLocalStorage<{
 
 // Store subject in AsyncLocalStorage
 Kilpi.$hooks.onSubjectResolved((event) => {
-  subjectStorage.set({ value: { subject: event.subject } });
+  const store = subjectStorage.getStore();
+  if (store) store.value = { subject: event.subject };
 });
 
 // Inject subject from cache before `getSubject` is called
 Kilpi.$hooks.onSubjectRequestFromCache(() => {
-  return subjectStorage.get()?.value;
+  const store = subjectStorage.getStore();
+  return store.value;
 });
 
 // Wrap your application entrypoint with the AsyncLocalStorage, e.g.
 // using a middleware or similar solution
 app.use(async (ctx, next) => {
-  await subjectStorage.run({}, () => {
+  await subjectStorage.run({}, async () => {
     await next();
   });
 });

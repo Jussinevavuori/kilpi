@@ -3,8 +3,11 @@ import BottomGetStartedSection from "@/components/landing-page/BottomGetStartedS
 import FeaturesSection from "@/components/landing-page/FeaturesSection.astro";
 import HeroSection from "@/components/landing-page/HeroSection.astro";
 import LatestBlogsSection from "@/components/landing-page/LatestBlogsSection.astro";
+import MotivationSection from "@/components/landing-page/MotivationSection.astro";
 import PluginsSection from "@/components/landing-page/PluginsSection.astro";
+import ProblemSolutionSection from "@/components/landing-page/ProblemSolutionSection.astro";
 import SupportSection from "@/components/landing-page/SupportSection.astro";
+import WhatIsAuthorizationSection from "@/components/landing-page/WhatIsAuthorizationSection.astro";
 import Banner from "@/components/layout/Banner.astro";
 import Layout from "@/components/layout/Layout.astro";
 import { getCollection } from "astro:content";
@@ -19,15 +22,18 @@ blogs.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 <Layout>
   <Banner>
     <span class="font-semibold">
-      🔥 Introducing Kilpi!
-      <a class="underline" href="/blog/2025-03-24-introducing-kilpi"> Read the article </a>
+      🔥 Introducing Kilpi v0.20 and the new Kilpi API —
+      <a class="underline" href="/blog/2025-10-10-kilpi-v0-20"> Read the article </a>
     </span>
   </Banner>
 
   <div style="--site-width:1080px">
     <HeroSection />
+    <ProblemSolutionSection />
+    <WhatIsAuthorizationSection />
     <FeaturesSection />
     <PluginsSection />
+    <MotivationSection />
     <LatestBlogsSection blogs={blogs} />
     <SupportSection />
     <BottomGetStartedSection />

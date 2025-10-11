@@ -38,6 +38,22 @@ export class KilpiClientCache<TClient extends AnyKilpiClient> {
    */
   public invalidate() {
     this.#asyncCache.clear();
-    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) => hook({}));
+    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) => hook({ key: null }));
+  }
+
+  /**
+   * Fine-grained invalidation: invalidate a specific cache key.
+   */
+  public invalidateKey(key: unknown[]) {
+    const stringifiedKey = fastJsonStableStringify(key);
+    this.#asyncCache.delete(stringifiedKey);
+    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) => hook({ key }));
+  }
+
+  /**
+   * Compare two cache keys
+   */
+  static areCacheKeysEqual(keyA: unknown[], keyB: unknown[]) {
+    return fastJsonStableStringify(keyA) === fastJsonStableStringify(keyB);
   }
 }

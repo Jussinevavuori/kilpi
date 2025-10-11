@@ -60,7 +60,7 @@ Install the Kilpi core library.
     export const Kilpi = createKilpi({
       // (1) Your subject adapter with optional `ctx` param.
       async getSubject(ctx?: MyContextType) {
-        return myAuthenticationProvider.getCurrentUser(ctx);
+        return await myAuthenticationProvider.getCurrentUser(ctx);
       },
 
       // (2) Your policies
@@ -68,13 +68,13 @@ Install the Kilpi core library.
         posts: {
           // "All authenticated users can create posts"
           async create(subject) {
-            if (!subject) return Deny()
+            if (!subject) return Deny();
             return Grant(subject);
           },
           // "Post can only be deleted by the author"
           async delete(subject, post: { authorId: string }) {
             if (!subject) return Deny();
-            if (subject.userId !== post.authorId) return Deny();
+            if (subject.id !== post.authorId) return Deny();
             return Grant(subject);
           },
         },
@@ -97,7 +97,7 @@ Install the Kilpi core library.
     async function deletePost(post: Post) {
       const { granted } = await Kilpi
         .posts               // (Policy namespace)
-        .delete(post)        // Instantiate polict with object
+        .delete(post)        // Instantiate policy with object
         .authorize({ ctx }); // Run the authorization check
 
       if (granted) await db.posts.delete(post.id);

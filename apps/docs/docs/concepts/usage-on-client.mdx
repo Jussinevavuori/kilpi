@@ -7,8 +7,8 @@ sidebar:
 You can also use Kilpi on the client side with the `@kilpi/client` package which allows you to **fetch authorization decisions from the server**.
 
 <Aside>
-  All authorization decisions are evaluated on the server. This makest them are
-  secure and trustable. This way they also can't expose any sensitive data and
+  All authorization decisions are evaluated on the server. This makes them
+  secure and trustworthy. This way they also can't expose any sensitive data and
   can access external data sources such as your authentication provider and
   backend.
 </Aside>
@@ -138,7 +138,7 @@ Alternatively, you can use an existing web-standard request-response adapter for
 
 Create your `KilpiClient` instance with `createKilpiClient`. This object is used to fetch authorization decisions from the server.
 
-Optionally, pass `infer` for improved typesafety, and any plugins in `plugins`.
+Optionally, pass `infer` for improved type safety, and add any plugins via `plugins`.
 
 ```ts
 // kilpi-client.ts
@@ -157,8 +157,8 @@ export const KilpiClient = createKilpiClient({
 
 <Aside type="tip">
   This works especially well with frameworks like Next.js, where you can import
-  the type of the server-side instance on the client and use it infer the types,
-  similarly as with [tRPC](https://trpc.io/).
+  the type of the server-side instance on the client and use it to infer the
+  types, similarly as with [tRPC](https://trpc.io/).
 </Aside>
 
 </Step>
@@ -185,18 +185,26 @@ You can use `@kilpi/client` with your frontend framework of choice or use one of
 
 <Tabs syncKey="frontend">
   <Tab label="React">
+
 #### React (client)
 
     Get utility hooks and components for client-side React with the [`@kilpi/react-client`
     package](/docs/plugins/react-client).
 
     ```tsx
-    export function Component() {
-      const { granted } = Kilpi.posts.create().useAuthorize();
+    import { KilpiClient } from "./kilpi-client";
+    const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
 
-      return <AuthorizeClient policy={Kilpi.posts.delete(post)}>
-        <DeletePostForm />
-      </AuthorizeClient>
+    export function Component({ post }: { post: Post }) {
+      // Use via hooks
+      const { granted } = KilpiClient.posts.create().useAuthorize();
+
+      // Or components
+      return (
+        <AuthorizeClient policy={KilpiClient.posts.delete(post)}>
+          <DeletePostForm />
+        </AuthorizeClient>
+      );
     }
     ```
 
@@ -218,3 +226,94 @@ const decision = await KilpiClient.some.policy().authorize({
   abortSignal, // Provide a custom abort signal for the fetch call
 });
 ```
+
+---
+
+## Caching
+
+On top of **deduplicating** and **batching** queries for performance, `KilpiClient` also caches all requests for you automatically.
+
+All authorization decisions are cached indefinitely, until the cache is invalidated.
+
+### Invalidating the cache
+
+Use the `KilpiClient.$cache` API to invalidate the cache.
+
+```ts
+// Fully clears the cache
+KilpiClient.$cache.invalidate();
+
+// Fine-grained invalidation: Only invalidate this policy
+KilpiClient.my.policy().invalidate();
+```
+
+<Aside type="tip">
+  You should clear the cache at least **when the user signs in or out** to avoid leaking cached data between users.
+
+```ts
+onAuthStateChanged(() => KilpiClient.$cache.invalidate());
+```
+
+</Aside>
+
+<Collapsible title="Cache invalidation in more detail">
+
+#### Hooks
+
+To react to cache invalidations, you can use the hooks API as follows.
+
+```ts
+const unregister = KilpiClient.$hooks.onCacheInvalidate(({ key }) => {
+  // When any cache invalidation happens
+  console.log("Some cache invalidation!");
+
+  // When the full cache is invalidated
+  if (key === null) console.log("Full cache invalidation!");
+  // When a specific cache key is invalidated
+  else console.log(`Cache invalidation for key:`, key);
+});
+```
+
+---
+
+#### Cache keys
+
+Kilpi uses [Tanstack Query](https://tanstack.com/query/latest) inspired keys of type `unknown[]`, which must be serializable. Internally, their stable string representation is used. This means each key must be stringifiable. To compare whether two cache keys are equal, use:
+
+```ts
+const keyA = ["some-key", { value: 1 }];
+const keyB = ["some-key", { value: 1 }];
+
+// False due to referential equivalence
+keyA === keyB;
+
+// True, due to stable stringification
+KilpiClientCache.areCacheKeysEqual(keyA, keyB);
+```
+
+---
+
+#### Getting a policy's cache key
+
+Each policy exposes its cache key as `KilpiClient.my.policy().$cacheKey`. While not recommended, you may also use the cache key directly as
+
+```ts
+// Not recommended but possible
+KilpiClient.$cache.invalidateKey(KilpiClient.my.policy().$cacheKey);
+```
+
+Or you may use it in `onCacheInvalidate` hooks.
+
+```ts
+const policy = KilpiClient.my.policy();
+const unregister = KilpiClient.$hooks.onCacheInvalidate(({ key }) => {
+  if (
+    key === null ||
+    KilpiClientCache.areCacheKeysEqual(key, policy.$cacheKey)
+  ) {
+    console.log("My policy was invalidated");
+  }
+});
+```
+
+</Collapsible>

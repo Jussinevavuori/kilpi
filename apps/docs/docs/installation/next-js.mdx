@@ -103,7 +103,7 @@ Here are some tips on how to best use Kilpi in a Next.js application.
 
 #### 1. Use `<Authorize />` to protect your UI.
 
-Simpe example of protecting your UI.
+Simple example of protecting your UI.
 
 ```tsx
 export default async function DashboardPage() {
@@ -130,7 +130,7 @@ export default async function PostPage(props: PageProps) {
   });
 
   // Protected query which uses .assert()
-  const post = await getPost.authorized();
+  const post = await getPost.authorized(id);
 
   return <PostDetails post={post} />;
 }

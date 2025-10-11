@@ -12,12 +12,12 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     name: "Concepts",
   },
   {
-    id: "advanced",
-    name: "Advanced",
-  },
-  {
     id: "plugins",
     name: "Plugins",
+  },
+  {
+    id: "advanced",
+    name: "Advanced",
   },
   {
     id: "installation",

@@ -16,7 +16,10 @@ export type KilpiOnBeforeSendRequestEvent<T extends AnyKilpiClient> = {};
 /**
  * On cache invalidate event
  */
-export type KilpiOnCacheInvalidateEvent<T extends AnyKilpiClient> = {};
+export type KilpiOnCacheInvalidateEvent<T extends AnyKilpiClient> = {
+  // If null, all keys invalidated. Otherwise, the specific key that was invalidated.
+  key: null | unknown[];
+};
 
 // =================================================================================================
 // HOOK TYPES fn: (Event => Return Type)

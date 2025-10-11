@@ -1,0 +1,300 @@
+---
+title: Kilpi 0.20 and the new Kilpi API
+author: Jussi Nevavuori
+authorUrl: https://jussinevavuori.com
+authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
+date: 2025-03-24
+summary: Kilpi 0.20 brings with it massive improvements in developer experience and simplifies integrating Kilpi.
+---
+
+After months of work on redesigning and simplifying Kilpi and its documentation, I am proud to announce that Kilpi 0.20 has been released.
+
+The new version brings with it major overhauls in the API and feature set in order to make Kilpi even simpler to install and use. For this reason, it also introduces **major breaking changes**.
+
+Install the latest version with
+
+<Tabs syncKey="package-manager">
+<Tab label="npm">
+
+```bash
+# Update other @kilpi/* packages to @latest as well
+npm install @kilpi/core@latest
+```
+
+</Tab>
+
+<Tab label="yarn">
+
+```bash
+# Update other @kilpi/* packages to @latest as well
+yarn add @kilpi/core@latest
+```
+
+</Tab>
+
+<Tab label="pnpm">
+
+```bash
+# Update other @kilpi/* packages to @latest as well
+pnpm add @kilpi/core@latest
+```
+
+</Tab>
+
+<Tab label="bun">
+
+```bash
+# Update other @kilpi/* packages to @latest as well
+bun add @kilpi/core@latest
+```
+
+</Tab>
+</Tabs>
+
+---
+
+## Most important changes
+
+- Authorization is now done via `Kilpi.posts.edit(post).authorize()` both on the server and client.
+- Scope has been removed.
+- All components and hooks have been redesigned.
+- The API is much smaller and simpler.
+
+## Summary of changes
+
+The core remains mostly the same, but the API is new. Here is a quick run-through of the changes.
+
+### `@kilpi/core`
+
+- New and unified authorization API: `Kilpi.posts.edit(post).authorize()` and the `.assert()` method.
+- Removed the scope API (and automatic subject caching).
+- Prefix all non-policy properties with `$` to avoid naming conflicts.
+- Updated `Kilpi.$query` API for more unified naming.
+- Rename `settings.defaultOnUnauthorized` to `onUnauthorizedAssert` in `createKilpi`.
+- New hooks (`Kilpi.$hooks.onSubjectResolved`, `onSubjectRequestFromCache` and `onUnauthorizedAssert`).
+- Plugins `EndpointPlugin` and `AuditPlugin` have been updated to match.
+- Upgraded and improved plugin API.
+
+### `@kilpi/client`
+
+- New and unified authorization API: `KilpiClient.posts.edit(post).authorize()`
+- Upgraded caching with `KilpiClient.$cache`.
+- Introduced client-side hooks with `KilpiClient.$hooks` (`onBeforeSendRequest` and `onCacheInvalidate`).
+- Removed `fetchSubject`.
+- Upgraded and improved plugin API.
+
+### `@kilpi/react-server`
+
+- New `<Authorize />` component.
+- Automatic subject caching
+- New `Kilpi.$onUnauthorizedRscAssert` API.
+
+### `@kilpi/react-client`
+
+- New `<AuthorizeClient />` component.
+- New authorization hook: `KilpiClient.posts.edit(post).useAuthorize()`
+- Removed `useSubject`.
+- Upgraded caching.
+
+---
+
+## New and unified authorization APIs
+
+Policies are now accessed using a tRPC-like proxy API, both with `Kilpi` and `KilpiClient`.
+
+```ts
+// Examples of accessing policies
+Kilpi.admin(); // Root-level policies
+Kilpi.posts.create(); // Nested policies
+Kilpi.posts.edit(post); // ...with object
+Kilpi.organizations.members.invite(); // Deeply nested
+KilpiClient.posts.edit(post); // And even the client
+```
+
+**All authorization is done via the `.authorize()` method**, which can optionally be provided the current `ctx` (passed to `getSubject`) or other authorization options (advanced use-cases only). The API returns a decision.
+
+```ts
+const decision = await Kilpi.posts.create().authorize();
+```
+
+Optionally, you can assert an authorization to receive a granted decision or throw.
+
+```ts "subject" "assert()"
+const { subject } = Kilpi.posts.create().authorize().assert();
+```
+
+These fully replace the multiple old (and potentially confusing) methods `Kilpi.authorize`, `Kilpi.isAuthorized`, `Kilpi.unauthorized` and `Kilpi.getAuthorizationDecision`.
+
+To avoid naming conflicts, all Kilpi functionality (`Kilpi.$hooks`, `Kilpi.$query`) have been prefixed with `$`. For this reason, you should not prefix your policies with `$`.
+
+---
+
+## Removed scope
+
+The most confusing and boilerplatey part of Kilpi to integrate and explain was scope. It also required `async_hooks`, which caused Kilpi to not work in some runtimes.
+
+It was originally implemented to enable features such as automatic subject caching or the `Kilpi.onUnauthorized` API, which have now also been removed.
+
+These have been replaced by **guides on subject caching** and with some plugins, such as the `@kilpi/react-server` plugin which automatically caches the subject and exposes the `Kilpi.$onUnauthorizedRscAssert` functionality which is essentially the same as the old `Kilpi.onUnauthorized` API.
+
+This means all scope-related APIs (`Kilpi.onUnauthorized`, `Kilpi.runInScope`, `Kilpi.scoped`, `settings.disableSubjectCaching` and `Kilpi.hooks.onRequestScope`) have also been removed.
+
+---
+
+## New `Kilpi.$query` API
+
+To create protected queries, use the renamed API.
+
+```ts "Kilpi.$query" "async authorize" "authorized" "unauthorized"
+// Was Kilpi.query
+const getPost = Kilpi.$query(
+  async (id: string) => await db.posts.findById(id),
+  {
+    // Was protector
+    async authorize({ input: [id], output: post, subject }) {
+      if (!post) return null;
+      const { granted } = await Kilpi.posts.read(post).authorize();
+      if (!granted) return null;
+      return post;
+    },
+  },
+);
+
+await getPost.authorized("123"); // Was ".protect()"
+await getPost.unauthorized("123"); // Was ".unsafe()"
+```
+
+Additionally, the `Kilpi.filter` method was deleted as it was deemed an anti-pattern.
+
+---
+
+## New `@kilpi/client` API
+
+To reflect the new server-side API, the Kilpi client API has been similarly redesigned.
+
+```ts
+// Fetches decision from the server
+await KilpiClient.posts.edit(post).authorize();
+```
+
+This replaces the `fetchAuthorization` API.
+
+You can provide query options to the `authorize` call. The `EndpointPlugin` also received some API updates to match.
+
+The `fetchSubject` method has been removed.
+
+### New client-side cache
+
+KilpiClient still has deduping and batching, but the caching has been redone with the `KilpiClient.$cache` API and the new matching hooks.
+
+This API provides more fine-grained caching via
+
+```ts
+KilpiClient.$cache.invalidate(); // Full cache invalidation
+KilpiClient.some.policy().invalidate(); // Fine-grained invalidation
+KilpiClient.$hooks.onCacheInvalidate(...); // Event listener
+```
+
+Even more cache functionality available in the documentation.
+
+---
+
+## Upgraded plugins
+
+### Upgraded `EndpointPlugin`
+
+The `EndpointPlugin` now supports the `getContext`, `onBeforeHandleRequest` and `onBeforeProcessItem` configuration options.
+
+The `Kilpi.createPostEndpoint` method is now `Kilpi.$createPostEndpoint`.
+
+### Upgraded `AuditPlugin`
+
+All `AuditPlugin` functionality is now prefixed with `Kilpi.$audit` instead of `Kilpi.audit`.
+
+---
+
+## New React Components
+
+The `@kilpi/react-server` and `@kilpi/react-client` packages have been completely redesigned to allow for a more readable and uniform API and more complex authorization rendering.
+
+### Server-side `<Authorize />`
+
+The new `<Authorize />` component conditionally renders based on the authorization status.
+
+```tsx
+const { Authorize } = Kilpi.$createReactServerComponents();
+
+<Authorize policy={Kilpi.posts.edit(post)}>
+  <PostEditForm post={post} />
+</Authorize>
+```
+
+It can additionally be provided the `Unauthorized` and `Pending` components.
+
+```tsx
+<Authorize
+  policy={Kilpi.posts.create()}
+  Unauthorized={<UnauthorizedMessage />}
+  Pending={<Loading />}
+>
+  {({ subject }) => <CreatePostForm userName={subject.name} />}
+</Authorize>
+```
+
+Both the `children` and the `Unauthorized` props can be dynamic functions which receive as type-safe render props the granted or the denied decision respectively.
+
+### Client-side `<AuthorizeClient />`
+
+Similarly, the `@kilpi/react-client` plugin has a matching `<AuthorizeClient />` component.
+
+```tsx
+const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
+
+<AuthorizeClient policy={KilpiClient.posts.edit(post)}>
+  <PostEditForm post={post} />
+</AuthorizeClient>
+```
+
+Which supports `Unauthorized`, `Error`, `Pending` and `Idle` components, all of which can again be type-safe functions that accept the current `useAuthorize()` query as render props.
+
+```tsx
+<AuthorizeClient
+  policy={KilpiClient.posts.delete(post)}
+  Pending={<p>Loading...</p>}
+  Unauthorized={<p>You are not allowed to delete this post</p>}
+  Idle={<p>Authorization disabled</p>}
+  Error={({ error }) => <p>Error: {error.message}</p>}
+  isDisabled={shouldDisableQuery}
+>
+  <DeletePostForm post={post} />
+</AuthorizeClient>
+```
+
+### Client-side `.useAuthorize()`
+
+To use the decisions in component logic, you can use the new `useAuthorize()` hook (which powers the `<AuthorizeClient />` component).
+
+```ts
+const {
+  status, // "idle" | "pending" | "success" | "error"
+  granted, // boolean (shorthand for decision?.granted)
+  decision, // The full decision object
+  ...query // Even more utilities
+} = KilpiClient.comments.delete(comment).useAuthorize();
+```
+
+### Other React server-side features
+
+- The `@kilpi/react-server` package automatically caches the subject per request using `React.cache` and the subject caching hooks. This can be opted out of with `ReactServerPlugin({ disableSubjectCaching: true })`.
+
+- The new `Kilpi.$onUnauthorizedRscAssert` function replaces the previous `Kilpi.onUnauthorized` function to allow to define separate `onUnauthorizedAssert` handlers for each page to work with the new `.authorize().assert()` API.
+
+---
+
+## Rewritten documentation
+
+The full documentation has been re-written from scratch to reflect the new APIs and to make it easier to get started with Kilpi.
+
+Everything has been simplified and restructured to make it easier to find what you are looking for and to understand the mental model of Kilpi.
+
+Similarly, the examples have been completely redone.

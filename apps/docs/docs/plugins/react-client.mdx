@@ -1,14 +1,16 @@
 ---
 title: React Client Plugin
+description: React Client integration for authorization components and hooks.
 sidebar:
   label: React Client Plugin
 ---
 
 The **React Client Plugin** provides a set of React components and hooks for working with the Kilpi client in a React application.
 
-Ensure you have [setup KilpiClient](/docs/getting-started/usage-on-client) for using Kilpi on the client.
-
----
+<Aside>
+  [Set up `KilpiClient`](/docs/concepts/usage-on-client) before installing this
+  plugin.
+</Aside>
 
 ## Installation
 
@@ -48,106 +50,123 @@ bun add @kilpi/react-client
 </Tab>
 </Tabs>
 
-Apply the plugin in your Kilpi configuration as follows.
+Apply the plugin in your KilpiClient configuration as follows.
 
 ```diff lang="ts"
 // kilpi.ts
 import { createKilpiClient } from "@kilpi/client";
-import { ReactClientComponentPlugin } from "@kilpi/react-client";
+import { ReactClientPlugin } from "@kilpi/react-client";
 
 export const KilpiClient = createKilpiClient({
   // ...
-+  plugins: [ReactClientComponentPlugin()]
++  plugins: [ReactClientPlugin()]
 })
 ```
 
 ---
 
-## Components and hooks
+## Features
 
-Use the `Kilpi.ReactClient.createComponents` function (provided by the plugin) to create React client component and hook bindings for working with the KilpiClient.
+The `ReactClientPlugin` includes multiple components and hooks to make authorizing a client-side React application easier.
+
+---
+
+### The `<AuthorizeClient />` component
+
+The `ReactClientPlugin` provides the `<AuthorizeClient />` component to authorize and conditionally render your client-side UI, similarly to the [`<Authorize />` RSC component from `ReactServerPlugin`](/docs/plugins/react-server).
 
 ```ts
-// kilpi.components.ts
-export const {
-  // Utility hooks that wrap KilpiClient methods
-  useIsAuthorized,
-  useSubject,
-
-  // Utility component that wraps useIsAuthorized
-  ClientAccess,
-} = KilpiClient.ReactClient.createComponents();
+const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
 ```
 
-### `useIsAuthorized()`
+You can use the component as follows.
 
-`useIsAuthorized()` fetches an authorization decision from the Kilpi server using `KilpiClient.fetchIsAuthorized()`.
+```tsx
+// Only show EditPostForm when authorized to edit the post
+<AuthorizeClient policy={KilpiClient.posts.edit(post)}>
+  <EditPostForm post={post} />
+</AuthorizeClient>
+```
+
+Additionally, you can provide optional unauthorized, pending, error and idle UIs for all statuses. You can even disable the query with `isDisabled`.
+
+```tsx
+<AuthorizeClient
+  policy={KilpiClient.posts.delete(post)}
+  Pending={<p>Loading...</p>}
+  Unauthorized={<p>You are not allowed to delete this post</p>}
+  Idle={<p>Authorization disabled</p>}
+  Error={<p>Error authorizing post deletion</p>}
+  isDisabled={shouldDisableQuery}
+>
+  <DeletePostForm post={post} />
+</AuthorizeClient>
+```
+
+You can even use render props to access the query to render the authorized and unauthorized UIs or disable the query entirely.
+
+<Aside>
+  The render prop types are narrowed down for usability, e.g. the `query`
+  parameter in `Unauthorized` knows the query is in a `success` state, there
+  exists a `decision` for which `granted: false`.
+</Aside>
+
+```tsx
+<AuthorizeClient
+  policy={KilpiClient.posts.create()}
+  Pending={(query) => <p>Query is {query.status}</p>}
+  Unauthorized={({ decision }) => <p>{decision.message}</p>}
+  Error={({ error }) => <p>Error: {error.message}</p>}
+  Idle={({ status }) => <p>Query is {status}</p>}
+>
+  {({ decision }) => <CreatePostForm authorName={decision.subject.name} />}
+</AuthorizeClient>
+```
+
+<Aside>
+  The `<AuthorizeClient />` is built on top of the `useAuthorize()` hook.
+</Aside>
+
+---
+
+### `useAuthorize()`
+
+The `ReactClientPlugin` augments policies with the `useAuthorize()` function, which automatically wraps the policy's `authorize()` fetch call with common utilities such as the query status, caching, re-fetch on cache invalidation and more.
 
 ```tsx
 export function DeleteCommentButton({ comment, onDelete }) {
   const {
-    isAuthorized, // boolean (when "success"), null (otherwise)
-    status, // "idle" | "loading" | "error" | "success"
-    error, // unknown (when "error"), null (otherwise)
-
-    isLoading, // boolean, true when status is "loading"
-    isError, // boolean, true when status is "error"
-    isSuccess, // boolean, true when status is "success"
-    isIdle, // boolean, true when status is "idle"
-  } = useIsAuthorized("comments:delete", comment);
+    status, // "idle" | "pending" | "success" | "error"
+    granted, // boolean (shorthand for decision?.granted)
+    decision, // The full decision object
+  } = KilpiClient.comments.delete(comment).useAuthorize();
 
   return (
-    <button disabled={!isAuthorized} onClick={onDelete}>
+    <button disabled={!granted} onClick={onDelete}>
       Delete comment
     </button>
   );
 }
 ```
 
-### `useSubject()`
+<Collapsible title="The full useAuthorize API">
 
-Fetches the current subject from the Kilpi server using `KilpiClient.fetchSubject()`.
+```ts
+const {
+  status, // "idle" | "pending" | "success" | "error"
+  isIdle, // Shorthand for status === "idle"
+  isError, // Shorthand for status === "error"
+  isPending, // Shorthand for status === "pending"
+  isSuccess, // Shorthand for status === "success"
 
-```tsx
-export function User() {
-  const {
-    subject, // Inferred subject type (when "success"), null (otherwise)
-    status, // "idle" | "loading" | "error" | "success"
-    error, // unknown (when "error"), null (otherwise)
+  granted, // Shorthand for decision?.granted
+  decision, // The query result when status === "success"
 
-    isLoading, // boolean, true when status is "loading"
-    isError, // boolean, true when status is "error"
-    isSuccess, // boolean, true when status is "success"
-    isIdle, // boolean, true when status is "idle"
-  } = useSubject();
-
-  return <p>Signed in as {subject?.name}</p>;
-}
+  isDisabled, // Pass-through property
+  error, // The error when status === "error"
+} = KilpiClient.comments.delete(comment).useAuthorize({
+  isDisabled, // Optionally disable the query and force it to "idle" state
+});
 ```
 
-### `<ClientAccess />`
-
-Similar to the [`<Access />` React Server Component](/docs/plugins/react-server-components#access), `<ClientAccess />` is used to show or hide components based on the user's authorizations.
-
-`<ClientAccess />` uses the `useIsAuthorized()` hook under the hood.
-
-```tsx
-async function Component({ comment }) {
-  return (
-    <div>
-      <p>{comment.content}</p>
-      <Access
-        to="comments:delete"
-        // Required only if policy takes in an object
-        on={comment}
-        // Optional fallback UIs
-        Loading={<p>Loading...</p>}
-        Unauthorized={<p>Unauthorized</p>}
-        Error={<p>Error</p>}
-      >
-        <button>Delete</button>
-      </Access>
-    </div>
-  );
-}
-```
+</Collapsible>

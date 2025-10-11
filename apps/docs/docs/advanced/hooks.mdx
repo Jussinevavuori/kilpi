@@ -4,7 +4,7 @@ title: Hooks
 
 <Aside>This is an advanced concept and not required for most use-cases.</Aside>
 
-**Hooks** are functions, which Kilpi calls during its execution. They are used for e.g. listening to events or customizing the behavior of Kilpi. They can be used for advanced functionality for your application or for pllugins.
+**Hooks** are functions, which Kilpi calls during its execution. They are used for e.g. listening to events or customizing the behavior of Kilpi. They can be used for advanced functionality for your application or for plugins.
 
 ## Registering and unregistering hooks
 
@@ -24,11 +24,15 @@ Kilpi.$hooks.unregisterAll();
 Kilpi.$hooks.unregisterAll("onAfterAuthorization");
 ```
 
+### Client-side hooks
+
+The `KilpiClient` instance also has its own and similar `KilpiClient.$hooks` API to match.
+
 ---
 
-## Types of hooks
+## Server-side hooks
 
-This list contains the types of different hooks you can use to use with Kilpi or in your custom plugins.
+The following hooks are for `Kilpi.$hooks` to be used on the server.
 
 ### `onAfterAuthorization`
 
@@ -97,6 +101,48 @@ const unregister = Kilpi.$hooks.onUnauthorizedAssert(async (event) => {
   );
   if (event.decision.reason === "CUSTOM_REASON") {
     throw new CustomError(event.message);
+  }
+});
+```
+
+---
+
+## Client-side hooks
+
+The following hooks are for `KilpiClient.$hooks` to be used on the client.
+
+### `onBeforeSendRequest`
+
+Before Kilpi sends the request, run additional callbacks or register additional headers.
+
+```ts
+const unregister = KilpiClient.$hooks.onBeforeSendRequest(() => {
+  console.log("Sending request...");
+  if (apiKey) {
+    return {
+      headers: {
+        "X-Custom-Api-Key": apiKey,
+      },
+    };
+  }
+});
+```
+
+### `onCacheInvalidate`
+
+When the cache (or part of it) is invalidated, this hook is called.
+
+<Aside type="tip">
+  Use the `KilpiClientCache.areCacheKeysEqual(keyA, keyB)` method to compare
+  keys instead of `===`.
+</Aside>
+
+```ts
+const unregister = KilpiClient.$hooks.onCacheInvalidate((event) => {
+  if (event.key === null) {
+    console.log("The entire cache was invalidated");
+  } else {
+    console.log("Cache invalidated for key:", event.key);
   }
 });
 ```

@@ -18,11 +18,7 @@ export const Kilpi = createKilpi({ ... })
 <Step>
 ### Handle unauthorized errors from `.assert()`
 
-The `.assert()` method throws an error when authorization is denied.
-
-Since Nest.js supports throwing HTTP exceptions, handling unauthorized exceptions is easiest with a global `onUnauthorizedAssert` handler.
-
-However, since Koa's errors are thrown with `ctx.throw`, the global `onUnauthorizedAssert` handler requires access to `ctx`. The best way to achieve this is using `AsyncLocalStorage` as shown below.
+The `.assert()` method throws an error when authorization is denied. Koa surfaces errors via `ctx.throw`, so the global `onUnauthorizedAssert` handler requires access to `ctx`. One way to achieve this is using `AsyncLocalStorage` as shown below.
 
 ```ts
 // app.ts
@@ -34,7 +30,7 @@ export const ctxStorage = new AsyncLocalStorage<Context>();
 // Provide the `ctx` in a middleware -- all code running inside
 // this block has access to `const ctx = ctxStorage.getStore()`.
 app.use(async (ctx, next) => {
-  await ctxStorage.run(ctx, () => {
+  await ctxStorage.run(ctx, async () => {
     await next();
   });
 });

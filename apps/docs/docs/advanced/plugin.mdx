@@ -23,7 +23,7 @@ List of all available first-party plugins.
 <LinkCard
   title="React Server Components Plugin"
   description="React Server Components for working with Kilpi and automatic RSC scope."
-  href="/docs/plugins/react-server-components"
+  href="/docs/plugins/react-server"
 />
 <LinkCard
   title="React Client Plugin"
@@ -100,7 +100,6 @@ Let's create an utility plugin for KilpiClient.
 ```ts
 import { createKilpiCorePlugin, type AnyKilpiCore } from "@kilpi/core";
 import type { KilpiClient } from "@kilpi/client";
-
 // Boilerplate if exteending the policy interface:
 //   The type of a KilpiClientPolicy extension
 export interface KilpiClientPolicyExtension_SayHelloPlugin<
@@ -119,7 +118,6 @@ declare module "@kilpi/client" {
     TAction extends PolicysetActions<TClient["$$infer"]["policies"]>,
   > extends KilpiClientPolicyExtension_SayHelloPlugin<TClient, TAction> {}
 }
-
 // Plugin constructor is a generic function of <T extends AnyKilpiCore>
 // and can take any configuration options needed.
 function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
@@ -139,7 +137,6 @@ function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
           },
         };
       },
-
       // Function which returns an extension on the policies.
       // This function must implement the extension defined in
       // `KilpiClientPolicyExtension_SayHelloPlugin` with access
@@ -160,12 +157,12 @@ function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
 }
 
 // Install the plugin
-const Kilpi = createKilpiClient({
+const KilpiClient = createKilpiClient({
   ...,
   plugins: [SayHelloPlugin({ name: "MyKilpiClient" })],
 });
 
 // Use the plugin
-Kilpi.$sayHello(); // Hello from MyKilpiClient
-Kilpi.posts.edit(post).sayHello(); // Hello from posts.edit
+KilpiClient.$sayHello(); // Hello from MyKilpiClient
+KilpiClient.posts.edit(post).sayHello(); // Hello from posts.edit
 ```

@@ -1,12 +1,11 @@
 ---
 import { Code } from "astro-expressive-code/components";
-import dedent from "dedent";
 import { ArrowRightIcon, GithubIcon } from "lucide-react";
 import Section from "../layout/Section.astro";
 import Button from "../ui/Button.astro";
 ---
 
-<Section id="hero" class="py-32 items-center text-center gap-16">
+<Section id="hero" class="py-[25vh] items-center text-center gap-16">
   {/* Header text */}
   <div class="flex flex-col gap-8">
     <h1 class="text-4xl relative font-bold tracking-tight sm:text-5xl md:text-6xl">
@@ -31,7 +30,7 @@ import Button from "../ui/Button.astro";
 
   {/* Buttons */}
   <div class="flex flex-col sm:flex-row gap-4">
-    <Button as="a" size="lg" variant="default" href="/docs/getting-started/introduction">
+    <Button as="a" size="lg" variant="default" href="/docs/getting-started/quickstart">
       Get started
       <ArrowRightIcon />
     </Button>
@@ -44,39 +43,40 @@ import Button from "../ui/Button.astro";
       variant="outline"
       class="gap-2"
     >
-      <GithubIcon />
       Star on GitHub
+      <GithubIcon />
     </Button>
   </div>
 
-  <div class="flex flex-col gap-4 items-center w-full">
+  <Code frame="none" lang="bash" code="npm install @kilpi/core" />
+
+  <!-- <div class="flex flex-col gap-4 items-center w-full">
     <p class="text-sm text-muted-fg">The simplest and most powerful authorization API</p>
 
     <div class="flex flex-col text-left gap-2 items-stretch w-min overflow-x-auto max-w-full">
-      <Code lang="ts" code={`await Kilpi.authorize("docs:update", doc);`} />
+      <Code lang="ts" code={`const { granted } = await Kilpi.posts.create().authorize()`} />
+      <Code lang="ts" code={`await Kilpi.comments.delete(comment).authorize().assert()`} />
       <Code
         lang="tsx"
         code={dedent`
-					<Access to="comments:update" on={comment}>
-						<EditDocumentForm comment={comment} />
-					</Access>
+					<Authorize policy={Kilpi.documents.edit(document)}>
+						<EditDocumentForm document={document} />
+					</Authorize>
 				`}
       />
-      <Code lang="ts" code={`if (await Kilpi.isAuthorized("orgs:create")) {}`} />
-      <Code lang="ts" code={`const message = await getMessage.protect();`} />
-    </div>
+      <Code lang="ts" code={`const workspaces = await listWorkspaces.authorized();`} />
+    </div> -->
 
-    <p class="text-sm text-muted-fg">
-      Designed and created by{" "}
-      <a
-        href="https://jussinevavuori.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="underline"
-      >
-        Jussi Nevavuori
-      </a>{" "}
-      with ❤️ in Brisbane & Helsinki
-    </p>
-  </div>
+  <p class="text-sm text-muted-fg">
+    Designed and created by{" "}
+    <a
+      href="https://jussinevavuori.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="underline"
+    >
+      Jussi Nevavuori
+    </a>{" "}
+    with ❤️ in Brisbane & Helsinki
+  </p>
 </Section>
