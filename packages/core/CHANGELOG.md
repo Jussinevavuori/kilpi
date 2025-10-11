@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 1.1.0
+
+### Minor Changes
+
+- 9e384a5: Add Kilpi.$getSubject utility
+
 ## 1.0.0
 
 ### Major Changes
