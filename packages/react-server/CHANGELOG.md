@@ -1,5 +1,16 @@
 # @kilpi/react
 
+## 1.0.0
+
+### Major Changes
+
+- 8cbef02: Kilpi 1.0 release with redesigned and simplified API (https://kilpi.vercel.app/blog/2025-10-10-kilpi-v0-20)
+
+### Patch Changes
+
+- Updated dependencies [8cbef02]
+  - @kilpi/core@1.0.0
+
 ## 0.9.13
 
 ### Patch Changes
