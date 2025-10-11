@@ -121,7 +121,7 @@ export class KilpiCore<
   /**
    * Create a protected query using the `$query` method.
    *
-   * ## Simple example usage
+   * ## Example usage
    *
    * ```ts
    * const getUserData = Kilpi.$query(
@@ -145,6 +145,23 @@ export class KilpiCore<
   ) {
     // Return a new KilpiQuery instance which implements the authorization logic.
     return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
+  }
+
+  /**
+   * Expose the `getSubject` method for use outside of Kilpi.
+   *
+   * ## Example usage
+   *
+   * ```ts
+   * // Without context
+   * const subject = await Kilpi.$getSubject();
+   *
+   * // With context
+   * const subject = await Kilpi.$getSubject({ ctx });
+   * ```
+   */
+  public async $getSubject(options: Partial<{ ctx: InferContext<TGetSubject> }> = {}) {
+    return await this[KilpiCoreSymbol_GetSubject](options.ctx);
   }
 
   /**
