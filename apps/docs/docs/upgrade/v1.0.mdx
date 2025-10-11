@@ -115,6 +115,15 @@ Update to the new `.authorize()` API.
 + const { subject } = await Kilpi.posts.delete(post).authorize().assert();
 ```
 
+### `Kilpi.getSubject`
+
+The `Kilpi.getSubject` method has been renamed to `Kilpi.$getSubject`.
+
+```diff lang="ts"
+- const subject = await Kilpi.getSubject();
++ const subject = await Kilpi.$getSubject();
+```
+
 ### `Kilpi.unauthorized()`
 
 The `unauthorized()` method has been removed, but you can mimic its behavior with a `never` policy.
