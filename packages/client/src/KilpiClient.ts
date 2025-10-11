@@ -104,7 +104,7 @@ export class KilpiClient<T extends AnyKilpiCore> {
   async #runJobs(jobs: Array<BatchJob<KilpiClientRequest>>) {
     // Run onBeforeSendRequest hooks to get additional headers
     const hookResults = await Promise.all(
-      this.$hooks.registeredHooks.onBeforeSendRequest.values().map((hook) => hook({})),
+      [...this.$hooks.registeredHooks.onBeforeSendRequest.values()].map((hook) => hook({})),
     );
 
     // Use request handler strategy to get response
