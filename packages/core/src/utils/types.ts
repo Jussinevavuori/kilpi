@@ -43,7 +43,7 @@ export type ArrayHead<T extends any[]> = T extends [infer H, ...any[]] ? H : nev
 /**
  * Get tail of array
  */
-export type ArrayTail<T extends any[]> = T extends [any, ...infer R] ? R : never;
+export type ArrayTail<T extends any[]> = T extends [any, ...infer R] ? R : [];
 
 /**
  * Any function
