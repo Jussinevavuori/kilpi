@@ -1,5 +1,11 @@
 # @kilpi/client
 
+## 1.0.0
+
+### Major Changes
+
+- 8cbef02: Kilpi 1.0 release with redesigned and simplified API (https://kilpi.vercel.app/blog/2025-10-10-kilpi-v0-20)
+
 ## 0.15.2
 
 ### Patch Changes
