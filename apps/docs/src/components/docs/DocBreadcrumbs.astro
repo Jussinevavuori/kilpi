@@ -1,5 +1,5 @@
 ---
-import { SIDEBAR_FOLDER_CONFIG } from "@/consts";
+import { SIDEBAR_FOLDER_CONFIG } from "@/sidebar.config";
 import type { CollectionEntry } from "astro:content";
 import { ChevronRightIcon } from "lucide-react";
 
@@ -13,7 +13,7 @@ type Breadcrumb = { href?: string; label: string };
 
 // Construct breadcrumbs:
 // 1. Start with static `docs` link
-const breadcrumbs: Breadcrumb[] = [{ href: "/docs/getting-started/introduction", label: "Docs" }];
+const breadcrumbs: Breadcrumb[] = [{ href: "/docs/getting-started/quickstart", label: "Docs" }];
 
 if (doc) {
   // 2. Add each folder in the path to the breadcrumbs

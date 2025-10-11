@@ -1,8 +1,6 @@
 ---
 title: Audit Plugin
 description: Logging, monitoring and auditing your authorization policies
-sidebar:
-  badge: New
 ---
 
 The audit plugin is used to receive events from the Kilpi server and send them to an external service. This is useful for logging, monitoring and auditing your authorization policies.
@@ -73,7 +71,7 @@ AuditPlugin({
 })
 ```
 
-You can also prematurely flush the current batch by calling `Kilpi.audit.flush()`.
+You can also prematurely flush the current batch by calling `Kilpi.$audit.flush()`.
 
 ### Periodical strategy
 
@@ -87,11 +85,11 @@ AuditPlugin({
 })
 ```
 
-You can also prematurely flush the current batch by calling `Kilpi.audit.flush()`.
+You can also prematurely flush the current batch by calling `Kilpi.$audit.flush()`.
 
 ### Manual strategy
 
-The manual strategy collects all events and waits until `Kilpi.audit.flush()` is manually called by you. This allows for full developer control on when events are flushed.
+The manual strategy collects all events and waits until `Kilpi.$audit.flush()` is manually called by you. This allows for full developer control on when events are flushed.
 
 ```ts {2}
 AuditPlugin({
@@ -99,12 +97,12 @@ AuditPlugin({
   async onFlushEvents(events) { ... },
 })
 
-await Kilpi.audit.flush()
+await Kilpi.$audit.flush()
 ```
 
 ### Immediate strategy
 
-Finally, primarily for testing purposes, the immediate strategy sends every event separately and immediately as they come. Calling `Kilpi.audit.flush()` will have no effect, as no batching is done.
+Finally, primarily for testing purposes, the immediate strategy sends every event separately and immediately as they come. Calling `Kilpi.$audit.flush()` will have no effect, as no batching is done.
 
 ```ts {2}
 AuditPlugin({
@@ -140,12 +138,12 @@ AuditPlugin({
 
 ## Filtering events
 
-You may optionally filter events using the `filterEvents` option. For example, to only include denied decisions you may do the following.
+You may optionally filter events using the `shouldIncludeEvent` option. For example, to only include denied decisions you may do the following.
 
 ```ts
 AuditPlugin({
   ...,
-  filterEvents(event) {
+  shouldIncludeEvent(event) {
     return !event.authorization.granted
   }
 })
@@ -167,20 +165,20 @@ AuditPlugin({
 To dynamically enable or disable the plugin, you can use the following methods.
 
 ```ts
-Kilpi.audit.disable();
-Kilpi.audit.enable();
+Kilpi.$audit.disable();
+Kilpi.$audit.enable();
 ```
 
 ---
 
 ## Manual flushing
 
-For more precise control on when the current batch is flushed, you may call the `Kilpi.audit.flush()` method to force an immediate flush.
+For more precise control on when the current batch is flushed, you may call the `Kilpi.$audit.flush()` method to force an immediate flush.
 
 ```ts
 // Flush on SIGINT before exiting
 process.on("SIGINT", async () => {
-  await Kilpi.audit.flush();
+  await Kilpi.$audit.flush();
   process.exit(0);
 });
 ```
@@ -211,5 +209,5 @@ You may be tempted to use the `AuditPlugin` for logging, and it can be done. How
   });
 
 + // Logging using hooks
-+ Kilpi.hooks.onAfterAuthorization((e) => console.log(format(e)));
++ Kilpi.$hooks.onAfterAuthorization((e) => console.log(format(e)));
 ```

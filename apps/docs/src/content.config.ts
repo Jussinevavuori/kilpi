@@ -41,6 +41,7 @@ export const collections = {
       date: z.date(),
       summary: z.string(),
       recommended: z.boolean().optional(),
+      archivedAt: z.date().optional(),
     }),
   }),
 };

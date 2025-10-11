@@ -1,8 +1,12 @@
-import type { AnyGetSubject, KilpiCore } from "./KilpiCore";
+import { KilpiCore } from "./KilpiCore";
+import type { AnyGetSubject } from "./types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type KilpiQueryProtector<
+/**
+ * Authorization function for KilpiQuery which authorizes or redacts the output.
+ */
+export type KilpiQueryAuthorizeFn<
   TInput,
   TRawOutput,
   TRedactedOutput,
@@ -14,37 +18,7 @@ export type KilpiQueryProtector<
 }) => TRedactedOutput;
 
 /**
- * Create protected queries. This pattern enables protection of data at the query level, allowing
- * for fine-grained control over data access. With this pattern, pages running multiple queries do
- * not have to remember to protect each piece of data individually, because calling each query
- * with `.protect()` (if a required query) will automatically
- * enforce the necessary protections.
- *
- * ```ts
- * const getUser = Kilpi.query(
- *   // Pure, cacheable query function
- *   cache(async (userId: string): Promise<User | null> => {
- *     const user = await db.query.Users.findFirst({ where: eq(Users.id, userId) });
- *     return user;
- *   },
- *
- *   // Protection options. With no protector defined, the query is unprotected.
- *   {
- *     // Protector function. Protects either by
- *     //   (a) Either returning a boolean for whether the user has access
- *     //   (b) Throwing an error if the user does not have access (e.g. with `Kilpi.protect()`)
- *     protect: async ({ input: [userId] }) => {
- *       await Kilpi.protect("Users:read", { userId });
- *     },
- *   }
- * );
- *
- * // Call directly -- no protections applied.
- * const user = await getUser.unsafe("123");
- *
- * // Call with protection -- throws if unauthorized
- * const user = await getUser.protect("123");
- * ```
+ * Create protected queries.
  */
 export class KilpiQuery<
   TCore extends KilpiCore<any, any>,
@@ -52,29 +26,45 @@ export class KilpiQuery<
   TRawOutput,
   TRedactedOutput = TRawOutput,
 > {
+  /**
+   * Reference to core instance.
+   */
   private core: TCore;
+
+  /**
+   * Reference to internal query function.
+   */
   private query: (...args: TInput) => TRawOutput;
 
-  // Inferring utility
-  public $infer: {
+  /**
+   * Type inference utilities. Do not use at runtime.
+   */
+  public $$infer: {
     core: TCore;
     input: TInput;
     rawOutput: TRawOutput;
     redactedOutput: TRedactedOutput;
   } = {} as any;
 
-  private protector: KilpiQueryProtector<
+  /**
+   * Authorization function which is called after the query is executed to
+   * authorize or redact the output.
+   */
+  private authorize: KilpiQueryAuthorizeFn<
     TInput,
     TRawOutput,
     TRedactedOutput,
     TCore["$$infer"]["getSubject"]
   >;
 
+  /**
+   * Constructor which assigns all parameters.
+   */
   constructor(
     core: TCore,
     query: (...args: TInput) => TRawOutput,
     options: {
-      protector?: KilpiQueryProtector<
+      authorize?: KilpiQueryAuthorizeFn<
         TInput,
         TRawOutput,
         TRedactedOutput,
@@ -85,8 +75,8 @@ export class KilpiQuery<
     this.core = core;
     this.query = query;
 
-    // Assign protector or use no-op protector by default
-    this.protector = options?.protector ?? ((args) => args.output as unknown as TRedactedOutput);
+    // Assign authorize output fn or use no-op authorize by default
+    this.authorize = options?.authorize ?? ((args) => args.output as unknown as TRedactedOutput);
   }
 
   // ===============================================================================================
@@ -94,25 +84,23 @@ export class KilpiQuery<
   // ===============================================================================================
 
   /**
-   * Unsafe access. No redaction or protection.
+   * Unsafe access. No authorization or redaction.
    */
-  public async unsafe(...args: TInput): Promise<TRawOutput> {
+  public async unauthorized(...args: TInput): Promise<TRawOutput> {
     return await this.query(...args);
   }
 
   /**
-   * Safe access. Runs onDeny if the user does not have access.
+   * Safe access. Runs authorization and redaction.
    */
-  public async protect(...args: TInput): Promise<Awaited<TRedactedOutput>> {
-    // Run query and get subject
-    const result = await this.query(...args);
-    const subject = await this.core.getSubject();
+  public async authorized(...input: TInput): Promise<Awaited<TRedactedOutput>> {
+    // Access subject
+    const subject = await KilpiCore.expose(this.core).getSubject();
 
-    // Run through protector to protect (throws) or redact (returns)
-    return await this.protector({
-      input: args,
-      output: result,
-      subject,
-    });
+    // Run query
+    const output = await this.query(...input);
+
+    // Run through authorize to authorize or redact data
+    return await this.authorize({ input, output, subject });
   }
 }

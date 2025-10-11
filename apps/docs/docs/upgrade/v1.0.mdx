@@ -1,0 +1,370 @@
+---
+title: Version 1.0
+description: How to upgrade from version 0 to 1.
+sidebar:
+  badge: New
+---
+
+<Aside>
+  This article does **not** cover new features — it primarily focuses on how to
+  upgrade from v0 to v1 while keeping the same behavior in an application.
+</Aside>
+
+## `@kilpi/core` updates
+
+### Policies and `deny()` and `grant()`
+
+`deny()` and `grant()` have been renamed to `Deny()` and `Grant()`.
+
+```diff lang="ts"
+- import { deny, grant } from "@kilpi/core";
++ import { Deny, Grant } from "@kilpi/core";
+
+export const Kilpi = createKilpi({
+  policies: {
+    async isAdmin(subject) {
+-     if (subject.role === "admin") return grant(subject);
++     if (subject.role === "admin") return Grant(subject);
+-     return deny({ message: "User is not an admin" });
++     return Deny({ message: "User is not an admin" });
+    }
+  }
+})
+```
+
+### Remove scope
+
+Remove all references to scope. It is no longer a part of Kilpi with the simplifications made in v1.
+
+These include `Kilpi.runInScope`, `Kilpi.scoped` and the `Kilpi.hooks.onRequestScope` hook.
+
+```diff lang="ts"
+- return await Kilpi.runInScope(async () => {
+-   return await handler();
+- }, req)
+-
+- export const POST = Kilpi.scoped(async (req: Request) => {
+-   return await handler();
+- })
+
++ await handler();
++
++ export const POST = async (req: Request) => {
++   return await handler();
++ }
+```
+
+Instead of passing `ctx` via scope, you now pass it to the `authorize()` method directly.
+
+```diff lang="ts"
+- await Kilpi.runInScope(async () => {
+-   await Kilpi.authorize("posts:edit", post);
+- }, ctx);
+
++ await Kilpi.posts.edit(post).authorize({ ctx });
+```
+
+<Aside type="tip">
+  **Automatic subject caching** has also been removed. [See
+  here](/docs/concepts/subject#performance-considerations-and-caching--deduping)
+  for more information.
+</Aside>
+
+### `Kilpi.onUnauthorized`
+
+Remove all `Kilpi.onUnauthorized` calls.
+
+<Aside>
+  If using `@kilpi/react-server`, you may replace them with
+  `Kilpi.$onUnauthorizedRscAssert` calls.
+</Aside>
+
+Fall back to using the default `onUnauthorizedAssert` provided to `Kilpi`, the `Kilpi.$hooks.onUnauthorizedAssert` hooks or the `.assert(() => { ... })` callback feature (or your own solution built on these).
+
+### `createKilpi`
+
+`settings.disableSubjectCaching` has been removed and `settings.defaultOnUnauthorized` has been renamed to `onUnauthorizedAssert`.
+
+```diff lang="ts"
+  export const Kilpi = createKilpi({
+    // ...
+-   settings: {
+-     async defaultOnUnauthorized(decision) {
+-       await redirect(`/sign-in?message=${decision.message}`);
+-     },
+-     disableSubjectCaching: true,
+-   },
++   async onUnauthorizedAssert(decision) {
++     await redirect(`/sign-in?message=${decision.message}`);
++   },
+  })
+```
+
+### `Kilpi.isAuthorized`, `Kilpi.authorize` and `Kilpi.getAuthorizationDecision`
+
+Update to the new `.authorize()` API.
+
+```diff lang="ts" ".authorize()" ".assert()"
+- const granted = await Kilpi.isAuthorized("posts:edit", post);
++ const { granted } = await Kilpi.posts.edit(post).authorize();
+
+- const decision = await Kilpi.getAuthorizationDecision("posts:create");
++ const decision = await Kilpi.posts.create().authorize();
+
+- const subject = await Kilpi.authorize("posts:delete", post);
++ const { subject } = await Kilpi.posts.delete(post).authorize().assert();
+```
+
+### `Kilpi.unauthorized()`
+
+The `unauthorized()` method has been removed, but you can mimic its behavior with a `never` policy.
+
+```diff lang="ts"
+  export const Kilpi = createKilpi({
+    // ...
+    policies: {
++     never: () => Deny(),
+      // ...
+    }
+  })
+
+- await Kilpi.unauthorized();
++ await Kilpi.never().authorize().assert();
+```
+
+### `Kilpi.query`
+
+`Kilpi.query` is renamed to `Kilpi.$query` and the API has been updated.
+
+```diff lang="ts"
+- const getPost = await Kilpi.query(
++ const getPost = await Kilpi.$query(
+    async (id) => { ... },
+    {
+-     async protector({ subject, input, output }) { ... },
++     async authorize({ subject, input, output }) { ... },
+    }
+  )
+
+- const post = await getPost.protect("1");
++ const post = await getPost.authorized("1");
+
+- const post = await getPost.unsafe("1");
++ const post = await getPost.unauthorized("1");
+```
+
+### `Kilpi.hooks`
+
+`Kilpi.hooks` is renamed to `Kilpi.$hooks` and the `Kilpi.onRequestScope` hook is removed.
+
+### `EndpointPlugin`
+
+The `EndpointPlugin`'s `Kilpi.createPostEndpoint` method is renamed to `Kilpi.$createPostEndpoint`.
+
+### `AuditPlugin`
+
+The `AuditPlugin`'s interface under `Kilpi.audit` has been renamed to `Kilpi.$audit`.
+
+---
+
+## `@kilpi/client` updates
+
+### `KilpiClient.fetchIsAuthorized`
+
+The old `fetchIsAuthorized` API is now more similar to the server-side API. It also returns the decision and not only a boolean.
+
+```diff lang="ts"
+- const granted = await KilpiClient.fetchIsAuthorized({
+-   action: "posts.edit",
+-   object: post,
+-   queryOptions: { signal },
+- });
++ const { granted } = await KilpiClient.posts.edit(post).authorize({ signal });
+```
+
+### `KilpiClient.fetchSubject`
+
+The `fetchSubject` method has been removed. You can mimic the old behavior with an `always` policy if needed.
+
+```diff lang="ts"
+  export const Kilpi = createKilpi({
+    // ...
+    policies: {
++     always: (subject) => Grant(subject),
+      // ...
+    }
+  })
+
+- const subject = await KilpiClient.fetchSubject();
++ const decision = await KilpiClient.always().authorize();
++ const subject = decision.granted ? decision.subject : null; // Should always be granted
+```
+
+### KilpiClient.clearCache
+
+Client-side cache invalidation has been improved with the new `Kilpi.$cache` API.
+
+```diff lang="ts"
+- await KilpiClient.clearCache();
++ await KilpiClient.$cache.invalidate();
+```
+
+---
+
+## `@kilpi/react-server` updates
+
+### `ReactServerComponentPlugin`
+
+The `ReactServerComponentPlugin` has been renamed to `ReactServerPlugin` and the API has been updated.
+
+```diff lang="ts"
+- import { ReactServerComponentPlugin } from "@kilpi/react-server";
++ import { ReactServerPlugin } from "@kilpi/react-server";
+
+  export const Kilpi = createKilpi({
+    // ...
+-   plugins: [ReactServerComponentPlugin()],
++   plugins: [ReactServerPlugin()],
+  })
+```
+
+### `<Access />` component
+
+The `<Access />` component has been redesigned as the `<Authorize />` component.
+
+```diff lang="tsx"
+- const { Access } = Kilpi.ReactServer.createComponents();
++ const { Authorize } = Kilpi.$createReactServerComponents();
+
+- <Access
+-   to="posts:delete"
+-   on={post}
+-   Loading={<LoadingUI />}
+-   Unauthorized={<UnauthorizedUI />}
+- >
+-   <DeletePostForm post={post} />
+- </Access>
+
++ <Authorize
++   policy={Kilpi.posts.delete(post)}
++   Pending={<LoadingUI />}
++   Unauthorized={<UnauthorizedUI />}
++ >
++   <DeletePostForm post={post} />
++ </Authorize>
+```
+
+### `Kilpi.onUnauthorized`
+
+Replace `Kilpi.onUnauthorized` calls with `Kilpi.$onUnauthorizedRscAssert` calls.
+
+```diff lang="ts"
+- Kilpi.onUnauthorized(async (decision) => {
+-   // ...
+- })
++ Kilpi.$onUnauthorizedRscAssert(async (decision) => {
++   // ...
++ })
+```
+
+---
+
+## `@kilpi/react-client` updates
+
+### `ReactClientComponentPlugin`
+
+The `ReactClientComponentPlugin` has been renamed to `ReactClientPlugin` and the API has been updated.
+
+```diff lang="ts"
+- import { ReactClientComponentPlugin } from "@kilpi/react-client";
++ import { ReactClientPlugin } from "@kilpi/react-client";
+
+  export const KilpiClient = createKilpiClient({
+    // ...
+-   plugins: [ReactClientComponentPlugin()],
++   plugins: [ReactClientPlugin()],
+  })
+```
+
+### `<ClientAccess />` component
+
+```diff lang="tsx"
+- const { ClientAccess } = KilpiClient.createComponents();
++ const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
+
+- <ClientAccess
+-   to="posts:delete"
+-   on={post}
+-   Loading={<LoadingUI />}
+-   Unauthorized={<UnauthorizedUI />}
+-   Error={<ErrorUI />}
+- >
+-   <DeletePostForm post={post} />
+- </ClientAccess>
+
++ <AuthorizeClient
++   policy={KilpiClient.posts.delete(post)}
++   Pending={<LoadingUI />}
++   Unauthorized={<UnauthorizedUI />}
++   Error={<ErrorUI />}
++ >
++   <DeletePostForm post={post} />
++ </AuthorizeClient>
+```
+
+### `useIsAuthorized()` hook
+
+The `useIsAuthorized` hook has been renamed to `useAuthorize()` and is available on each policy separately.
+
+```diff lang="tsx"
+- const { useIsAuthorized } = KilpiClient.ReactClient.createComponents();
+
+- const {
+-   isAuthorized,
+-   status,
+-   error,
+-   // ...
+- } = useIsAuthorized("comments:edit", comment);
+
++ const {
++   granted,
++   status,
++   error,
++   // ...
++ } = KilpiClient.comments.edit(comment).useAuthorize();
+```
+
+### `useSubject()` hook
+
+The `useSubject` hook has been removed. You can mimic the old behavior with an `always` policy if needed.
+
+```diff lang="tsx"
+- const { useSubject } = KilpiClient.ReactClient.createComponents();
+-
+- const {
+-   subject,
+-   status,
+-   error,
+-   // ...
+- } = useSubject();
+
+  export const KilpiClient = createKilpiClient({
+    // ...
+    policies: {
++     always: (subject) => Grant(subject),
+      // ...
+    }
+  })
+
++ function useSubject() {
++   const query = KilpiClient.always().useAuthorize();
++   return { ...query, subject: query.granted ? query.decision.subject : null };
++ }
++
++ const {
++   subject,
++   status,
++   error,
++   // ...
++ } = useSubject();
+```

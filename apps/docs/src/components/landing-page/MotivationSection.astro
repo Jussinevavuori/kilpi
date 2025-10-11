@@ -1,0 +1,82 @@
+---
+import Section from "@/components/layout/Section.astro";
+---
+
+<Section id="problem-solution">
+  <div class="space-y-8">
+    <h2 class="text-4xl font-bold tracking-tight">Why did I build Kilpi?</h2>
+
+    <div class="space-y-2">
+      <p>
+        🐢 <strong>Kilpi</strong>
+        <em class="text-muted-fg">[/ˈkilpi/]</em> is the <strong>Finnish</strong> word for <strong
+          >shield</strong
+        >.
+      </p>
+    </div>
+  </div>
+
+  <article class="space-y-4 sm:columns-2 md:columns-3 lg:columns-4">
+    <p class="text-lg font-bold">I've built a lot of applications throughout my career.</p>
+    <p>And I've built authorization into them time after time.</p>
+    <p>
+      And I've created half-baked abstractions for authorization way too often trying to refactor
+      countless <code>if</code> statements littered throughout my pages, mutations, queries and UI components.
+    </p>
+    <p>
+      This has made maintenance troublesome, error-prone and time-consuming, when new features are
+      added or especially when the authorization logic requires changing.
+    </p>
+    <p>Many gray hairs, bugs, and stressful days later, I went looking for a solution.</p>
+    <p class="h-1"></p>
+    <p class="text-lg font-bold">But there was no solution right for me.</p>
+    <p>
+      NPM was coming up dry, believe it or not. The few authorization libraries that exist are
+      either too shallow, old, unmaintained or abandoned.
+    </p>
+    <p>
+      And all the good solutions are paid authorization-as-a-service products intended for much
+      larger applications, not to mention existing authorization systems such as XACML, which are
+      way too much for most web applications.
+    </p>
+    <p class="h-1"></p>
+    <p class="font-bold text-lg">Kilpi was my solution to the problem.</p>
+    <p>I was aiming for a good abstraction and a good developer experience to solve my problems.</p>
+    <p>
+      What started off as just another abstraction eventually became its own package in the monorepo
+      until it evolved into a fully-fledged library.
+    </p>
+    <p>
+      Turns out, it's a great solution for this! Not only has it made authorization clearer and
+      better in my applications, it has also allowed to change my authentication provider with
+      minimal authorization logic changes.
+    </p>
+    <p>
+      Kilpi also helps fight security issues listed in the OWASP 2021 Top 10 Security Risks for Web
+      Applications and CWE 2024 Top 25 Most Dangerous Software Weaknesses reports.
+    </p>
+    <p>
+      Not only was it fun to build and a joy to use to solve my own problems, I also wrote my
+      master's thesis for Aalto University on Kilpi and authorization in the web.
+    </p>
+  </article>
+  <div class="flex items-center gap-4">
+    <img
+      alt="Jussi Nevavuori"
+      src="https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg"
+      class="rounded-full size-16"
+    />
+
+    <div class="max-w-sm">
+      <a
+        class="leading-tight text-xl font-bold underline text-foreground"
+        href="https://www.jussinevavuori.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Jussi Nevavuori
+      </a>
+      <p>Author of Kilpi, full-stack software developer & designer, entrepreneur & MSc. (Tech).</p>
+    </div>
+  </div>
+</Section>

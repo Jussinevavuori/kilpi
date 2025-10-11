@@ -1,9 +1,19 @@
-import type { AnyKilpiCore } from "@kilpi/core";
+import type { AnyKilpiCore, PolicysetActions } from "@kilpi/core";
 import type { KilpiClient } from "./KilpiClient";
+import type { KilpiClientPolicy } from "./KilpiClientPolicy";
 
-export type KilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends object> = (
-  core: KilpiClient<TIn>,
-) => TExtension;
+// Alternative naming suggestions:
+// - "publicInterface" could be "expose", "api", "methods", or "exports".
+// - "extendPolicy" could be "policyExtension", "extendPolicyApi", or "policyEnhancer".
+
+export type KilpiClientPlugin<TCore extends AnyKilpiCore, TClientExtension extends object> = (
+  client: KilpiClient<TCore>,
+) => {
+  extendClient?: () => TClientExtension;
+  extendPolicy?: (
+    policy: KilpiClientPolicy<KilpiClient<TCore>, PolicysetActions<TCore["$$infer"]["policies"]>>,
+  ) => object; // Typed via declaration merging in the plugin files
+};
 
 /**
  * Kilpi plugins are functions that take in a KilpiCore instance, do something with the instance
@@ -12,26 +22,30 @@ export type KilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends objec
  * ## Example
  *
  * @usage
- * ```ts
+ * ```typescript
  * function SayHelloPlugin<T extends AnyKilpiCore>(opts: { name: string }) {
- *   return createKilpiPlugin((Client: KilpiClient<T>) => {
+ *   return createKilpiClientPlugin((Client: KilpiClient<T>) => {
  *     return {
- *       sayHello: () => console.log(`Hello rom ${opts.name}`),
+ *       extendClient() {
+ *         return {
+ *           $sayHello: () => console.log(`Hello from ${opts.name}`),
+ *         };
+ *       }
  *     };
- *   })
+ *   });
  * }
  *
  * const KilpiClient = createKilpiClient<typeof Kilpi>({
  *   plugins: [
  *     SayHelloPlugin({ name: "Kilpi Client Plugin" }),
  *   ],
- * })
+ * });
  *
- * Kilpi.sayHello(); // Hello from Kilpi Client Plugin
+ * Kilpi.$sayHello(); // Hello from Kilpi Client Plugin
  * ```
  */
-export function createKilpiClientPlugin<TIn extends AnyKilpiCore, TExtension extends object>(
-  plugin: KilpiClientPlugin<TIn, TExtension>,
-): KilpiClientPlugin<TIn, TExtension> {
+export function createKilpiClientPlugin<TCore extends AnyKilpiCore, TExtension extends object>(
+  plugin: KilpiClientPlugin<TCore, TExtension>,
+) {
   return plugin;
 }

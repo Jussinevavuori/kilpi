@@ -1,4 +1,14 @@
 {
-  "printWidth": 100,
-  "plugins": ["prettier-plugin-tailwindcss"]
+	"printWidth": 100,
+	"plugins": [
+		"prettier-plugin-tailwindcss"
+	],
+	"overrides": [
+		{
+			"files": "**/*.mdx",
+			"options": {
+				"printWidth": 80
+			}
+		}
+	]
 }

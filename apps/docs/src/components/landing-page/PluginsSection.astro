@@ -10,15 +10,15 @@ export const CATEGORIES = [
     items: [
       {
         title: "React Server Components",
-        description: "Automatic RSC scope and <Access /> component.",
+        description: "The <Authorize /> component and more features.",
         Icon: SvgLogos.React,
-        link: "/docs/plugins/react-server-components",
+        link: "/docs/plugins/react-server",
       },
       {
         title: "React Client",
-        description: "React client components and hooks for Kilpi Client bindings.",
+        description: "Client bindings with <AuthorizeClient /> and useAuthorize()",
         Icon: SvgLogos.React,
-        link: "/docs/plugins/react-client-components",
+        link: "/docs/plugins/react-client",
       },
     ],
   },
@@ -38,49 +38,6 @@ export const CATEGORIES = [
           "Automatically construct an API endpoint for fetching the current subject and authorization decisions.",
         Icon: ToyBrickIcon,
         link: "/docs/plugins/endpoint",
-      },
-    ],
-  },
-  {
-    title: "Installation guides",
-    description:
-      "With or without plugins, see how to start using Kilpi with your favorite framework.",
-    items: [
-      {
-        title: "Next.js",
-        Icon: SvgLogos.Next,
-        link: "/docs/installation/next-js",
-        description: "",
-      },
-      {
-        title: "Hono",
-        Icon: SvgLogos.Hono,
-        link: "/docs/installation/hono",
-        description: "",
-      },
-      {
-        title: "Express",
-        Icon: SvgLogos.Express,
-        link: "/docs/installation/express",
-        description: "",
-      },
-      {
-        title: "Nest.js",
-        Icon: SvgLogos.NestJs,
-        link: "/docs/installation/nest-js",
-        description: "",
-      },
-      {
-        title: "Koa",
-        Icon: "https://images.seeklogo.com/logo-png/36/2/koa-logo-png_seeklogo-362249.png",
-        link: "/docs/installation/koa",
-        description: "",
-      },
-      {
-        title: "Oak",
-        Icon: "https://oakserver.org/oak_logo_head.svg?__frsh_c=6ccb8f389a5d8534f54e00d00f731f6c6dc69c61",
-        link: "/docs/installation/oak",
-        description: "",
       },
     ],
   },
@@ -127,25 +84,4 @@ export const CATEGORIES = [
       </div>
     ))
   }
-
-  <div class="flex flex-col gap-1">
-    <h3 class="text-xl font-semibold">Couldn't find yours?</h3>
-    <p class="text-muted-fg max-w-xl">
-      Kilpi is framework agnostic and can always be used without any plugins or component libraries.
-      You may also{" "}
-      <a href="https://github.com/Jussinevavuor/kilpi/issues/new" class="underline">
-        request a new integration, feature, or plugin
-      </a>{" "}
-      or{" "}
-      <a
-        href="https://jussinevavuori.com#contact"
-        class="underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        contact me
-      </a>{" "}
-      to request support.
-    </p>
-  </div>
 </Section>

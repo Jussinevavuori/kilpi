@@ -2,7 +2,7 @@
 title: Endpoint Plugin
 ---
 
-The endpoint plugin is already included in `@kilpi/core`. Apply the plugin in your Kilpi configuration as follows.
+The endpoint plugin is already included in `@kilpi/core`. Apply the plugin in your Kilpi configuration as follows. [This plugin is intended to be used together with `@kilpi/client`](/docs/concepts/usage-on-client).
 
 ```diff lang="ts"
 // kilpi.ts
@@ -11,89 +11,141 @@ import { createKilpi, EndpointPlugin } from "@kilpi/core";
 export const Kilpi = createKilpi({
   getSubject,
   policies,
-+  plugins: [EndpointPlugin({ secret: process.env.KILPI_SECRET })]
++  plugins: [
++    EndpointPlugin({
++      // Required
++      secret: process.env.KILPI_SECRET,
++    })
++  ]
 })
 ```
 
+<Aside type="tip">
+
 The secret can be included in the client bundle.
+
+</Aside>
 
 ## Usage
 
-The endpoint plugin exposes the `Kilpi.createPostEndpoint()` function which constructs a web-standard request-response handler function. You can integrate it with your framework of choice however you want. For example, with Next.js you would do the followings
+The endpoint plugin exposes the `Kilpi.$createPostEndpoint()` function which constructs a web-standard request-response handler function. You can integrate it with your framework of choice however you want. For example, with Next.js:
 
 ```ts
 // app/api/kilpi/route.ts
 // (req: Request) => Promise<Response>
-export const POST = Kilpi.createPostEndpoint();
+export const POST = Kilpi.$createPostEndpoint();
 ```
 
-See [usage on client](/docs/getting-started/usage-on-client) for how to set up `KilpiClient` for calling the endpoint as below including batching, caching, and deduplication.
-
-```ts
-await KilpiClient.fetchIsAuthorized({
-  action: "documents:delete",
-  object: myDocument,
-});
-```
-
-## SuperJSON serialization
+<Aside>
 
 The endpoint plugin uses [SuperJSON](https://www.npmjs.com/package/superjson) for serializing the request and response bodies. This allows you to send complex data types such as dates, maps, sets, and other non-JSON-safe values in the request body and receive them in the response.
 
+</Aside>
+
+## Optional configuration
+
+You can provide additional configuration to `EndpointPlugin` to customize its behavior. See below examples.
+
+```ts
+EndpointPlugin({
+  secret: "...",
+
+  // Extract the `ctx` parameter from the request for `getSubject`
+  // if required.
+  getContext(req) {
+    return req;
+  },
+
+  // Before handling the request, run this hook. This hook may
+  // optionally throw or return an early response to terminate
+  // execution. Useful for e.g. rate-limiting.
+  async onBeforeHandleRequest(req) {
+    const allow = await rateLimit();
+    if (!allow) {
+      return Response.json({ error: "Too fast" }, { status: 429 });
+    }
+  },
+
+  // Before handling each item in the request, run this hook.
+  // Simply an "event-listener" type callback.
+  async onBeforeProcessItem(item) {
+    if (item.type === "fetchDecision") {
+      console.log(`Deciding ${item.action} on ${item.object}`);
+    }
+  },
+});
+```
+
 ---
 
-## API reference
+<Collapsible title="API reference (advanced)">
 
-The API is designed for `@kilpi/client` and is not optimized for calling manually, however it is possible.
-
-### Basic fetch example
-
-The following is a basic example of how you can call the endpoint manually. It includes bearer authentication with `secret` and `SuperJSON.stringify` for serializing the request body.
+The API is designed for `@kilpi/client` and is not optimized for calling manually, however it is possible. See the short example below.
 
 ```ts
 import * as SuperJSON from "superjson";
+import z from "zod";
 
-function callKilpiApiEndpoint(body: RequestBody) {
+// Utility method you can call to fetch decisions from Kilpi. Supports
+// batching by sending multiple queries at once.
+export function callKilpiApiEndpoint(body: Array<{
+  type: "fetchDecision"; // May support other types of requests in the future, e.g. fetchSubject
+  requestId: string; // Generate a unique ID for this item in the array to find the corresponding response
+  action: string; // The action, e.g. "posts.edit"
+  object: unknown; // The corresponding object, e.g. the post object
+}>) {
+  // Send the request with these parameters
   const response = await fetch(process.env.PUBLIC_KILPI_URL, {
     method: "POST",
+    body: SuperJSON.stringify(body),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.PUBLIC_KILPI_SECRET}`,
     },
-    body: SuperJSON.stringify(body),
   });
 
+  // Response must have status 200
   if (!response.ok) throw new Error("Failed to call Kilpi API");
 
-  return (await response.json()) as ResponseBody;
+  // Setup schema for response shape using Zod
+  const responseSchema =  z.object({
+    // Used to match which request from the body array each
+    // response item corresponds to.
+    requestId: z.string(),
+
+    // The actual response data for that request.
+    data:  z.object({
+      decision: z.discriminatedUnion("granted", [
+        z.object({
+          granted: z.literal(true),
+          subject: z.unknown(),
+        }),
+        z.object({
+          granted: z.literal(false),
+          message: z.string().optional(),
+          reason: z.string().optional(),
+          metadata: z.unknown().optional(),
+        }),
+      ]),
+    })
+  }).array();
+
+  // Get JSON and parse and validate
+  return await response.json().then((body) => responseSchema.parse(body));
 }
+
+const responses = await callKilpiApiEndpoint([
+  {
+    type: "fetchDecision",
+    requestId: "123",
+    action: "posts.edit",
+    object: { id: "post-123", authorId: "user-123" },
+  }
+])
+
+const decision = responses.find(_ => _.requestId === "123")?.data?.decision;
+
+if (decision.granted) { ... }
 ```
 
-### Request body schema
-
-The request body is serialized with [SuperJSON](https://www.npmjs.com/package/superjson).
-
-For batching purposes, the Kilpi API is always called with an array of items, each one of which has a unique `requestId` and a type indicating the type of the request. Depending on the type, the request may require additional data.
-
-```ts
-type RequestBody = Array<
-  | {
-      type: "getIsAuthorized";
-      requestId: string;
-      action: string; // Action (e.g. "documents:create")
-      object?: any; // Optional object
-    }
-  | {
-      type: "getSubject";
-      requestId: string;
-    }
->;
-```
-
-### Response schema
-
-The response is always a corresponding array of items, with each item having a matching `requestId` and `data` attribute indicating the response data for that item.
-
-```ts
-type ResponseBody = Array<{ requestId: string; data: any }>;
-```
+</Collapsible>

@@ -4,125 +4,203 @@ sidebar:
   order: 3
 ---
 
-**The subject** represents your **user** or other actor and their permissions, memberships or similar. The subject allows you to wrap any authentication provider and pass it to Kilpi for evaluating policies. The term "user" can be used interchangeably with the "subject".
+**The subject** represents the current **user** as well as any of their authorization-related data, such as permissions and memberships.
 
-### Example subject
+<Aside>
+  **Subject ≈ user**, however the term **subject** is more commonly used in
+  authorization systems, as it may also refer to e.g. external systems,
+  applications or AI agents, which may access your application.
+</Aside>
+
+The current user is provided using the **`getSubject` adapter** to allow getting the subject from any system or authentication provider.
+
+<Aside>
+  Because authentication always comes before authorization, Kilpi reduces
+  boilerplate and calls `getSubject` for you.
+</Aside>
+
+## Defining a `getSubject` adapter
+
+Implement your `getSubject` adapter by passing it to `createKilpi`. It should call your authentication system or provider and return any value that represents the current subject or e.g. `null` if there is no authenticated subject.
 
 ```ts
-// src/kilpi/subject.ts
-export type Subject = { id: string };
+export const Kilpi = createKilpi({
+  async getSubject() {
+    const user = await myAuthenticationProvider.getCurrentUser();
+    if (!user) return null;
+    return { id: user.id, name: user.name };
+  },
+  // ...
+});
+```
 
-export async function getSubject(): Promise<Subject | null> {
-  const session = await getSession(); // From your auth provider
-  if (!session) return null;
-  return { id: session.id };
-}
+The `subject`'s type is automatically inferred by your `policies`.
+
+<Aside type="tip">
+  You can extract `getSubject` into its own function to infer the `Subject` type. This is especially useful when defining policies in separate objects.
+
+```ts {3}
+async function getSubject() { ... }
+
+export type Subject = Awaited<ReturnType<typeof getSubject>>;
 
 export const Kilpi = createKilpi({ getSubject, ... })
 ```
 
+</Aside>
+
 ---
 
-### Providing arguments to getSubject
+## Passing a context argument
 
-Often, to get your current subject, you need access to a **context**, such as the current request. **You can provide data to the `getSubject` function via the current scope** as follows.
+Commonly, your `getSubject` may require additional **context** (e.g. the current `request`).
 
-<Steps>
-<Step>
-  
-#### Accept context in `getSubject`
+<Aside>
+  When accepting the `ctx` parameter, ensure it is made optional with `?` as
+  shown below.
+</Aside>
 
-Define the type of the context parameter in your `getSubject` function. **The parameter must be optional.** The context may contain e.g. the current request or any other data you need to fetch the subject.
-
-```ts {2}
-export async function getSubject(
-  context?: { req: Request }, // Must be optional
-) {
-  if (!context?.req) return null;
-  return await getUserFromRequest(context.req);
-}
-```
-
-</Step>
-<Step>
-
-#### Pass context via scope
-
-Pass the context as the second argument to `Kilpi.runInScope` or `Kilpi.scoped` to make it available in the `getSubject` function. The type is inferred from the `getSubject` function signature.
-
-```ts {4}
-app.use((req, res, next) => {
-  Kilpi.runInScope(
-    async () => await next(),
-    { req }, // Provide context object
-  );
+```ts {2-4} "ctx"
+export const Kilpi = createKilpi({
+  async getSubject(ctx?: Request) {
+    if (!ctx) return null;
+    const user = await myAuthenticationProvider.getCurrentUser(ctx);
+    if (!user) return null;
+    return { id: user.id, name: user.name };
+  },
+  // ...
 });
 ```
 
-[Read more about the scope](/docs/concepts/scope).
+You can then pass this `ctx` object when authorizing using the `authorize()` API.
 
-</Step>
-</Steps>
+```ts "ctx: request"
+await Kilpi.some.policy().authorize({ ctx: request });
+```
 
-### Provide extra data to policies
+<Collapsible title="Alternative to the ctx argument">
+<Aside type="tip">
+As an alternative to directly always providing the `ctx` argument, you may also pass it down via
+`AsyncLocalStorage` if your runtime supports `async_hooks`. This requires some setup but may
+reduce boilerplate.
+</Aside>
 
-In addition to simply fetching the user object as your subject, you may also fetch any additional data, **if it is used in most policies**. This may include e.g. permissions, memberships, subscriptions or any other data that is used in most policies.
+Below is an example implementation using a global middleware to provide the `ctx`.
 
 ```ts
-// subject.ts
-const getSubject = cache(() => {
-  const user = await getUserFromMyAuthProvider();
-  if (!user) return null;
+// app.ts
+import { AsyncLocalStorage } from "async_hooks";
 
-  return Object.assign(user, {
-    permissions: await db.getPermissions(user.id),
-    memberships: await db.getMemberships(user.id),
-    subscription: await db.getSubscription(user.id),
+// Create an AsyncLocalStorage which can provide the `ctx`
+export const ctxStorage = new AsyncLocalStorage<Context>();
+
+// Provide the `ctx` in a middleware -- all code running inside
+// this block has access to `const ctx = ctxStorage.getStore()`.
+app.use(async (ctx, next) => {
+  await ctxStorage.run(ctx, async () => {
+    await next();
+  });
+});
+
+// Later getSubject can use the ctxStorage to consume the ctx
+async function getSubject() {
+  const ctx = ctxStorage.getStore();
+  if (!ctx) return null;
+
+  // ...
+}
+```
+
+</Collapsible>
+
+---
+
+## Additional data
+
+Very commonly, your subject has other authorization-related properties not received directly from your authentication provider. These include e.g. permissions, roles, and memberships. It is often practical and efficient to include them in your `getSubject` instead of fetching in policies.
+
+```ts "memberships" {5}
+export const Kilpi = createKilpi({
+  async getSubject(ctx?: Request) {
+    const user = await myAuthenticationProvider.getCurrentUser(ctx);
+    if (!user) return null;
+    const memberships = await db.listMembershipsForUser(user);
+    return { ...user, memberships };
+  },
+  // ...
+});
+```
+
+---
+
+## Performance considerations and caching / deduping
+
+Kilpi calls `getSubject` for you on every single `authorize()` call. Especially, if your `getSubject` is an expensive or slow function, you should consider caching it for each request (deduplicating).
+
+<Aside type="warning">
+  The deduplication cache **must not** leak the cached subject to other
+  requests.
+</Aside>
+
+This can be done in multiple ways, and some plugins (such as [`ReactServerPlugin`](/docs/plugins/react-server)) even automatically cache the subject for each request.
+
+<Collapsible title="Example: Cache subject with AsyncLocalStorage">
+
+If your runtime supports `async_hooks` and you have access to your application's entrypoints (such as with a global middleware), you can use the following solution based on `AsyncLocalStorage`.
+
+```ts
+import { AsyncLocalStorage } from "async_hooks";
+
+// Create AsyncLocalStorage for providing the cached subject
+const subjectStorage = new AsyncLocalStorage<{
+  value?: { subject: Subject };
+}>();
+
+// Store subject in AsyncLocalStorage
+Kilpi.$hooks.onSubjectResolved((event) => {
+  const store = subjectStorage.getStore();
+  if (store) store.value = { subject: event.subject };
+});
+
+// Inject subject from cache before `getSubject` is called
+Kilpi.$hooks.onSubjectRequestFromCache(() => {
+  const store = subjectStorage.getStore();
+  return store.value;
+});
+
+// Wrap your application entrypoint with the AsyncLocalStorage, e.g.
+// using a middleware or similar solution
+app.use(async (ctx, next) => {
+  await subjectStorage.run({}, async () => {
+    await next();
   });
 });
 ```
 
-If you have data that is only used in a few policies, it should either be **fetched in the policy function** (preferred) or be passed down as the object.
+</Collapsible>
 
-### Subject caching
+<Collapsible title="Example: Cache subject in request object">
 
-The subject is automatically cached inside the scope, if one is available. To disable this behavior, you can pass `settings.disableSubjectCaching: true` to `createKilpi`.
-
-We recommend caching the subject for performance reasons, either yourself or by allowing Kilpi to cache it for you.
+You might in some contexts with a mutable `request` object be able to store the subject directly in the request.
 
 ```ts
-// kilpi.ts
-export const Kilpi = createKilpi({ ...,
-  settings: { disableSubjectCaching: true, },
-})
-```
+type SubjectCache = { subjectCache?: { subject: Subject } };
 
----
+async function getSubject(
+  ctx?: Request & {
+    subjectCache?: { subject: Subject };
+  },
+) {
+  if (!ctx) return null;
 
-## Motivation for the subject pattern
+  // Cache hit
+  if (ctx.subjectCache) return ctx.subjectCache.subject;
 
-### 1. Reduce boilerplate
-
-By automatically providing the subject while evaluating policies, the caller does not have to worry about fetching the subject or passing it to the policy evaluation. Additionally, Kilpi can narrow down the type of the subject to reduce type-checking boilerplate.
-
-```ts
-// Without subject pattern
-const user = await getUserFromMyAuthProvider();
-await Kilpi.authorize(user, "docs:read", doc);
-if (!user) {
-  throw new Error("User not found");
+  // Cache miss: Get subject and store it in cache
+  const subject = await getCurrentUser(ctx);
+  ctx.subjectCache = { subject };
+  return subject;
 }
-console.log(user.name);
-
-// With subject pattern (and narrowed down `user` type)
-const user = await Kilpi.authorize("docs:read", doc);
-console.log(user.name);
 ```
 
-While this does make the API design less explicit, it is justified by the fact that in most applications it reduces the complexity and boilerplate of the implementation by a considerable amount.
-
-### 2. Create auth-provider agnostic API
-
-By bringing your own `getSubject` function you can use any auth provider you want.
-
-This would allow you to easily change your auth provider without changing your authorization layer.
+</Collapsible>

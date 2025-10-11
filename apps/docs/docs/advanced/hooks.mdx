@@ -1,0 +1,148 @@
+---
+title: Hooks
+---
+
+<Aside>This is an advanced concept and not required for most use-cases.</Aside>
+
+**Hooks** are functions, which Kilpi calls during its execution. They are used for e.g. listening to events or customizing the behavior of Kilpi. They can be used for advanced functionality for your application or for plugins.
+
+## Registering and unregistering hooks
+
+Register a hook by calling `Kilpi.$hooks.onSomeHook` and providing the hook callback. This call returns an unregister function.
+
+```ts
+const unregister = Kilpi.$hooks.onAfterAuthorization(...);
+unregister();
+```
+
+You can also unregister multiple hooks with `Kilpi.$hooks.unregisterAll()`.
+
+```ts
+// Unregister ALL hooks.
+Kilpi.$hooks.unregisterAll();
+// Unregister ALL hooks of a specific type.
+Kilpi.$hooks.unregisterAll("onAfterAuthorization");
+```
+
+### Client-side hooks
+
+The `KilpiClient` instance also has its own and similar `KilpiClient.$hooks` API to match.
+
+---
+
+## Server-side hooks
+
+The following hooks are for `Kilpi.$hooks` to be used on the server.
+
+### `onAfterAuthorization`
+
+Event listener called after a policy is evaluated using `.authorize()`.
+
+```ts
+const unregister = Kilpi.$hooks.onAfterAuthorization(async (event) => {
+  console.log(
+    event.action, // e.g. "posts.edit",
+    event.subject, // Resolved subject
+    event.object, // Provided object (e.g. the post object)
+    event.context, // Context object passed to getSubject
+    event.decision, // e.g. { granted: true, subject: { ... } }
+  );
+});
+```
+
+<Aside type="tip">
+  For auditing your authorizations, we recommend using the [Audit
+  Plugin](/docs/plugins/audit) instead of this hook. It uses this hook
+  internally.
+</Aside>
+
+### `onSubjectRequestFromCache`
+
+Before `getSubject` is called, Kilpi calls this hook. If this hook returns a subject (even a `null` or `undefined` subject), that subject is used and `getSubject` is not called.
+
+```ts
+const unregister = Kilpi.$hooks.onSubjectRequestFromCache(async (event) => {
+  console.log(event.context); // Context which was passed to `getSubject` if any.
+
+  // Look up from cache (pseudocode implementation here)
+  const cacheResult = await getSubjectFromCache();
+
+  if (!cacheResult) return; // Cache miss
+  return { subject: cacheResult.subject }; // Cache hit
+});
+```
+
+### `onSubjectResolved`
+
+Event listener called whenever Kilpi calls `getSubject` (usually during `.authorize()`).
+
+```ts
+const unregister = Kilpi.$hooks.onSubjectResolved(async (event) => {
+  console.log(
+    event.subject, // Subject which was resolved
+    event.context, // Context which was passed to `getSubject` if any.
+    event.fromCache, // Boolean for whether the subject was received from the `onSubjectRequestFromCache` hook
+  );
+});
+```
+
+### `onUnauthorizedAssert`
+
+Register additional handlers which are run when `assert()` denies access. These handlers may run side-effects or throw custom exceptions.
+
+```ts
+const unregister = Kilpi.$hooks.onUnauthorizedAssert(async (event) => {
+  console.log(
+    event.decision, // The denied decision
+    event.action, // e.g. "posts.edit",
+    event.subject, // Resolved subject
+    event.object, // Provided object (e.g. the post object)
+    event.context, // Context object passed to getSubject
+  );
+  if (event.decision.reason === "CUSTOM_REASON") {
+    throw new CustomError(event.message);
+  }
+});
+```
+
+---
+
+## Client-side hooks
+
+The following hooks are for `KilpiClient.$hooks` to be used on the client.
+
+### `onBeforeSendRequest`
+
+Before Kilpi sends the request, run additional callbacks or register additional headers.
+
+```ts
+const unregister = KilpiClient.$hooks.onBeforeSendRequest(() => {
+  console.log("Sending request...");
+  if (apiKey) {
+    return {
+      headers: {
+        "X-Custom-Api-Key": apiKey,
+      },
+    };
+  }
+});
+```
+
+### `onCacheInvalidate`
+
+When the cache (or part of it) is invalidated, this hook is called.
+
+<Aside type="tip">
+  Use the `KilpiClientCache.areCacheKeysEqual(keyA, keyB)` method to compare
+  keys instead of `===`.
+</Aside>
+
+```ts
+const unregister = KilpiClient.$hooks.onCacheInvalidate((event) => {
+  if (event.key === null) {
+    console.log("The entire cache was invalidated");
+  } else {
+    console.log("Cache invalidated for key:", event.key);
+  }
+});
+```

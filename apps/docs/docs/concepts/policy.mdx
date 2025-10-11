@@ -4,173 +4,255 @@ sidebar:
   order: 2
 ---
 
-**A policy** is a function that receives a [**subject**](/docs/concepts/subject) and optionally a **object** and returns an [**authorization object**](/docs/concepts/authorization-object), either granted or denied.
+**A policy** is an asynchronous function. It receives the [**subject**](/docs/concepts/subject) and optionally an **object**, then returns an **authorization decision**. The decision is either granted with `Grant(...)` or denied with `Deny(...)`. Policies are always run on the server.
 
-A policy defines an **action** that can be taken in your application, optionally **on an object**, such as `documents:read`, `users:update`, `comments:delete`.
-
-In a nutshell...
-
-- Policies can be nested as deep as you want, forming a hierarchy.
-- Policies always take the subject as the first argument.
-- Policies can optionally take in an object as the second argument.
-- Policies can be asynchronous functions and fetch data from external sources for deciding access.
-- A policy must explicitly either grant (with `return grant(subject)`) or deny (with `return deny(reason?)`) access.
+Each policy uniquely corresponds to an **action**, such as `posts.edit`.
 
 ## Defining policies
 
-Define policies by constructing a `policies` object (with `as const satisfies Policyset<MySubjectType>` for improved type-safety).
-
-<Aside>The subject type must match the subject type returned by `getSubject` exactly.</Aside>
+Define policies as the `policies` argument to `createKilpi`. Each policy function must either `return Grant(subject)` or `return Deny(...)`.
 
 ```ts
-import { deny, grant, type Policyset } from "@kilpi/core";
+export const Kilpi = createKilpi({
+  // ...
+  policies: {
+    // Root-level policy without object
+    async admin(subject) {
+      return subject?.isAdmin ? Grant(subject) : Deny();
+    },
 
-export const policies = {
-  // Example hierarchy
-  documents: {
-    // Allow all authed members to read docs
-    read(user) {
-      if (!user) return deny({ message: "Unauthenticated" });
-      return grant(user);
+    // Nested policy with object
+    posts: {
+      async edit(subject, post: Post) {
+        return subject?.id === post.userId ? Grant(subject) : Deny();
+      },
+    },
+
+    // Deeply nested policy with object and data fetching
+    organizations: {
+      members: {
+        async delete(subject, { orgId }: { orgId: string }) {
+          if (!subject) return Deny();
+          const role = await getUserRole(subject.id, orgId);
+          if (role !== "admin") return Deny();
+          return Grant(subject);
+        },
+      },
     },
   },
-} as const satisfies Policyset<MySubjectType>;
+});
 ```
 
-### Defining a basic policy
+The `subject` type is automatically inferred, but the optional object type must be manually provided. Policies can be nested to any depth.
 
-A basic policy takes in a `subject` (often aliased as `user`) and returns an authorization with `return grant(user)` or `return deny(reason?)`.
-
-> The subject is automatically typed by `satisfies Policyset<MySubjectType>`.
+The policies are then referenced as e.g.
 
 ```ts
-export const policies = {
-  comments: {
-    create(user) {
-      if (!user) return deny({ message: "Unauthenticated" });
-      return grant(user);
-    },
-  },
-} as const satisfies Policyset<MySubjectType>;
-
-await Kilpi.authorize("comments:create");
+Kilpi.always();
+Kilpi.posts.edit(myPost);
+Kilpi.organizations.members.delete({ orgId });
 ```
 
-### Defining a policy with an object
-
-A policy can optionally receive a **object** as the second argument.
-
-```ts {3,5,10}
-export const policies = {
-  comments: {
-    delete(user, comment: Comment) {
-      if (!user) return deny({ message: "Unauthenticated" });
-      return comment.userId === user.id ? grant(user) : deny();
-    },
-  },
-} as const satisfies Policyset<MySubjectType>;
-
-await Kilpi.authorize("comments:delete", myComment);
-```
-
-### Defining an asynchronous data-fetching policy
-
-Policies can even fetch data during evaluation, as they are by design always asynchronous.
-
-```ts {5}
-export const policies = {
-  comments: {
-    async archive(user, comment: Comment) {
-      if (!user) return deny({ message: "Unauthenticated" });
-      const response = await getAiResponse("Allow deleting comment: Yes or no?");
-      return response.includes("Yes") ? grant(user) : deny();
-    },
-  },
-} as const satisfies Policyset<MySubjectType>;
-
-await Kilpi.authorize("comments:delete", myComment);
-```
-
-<Aside type="warning">
-  If using [protected queries](/docs/guides/protected-queries), do not call them via `.protect()`.
-  Instead use `.unsafe()` to avoid infinite loops. This is safe, as the policy never returns the
-  data to the user.
+<Aside type="tip">
+  It is often smart to separate common logic into utility functions, such as
+  `isAdmin(subject)` or `hasMembership(subject, orgId)`.
 </Aside>
 
-### Tip: Utility functions
+<Aside type="note">
+  Do not start your policy or namespace names with `$` to avoid naming
+  conflicts. E.g. `Kilpi.$posts.$edit(post)` is discouraged.
+</Aside>
 
-Almost always, your policies will be more readable when using utility functions. See below for examples on how to use utility functions for e.g. data fetching, common denials and more.
+### `Grant(subject)`: Subject narrowing
 
-```diff lang="ts"
-+ const unauthed = () => deny({ message: "Unauthenticated" });
+Instead of returning `true`, the function returns `Grant(subject)`. This allows Kilpi to infer the narrowed down type subject type when authorizing and reduce boilerplate.
 
-+ const isAdmin = (subject: Subject) => subject.role === "admin";
-
-+ const isMember = async (subject: Subject, orgId: string) => {
-+   const memberships = await db.getMembershipsForUser(subject.id);
-+   return memberships.some(m => m.orgId === orgId && m.role === role);
-+ };
-
-  export const policies = {
-    documents: {
--     async create(user, orgId: string) {
--       if (!user) return deny({ message: "Unauthenticated" });
--       if (user.role === "admin") return grant(user);
--       const memberships = await db.getMembershipsForUser(user.id);
--       return memberships.some(m => m.orgId === orgId && m.role === "manager") ? grant(user) : deny();
--     }
-+     async create(user, orgId: string) {
-+       if (!user) return unauthed();
-+       return isAdmin(user) || (await isMember(user, orgId)) ? grant(user) : deny();
-    }
-  } as const satisfies Policyset<MySubjectType>;
-```
-
-## Narrowed down subject type
-
-Due to this method of defining policies, the final subject type is automatically narrowed down by TypeScript. You can receive the narrowed down subject type using `Kilpi.authorize` or `Kilpi.getAuthorizationDecision`.
-
-```ts {4-5,11}
-export const policies = {
-  documents: {
-    read(user) {
-      if (!user) return deny({ message: "Unauthenticated" });
-      return grant(user);
+```ts {5,6,15,20}
+export const Kilpi = createKilpi({
+  // ...
+  policies: {
+    async authenticated(subject) {
+      if (!subject) return Deny();
+      return Grant(subject); // TS infers subject here is not null
     },
   },
-} as const satisfies Policyset<{ userId: string } | null>;
+});
 
-// User is inferred to be non-null
-const user = await Kilpi.authorize("documents:read");
-//    ^? { userId: string }
+// TS also infers that subject is not null here, no
+// `if (decision.subject)` or `subject?.id` required.
+const decision = await Kilpi.authenticated().authorize();
+if (decision.granted) {
+  console.log(decision.subject.id);
+}
+
+// Similarly for assertions
+const { subject } = await Kilpi.authenticated().authorize().assert();
+console.log(subject.id);
 ```
+
+### `Deny(...)`: Additional denial data
+
+Similarly, instead of returning `false`, the policy function returns `Deny(...)`. The denial can be provided additional data about why the policy failed. All metadata is optional and you can simply `return Deny()` when no additional data is required.
+
+```ts "message" "decision.message" "reason" "decision.reason" ""NOT_SUBSCRIBED"" ""UNAUTHENTICATED"" "requiredTier" "metadata"
+export const Kilpi = createKilpi({
+  // ...
+  policies: {
+    posts: {
+      async edit(subject, post: Post) {
+        if (!subject) {
+          return Deny({
+            message: "You are not signed in", // User-facing
+            reason: "UNAUTHENTICATED", // System-facing
+          });
+        }
+
+        if (subject.tier !== "premium") {
+          return Deny({
+            message: "Not subscribed", // User-facing
+            reason: "NOT_SUBSCRIBED", // System-facing
+            metadata: {
+              requiredTier: "premium", // System-facing
+            },
+          });
+        }
+
+        return Grant(subject);
+      },
+    },
+  },
+});
+
+// Customize unauthorized behavior based on denial details
+const decision = await Kilpi.posts.edit(post).authorize();
+if (!decision.granted) {
+  showMessage(decision.message);
+  if (decision.reason === "NOT_SUBSCRIBED") {
+    redirect(`/subscribe?tier=${decision.metadata?.requiredTier}`);
+  }
+}
+```
+
+---
+
+## Data fetching
+
+Policies are asynchronous and run on the server. This means they can fetch data from the database or any other source, allowing you to create a _stateful authorization system_.
+
+```ts {11}
+export const Kilpi = createKilpi({
+  // ...
+  policies: {
+    posts: {
+      // A free user can create at most 3 posts
+      async create(subject) {
+        if (!subject) return Deny();
+        if (subject.tier === "premium") return Grant(subject);
+
+        // Fetch # of posts from DB
+        const postsCount = await db.countPostsForUser(subject.id);
+        return postsCount < 3 ? Grant(subject) : Deny();
+      },
+    },
+  },
+});
+```
+
+<Aside type="tip">
+  Remember to consider performance. The policy and the fetch are ran on the
+  server during the `authorize()` call.
+</Aside>
+
+---
 
 ## Structuring policies
 
-Initially, you can start off with a simple policies object containing all your application's policies. However, as your application grows, so will the `policies` object. At some point, it might be beneficial to split your policies into separate files.
+You can structure your policies in any way you'd like. However, as a starting point, we recommend a combination of two methods:
 
-```ts
-// policies/documents.ts
-export const documentPolicies = {
-  read(subject, document) { ... },
-  create(subject, document) { ... },
-  delete(subject, document) { ... },
-} as const satisfies Policyset<MySubjectType>;
+### Root-level utility policies
+
+Sometimes you don't need to specify an action. You just want to check the user is authenticated or an admin. For this case, you may define root-level policies such as `authed` or `admin`.
+
+```ts {4,5,11}
+export const Kilpi = createKilpi({ /* ... */,
+  // ...
+  policies: {
+    authed: (subject) => subject ? Grant(subject) : Deny(),
+    admin: (subject) => subject?.isAdmin ? Grant(subject) : Deny(),
+    // ...
+  }
+})
+
+// Get the current user (we can be sure they are an admin)
+const { subject } = await Kilpi.admin().authorize().assert();
 ```
 
-```ts
-// policies/organizations.ts
-export const organizationPolicies = {
-  read(subject, document) { ... },
-  create(subject, document) { ... },
-  delete(subject, document) { ... },
-} as const satisfies Policyset<MySubjectType>;
+### Domain-specific policies
+
+The rest of your policies are recommended to belong to a domain or an "object type", such as `posts` or `organizations`, which includes all the available actions for that domain.
+
+```ts {6-11}
+export const Kilpi = createKilpi({ /* ... */,
+  // ...
+  policies: {
+    // ...
+    posts: {
+      async read(subject, post: Post) { ... },
+      async list(subject)  { ... },
+      async create(subject) { ... },
+      async update(subject, post: Post) { ... },
+      async delete(subject, post: Post) { ... },
+      async archive(subject, post: Post) { ... },
+      // ...
+    }
+  }
+})
 ```
 
-```ts
-// policies/index.ts
-export const policies = {
-  documents: documentPolicies,
-  organizations: organizationPolicies,
-} as const satisfies Policyset<MySubjectType>;
+---
+
+## Scaling policies to larger projects
+
+Instead of defining all policies inside the `createKilpi` body, it is usually a more scalable approach to split them into multiple files.
+
+<Aside type="tip">
+
+When doing this, remember to add `as const satisfies Policyset<MySubject>` (with your `MySubject` type).
+
+This both ensures your types are correct and automatically infers the type of `subject`.
+
+</Aside>
+
+```ts {4,7}
+// src/posts.policies.ts
+import type { Policyset } from "@kilpi/core";
+
+export const postPolicies = {
+  async create(subject) { ... },
+  async update(subject, post: Post) { ... },
+} as const satisfies Policyset<MySubject>;
 ```
+
+```ts {4,7}
+// src/orgs.policies.ts
+import type { Policyset } from "@kilpi/core";
+
+export const orgPolicies = {
+  async create(subject) { ... },
+  async update(subject, org: Organization) { ... },
+} as const satisfies Policyset<MySubject>;
+```
+
+Then finally combine them in `createKilpi`.
+
+```ts {4,5}
+export const Kilpi = createKilpi({
+  // ...,
+  policies: {
+    posts: postPolicies,
+    orgs: orgPolicies,
+  },
+});
+```
+
+You can take this nesting as deep as you want, e.g. `Kilpi.orgs.memberships.invites.create()`.

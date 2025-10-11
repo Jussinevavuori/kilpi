@@ -1,0 +1,75 @@
+---
+import Section from "@/components/layout/Section.astro";
+import { Code } from "astro-expressive-code/components";
+import dedent from "dedent";
+---
+
+<Section id="problem-solution">
+  <div class="lg:flex-row flex flex-col gap-16 justify-between">
+    <div class="space-y-4 max-w-md">
+      <h2 class="text-4xl font-bold tracking-tight">Too few developers consider authorization.</h2>
+      <div class="h-1"></div>
+      <p class="text-lg font-semibold">This leads to technical debt:</p>
+      <p class="text-muted-fg text-lg">
+        Implicit policies, authorization logic scattered all over the codebase, duplicated access
+        control rules, complex if-else statements, authorization logic mixed with business logic,
+        security risks and vulnerabilities, and spending days instead of minutes to change a single
+        access control rule.
+      </p>
+      <p class="font-semibold text-lg">This is expensive, stressful and dangerous.</p>
+    </div>
+    <Code
+      lang="tsx"
+      code={dedent`
+				async function deletePost(post: Post) {
+					const user = await getCurrentUser();
+					if (!user) {
+						return Response.redirect("/sign-in", 302);
+					} else if (
+						user.role === "admin"
+							|| user.id === post.userId
+							|| user.team?.id === post.teamId
+					) {
+						await db.posts.deleteById(post.id);
+						return new Response("Post deleted", { status: 200 });
+					} else {
+						return new Response("Forbidden", { status: 403 });
+					}
+				}
+			`}
+    />
+  </div>
+  <hr />
+  <div class="lg:flex-row-reverse flex flex-col gap-16 justify-between">
+    <div class="space-y-2 max-w-md">
+      <h2 class="text-4xl font-bold tracking-tight">Wouldn't this be better?</h2>
+      <div class="h-1"></div>
+      <p class="text-lg font-semibold">Cheap, stress-free and secure.</p>
+      <p class="text-muted-fg text-lg">
+        A well designed authorization system and explicit policies solve maintainability, security,
+        readability and many more issues caused by <em>ad-hoc authorization</em>.
+      </p>
+      <p class="text-lg font-semibold">
+        And Kilpi is <em>the</em> tool for building your authorization system.
+      </p>
+    </div>
+    <div class="space-y-4">
+      <Code
+        lang="tsx"
+        meta="{2}"
+        class="lg:[&_pre]:!py-6"
+        code={dedent`
+					async function deletePost(post: Post) {
+						const { granted } = await Kilpi.posts.delete(post).authorize();
+						if (granted) {
+							await db.posts.deleteById(post.id);
+						}
+					}
+				`}
+      />
+      <p class="opacity-50 text-sm">
+        And wait until you learn about <code>.assert()</code> — this becomes even shorter!
+      </p>
+    </div>
+  </div>
+</Section>

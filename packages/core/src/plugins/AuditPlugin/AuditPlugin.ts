@@ -19,11 +19,11 @@ export function AuditPlugin<T extends AnyKilpiCore>(
      * Optionally filter events. If provided, only events that pass the filter will be sent to the
      * flush strategy.
      */
-    filterEvents?: (event: KilpiAuditEvent<T>) => boolean;
+    shouldIncludeEvent?: (event: KilpiAuditEvent<T>) => boolean;
 
     /**
-     * Optionally disable initially. Can be re-enabled with `Kilpi.audit.enable()` and
-     * disabled with `Kilpi.audit.disable()`.
+     * Optionally disable initially. Can be re-enabled with `Kilpi.$audit.enable()` and
+     * disabled with `Kilpi.$audit.disable()`.
      */
     disabled?: boolean;
   },
@@ -42,7 +42,7 @@ export function AuditPlugin<T extends AnyKilpiCore>(
 
       // Connect flush strategy to onAfterAuthorization hook to always send an audit event
       // when an authorization event has been performed.
-      unsubscribe = Kilpi.hooks.onAfterAuthorization((event) => {
+      unsubscribe = Kilpi.$hooks.onAfterAuthorization((event) => {
         // Construct audit event
         const auditEvent: KilpiAuditEvent<T> = {
           type: "authorization",
@@ -51,12 +51,11 @@ export function AuditPlugin<T extends AnyKilpiCore>(
           subject: event.subject,
           action: event.action,
           object: event.object,
-          source: event.source,
           timestamp: Date.now(),
         };
 
-        // Omit audit events based on options.filterEvents
-        if (options.filterEvents && options.filterEvents(auditEvent) === false) {
+        // Omit audit events based on options.shouldIncludeEvent
+        if (options.shouldIncludeEvent && options.shouldIncludeEvent(auditEvent) === false) {
           return;
         }
 
@@ -78,23 +77,32 @@ export function AuditPlugin<T extends AnyKilpiCore>(
     // Enable by default unless explicitly disabled
     if (!options.disabled) enable();
 
-    // Public interface for interacting with the audit plugin, namespaced under "audit".
+    // Public interface for interacting with the audit plugin, namespaced under "$audit".
     return {
-      audit: {
-        /**
-         * Manually trigger a flush.
-         */
-        flush: () => flushStrategy.triggerFlush(),
+      extendCore() {
+        return {
+          $audit: {
+            /**
+             * Manually trigger a flush.
+             */
+            flush: () => flushStrategy.triggerFlush(),
 
-        /**
-         * Dynamically enable the audit plugin.
-         */
-        enable,
+            /**
+             * Dynamically enable the audit plugin.
+             */
+            enable,
 
-        /**
-         * Dynamically disable the audit plugin.
-         */
-        disable,
+            /**
+             * Dynamically disable the audit plugin.
+             */
+            disable,
+
+            /**
+             * Current enabled/disabled status of the audit plugin.
+             */
+            getIsEnabled: () => Boolean(unsubscribe),
+          },
+        };
       },
     };
   });

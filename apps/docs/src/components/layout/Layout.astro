@@ -23,7 +23,7 @@ type Props = {
 const { title, siteWidthPx = 1280 } = Astro.props;
 ---
 
-<html lang="en" class="scroll-smooth">
+<html lang="en" class={process.env.NODE_ENV === "production" ? "scroll-smooth" : ""}>
   <Head title={title} />
   <body
     class="min-h-screen font-sans bg-bg text-fg antialiased"

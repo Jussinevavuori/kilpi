@@ -1,0 +1,158 @@
+---
+title: React Server Plugin
+description: RSC integration, components and more.
+sidebar:
+  label: React Server Plugin
+---
+
+The **React Server Plugin** provides **authorization components** as well as other utilities such as automatic subject caching and per-page `onUnauthorizedAssert` handlers.
+
+## Installation
+
+Install the plugin with your package manager of choice.
+
+<Tabs syncKey="package-manager">
+<Tab label="npm">
+
+```bash
+npm install @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="yarn">
+
+```bash
+yarn add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="pnpm">
+
+```bash
+pnpm add @kilpi/react-server
+```
+
+</Tab>
+
+<Tab label="bun">
+
+```bash
+bun add @kilpi/react-server
+```
+
+</Tab>
+</Tabs>
+
+Apply the plugin in your Kilpi configuration as follows.
+
+```diff lang="ts"
+// kilpi.ts
+import { createKilpi } from "@kilpi/core";
+import { ReactServerPlugin } from "@kilpi/react-server";
+
+export const Kilpi = createKilpi({
+  getSubject,
+  policies,
++  plugins: [ReactServerPlugin()]
+})
+```
+
+---
+
+## Features
+
+The `ReactServerPlugin` includes multiple features that make working with RSC applications (such as Next.js) easier.
+
+---
+
+### Subject caching
+
+The plugin automatically caches your subject such that each request will only evaluate `getSubject` once.
+
+<Collapsible title="Opting out of subject caching">
+
+To opt out of this behavior, you can set
+
+```ts
+ReactServerPlugin({ disableSubjectCaching: true });
+```
+
+</Collapsible>
+
+---
+
+### The `<Authorize />` component
+
+The `ReactServerPlugin` provides the `<Authorize />` component to authorize and conditionally render your server-side UI.
+
+```ts
+const { Authorize } = Kilpi.$createReactServerComponents();
+```
+
+You can use the component as follows.
+
+```tsx
+// Only show EditPostForm when authorized to edit the post
+<Authorize policy={Kilpi.posts.edit(post)}>
+  <EditPostForm post={post} />
+</Authorize>
+```
+
+Additionally, you can provide optional unauthorized and pending (Suspense fallback) UIs.
+
+```tsx
+<Authorize
+  policy={Kilpi.posts.delete(post)}
+  Pending={<p>Loading...</p>}
+  Unauthorized={<p>You are not allowed to delete this post</p>}
+>
+  <DeletePostForm post={post} />
+</Authorize>
+```
+
+You can even use render props to access the decision to render the authorized and unauthorized UIs.
+
+```tsx
+<Authorize
+  policy={Kilpi.posts.create()}
+  Unauthorized={(decision) => <p>{decision.message}</p>}
+>
+  {(decision) => <CreatePostForm authorName={decision.subject.name} />}
+</Authorize>
+```
+
+---
+
+### `Kilpi.$onUnauthorizedRscAssert`
+
+The `Kilpi.$onUnauthorizedRscAssert` API allows you to set an `onUnauthorizedAssert` handler per request.
+
+For example, if you want unauthorized access to `/posts/[id]` to redirect to `/posts`, you can use `Kilpi.$onUnauthorizedRscAssert` as follows.
+
+```tsx {4-8}
+export default async function PostPage(props: PageProps) {
+  const { id } = await props.params;
+
+  // If any assertion on this page fails, e.g. in
+  // `getPost.authorized`, always redirect to `/posts`.
+  Kilpi.$onUnauthorizedRscAssert(async (decision) => {
+    redirect("/posts");
+  });
+
+  // Either a protected query which calls .assert()
+  const post = await getPost.authorized(id);
+
+  // Or calling .assert() directly somewhere on the page
+  await Kilpi.posts.read(post).authorize().assert();
+
+  return <PostDetails post={post} />;
+}
+```
+
+<Aside>
+
+Subject caching and the `Kilpi.$onUnauthorizedRscAssert` method are both based on `React.cache`.
+
+</Aside>

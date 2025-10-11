@@ -5,46 +5,62 @@ description: Install Kilpi for Oak
 
 <Steps>
 <Step>
-### Install & setup Kilpi
+### Install and setup Kilpi
 
 Install Kilpi and setup your Kilpi instance by following the [quickstart guide](/docs/getting-started/quickstart).
 
 ```ts
-export const Kilpi = createKilpi({
-  getSubject,
-  policies,
-  ...
-})
+export const Kilpi = createKilpi({ ... })
 ```
+
 </Step>
 
 <Step>
-### [Provide scope](/docs/concepts/scope)
+### Handle unauthorized errors from `.assert()`
 
-To use the full feature set of Kilpi, you need to [provide a scope](/docs/concepts/scope) for each request. This can be done by using the `Kilpi.runInScope` method as a middleware.
+The `.assert()` method throws an error when authorization is denied. Oak surfaces errors via `ctx.throw`, so the global `onUnauthorizedAssert` handler requires access to `ctx`. One way to achieve this is using `AsyncLocalStorage` as shown below.
 
 ```ts
+// app.ts
+import { AsyncLocalStorage } from "async_hooks";
+
+// Create an AsyncLocalStorage which can provide the `ctx`
+export const ctxStorage = new AsyncLocalStorage();
+
+// Provide the `ctx` in a middleware -- all code running inside
+// this block has access to `const ctx = ctxStorage.getStore()`.
 app.use(async (ctx, next) => {
-  Kilpi.runInScope(async () => {
+  await ctxStorage.run(ctx, async () => {
     await next();
-  })
-})
+  });
+});
 ```
-</Step>
-
-<Step>
-### Handle unauthorized errors
-
-Since Oak supports throwing HTTP exceptions, handling errors is straightforward with a middleware.
 
 ```diff lang="ts"
-  app.use(async (ctx, next) => {
-    Kilpi.runInScope(async () => {
-+     Kilpi.onUnauthorized(({ message }) => ctx.throw(403, message));
-      
-      await next();
-    })
+  // kilpi.ts
+  import { ctxStorage } from "./app";
+
+  export const Kilpi = createKilpi({
+    // ...,
++   async onUnauthorizedAssert(decision)  {
++     // Access the context if available
++     const ctx = ctxStorage.getStore();
++     if (!ctx) return;
++
++     // Optionally customize behavior based on the decision
++     switch (decision.reason) { ... }
++
++     // By default, throw a HTTP 403 Forbidden exception
++     ctx.throw(403, decision.message);
++   }
   })
 ```
+
+<Aside type="note">
+
+If your runtime does not support `async_hooks`, you must find another way of handling unauthorized cases if you want to use the `.assert()` API.
+
+</Aside>
+
 </Step>
 </Steps>

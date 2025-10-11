@@ -4,30 +4,13 @@ sidebar:
   order: 6
 ---
 
-You can also use Kilpi on the client-side, as long as you have a server-side instance of Kilpi you can connect to using the [endpoint plugin](https://kilpi.dev/docs/docs/plugins/endpoint). Follow this guide to set up `KilpiClient`.
-
-<Aside type="tip">
-  This works especially well with frameworks like Next.js, where you can import the type of the
-  server-side instance on the client and use it infer the types, similarly as with
-  [tRPC](https://trpc.io/).
-</Aside>
+You can also use Kilpi on the client side with the `@kilpi/client` package which allows you to **fetch authorization decisions from the server**.
 
 <Aside>
-  By design, **all authorization is performed on the server**. The `@kilpi/client` package only
-  fetches authorization decisions from the server, **with request caching, batching, and deduping**
-  for performance.
-
-<Collapsible title="Reasons for server-first design">
-
-1.  **Priority**: Most critical authorizations should and do happen on the server. The client is a "second-class" citizen for the API as far less critical authorizations are performed there.
-1.  **Trust**: You can always trust the decisions from the server, not the client.
-1.  **Backend access**: The `getSubject` function and policies are all asynchronous and should be able to access e.g. the database.
-1.  **Sensitive data**: The policies or the `getSubject` function may handle sensitive data which shouldn't be exposed to the client.
-
-In the future, there are plans to create an alternative client-first API for client-side applications.
-
-</Collapsible>
-
+  All authorization decisions are evaluated on the server. This makes them
+  secure and trustworthy. This way they also can't expose any sensitive data and
+  can access external data sources such as your authentication provider and
+  backend.
 </Aside>
 
 ---
@@ -85,28 +68,41 @@ PUBLIC_KILPI_SECRET=generate-secret
 </Step>
 <Step>
 
-### Setup an authorization endpoint
+### Install EndpointPlugin
 
-The Kilpi client requires an endpoint for fetching authorization decisions.
+The Kilpi client requires an endpoint for fetching authorization decisions. Use the [EndpointPlugin](/docs/plugins/endpoint) from `@kilpi/core` to create an authorization endpoint. It exposes the `Kilpi.$createPostEndpoint()` function, which constructs a web-standard request-response function to use as your endpoint.
 
-Use the [EndpointPlugin](/docs/plugins/endpoint) from `@kilpi/core` to create an authorization endpoint. It exposes the `Kilpi.createPostEndpoint()` function, which constructs a web-standard request-response function to use as your endpoint.
-
-```ts
+```diff lang="ts"
 // kilpi.ts
 import { createKilpi, EndpointPlugin } from "@kilpi/core";
 
 export const Kilpi = createKilpi({
   ...,
-  plugins: [
-    EndpointPlugin({ secret: process.env.PUBLIC_KILPI_SECRET })
-  ]
++  plugins: [
++   EndpointPlugin({
++     secret: process.env.PUBLIC_KILPI_SECRET,
++     // Optional
++     getContext(request) { ... },
++     async onBeforeHandleRequest(request) { ... },
++     async onBeforeProcessItem(requestItem) { ... },
++   })
++ ]
 })
 ```
 
+Read more about the [EndpointPlugin](/docs/plugins/endpoint) for more information on the setup options.
+
 <Aside type="tip">
-  The endpoint automatically supports [SuperJSON](https://www.npmjs.com/package/superjson)
-  serialization for sending dates and other non-JSON-safe values.
+  The endpoint automatically supports
+  [SuperJSON](https://www.npmjs.com/package/superjson) serialization for sending
+  dates and other non-JSON-safe values.
 </Aside>
+
+</Step>
+
+<Step>
+
+### Setup the authorization endpoint
 
 Expose the endpoint using your framework of choice.
 
@@ -114,12 +110,12 @@ Expose the endpoint using your framework of choice.
   <Tab label="Next.js (App router)">
     ```ts
     // app/api/kilpi/route.ts
-    export const POST = Kilpi.createPostEndpoint();
+    export const POST = Kilpi.$createPostEndpoint();
     ```
   </Tab>
   <Tab label="Hono">
     ```ts
-    const endpoint = Kilpi.createPostEndpoint();
+    const endpoint = Kilpi.$createPostEndpoint();
 
     app.post('/api/kilpi', async (c) => await endpoint(c.req.raw));
     ```
@@ -127,23 +123,31 @@ Expose the endpoint using your framework of choice.
   </Tab>
 </Tabs>
 
-More guides are coming, but as the `Kilpi.createPostEndpoint()` returns a web-standard request-response function, you can use it with any framework that supports web standards, or create a wrapper around it to support web standards yourself.
+<Aside>
+
+More guides are coming, but as the `Kilpi.$createPostEndpoint()` returns a web-standard `(request: Request) => Promise<Response>` function, you can use it with any framework that supports web standards.
+
+Alternatively, you can use an existing web-standard request-response adapter for your framework or create your own.
+
+</Aside>
 
 </Step>
 <Step>
 
-### Create your `KilpiClient` instance.
+### Create your `KilpiClient` instance
 
 Create your `KilpiClient` instance with `createKilpiClient`. This object is used to fetch authorization decisions from the server.
 
-Optionally, pass `infer` for improved typesafety, and any plugins in `plugins`.
+Optionally, pass `infer` for improved type safety, and add any plugins via `plugins`.
 
 ```ts
 // kilpi-client.ts
 import type { Kilpi } from "./kilpi.ts";
 
 export const KilpiClient = createKilpiClient({
-  infer: {} as typeof Kilpi, // Infer subject and policies from server instance
+  // Infer subject and policies from server instance
+  infer: {} as typeof Kilpi,
+  // Connect to the endpoint
   connect: {
     endpointUrl: process.env.PUBLIC_KILPI_URL,
     secret: process.env.PUBLIC_KILPI_SECRET,
@@ -151,106 +155,165 @@ export const KilpiClient = createKilpiClient({
 });
 ```
 
-</Step>
-<Step>
-
-### Start using on the client
-
-Now you can use the `KilpiClient` instance to fetch the subject and authorization decisions. To enable passing query options, such as abort signals, it has a different signature than the server side `Kilpi` instance.
-
-#### Fetching the subject
-
-```ts
-// Fetch the subject
-const subject = await KilpiClient.fetchSubject();
-
-// Or optionally with query options
-const subject = await KilpiClient.fetchSubject({
-  queryOptions: { signal },
-});
-```
-
-#### Fetching authorization decisions
-
-```ts
-// Fetch authorization decisions for policy without object
-const canCreateDocument = await KilpiClient.fetchIsAuthorized({
-  action: "documents:create",
-  queryOptions: { ... } // Optional
-});
-
-// Fetch authorization decisions for policy with object
-const canUpdateComment = await KilpiClient.fetchIsAuthorized({
-  action: "comments:update",
-  object: comment,
-  queryOptions: { ... } // Optional
-});
-```
-
-<Aside>
-All requests are **cached**, **deduped** and **batched** for performance. You can clear the cache with `KilpiClient.clearCache()`, e.g. as
-
-```ts
-onAuthStateChange(() => KilpiClient.clearCache());
-```
-
-Control the batching options in `createKilpiClient` with the `batching` option.
-
+<Aside type="tip">
+  This works especially well with frameworks like Next.js, where you can import
+  the type of the server-side instance on the client and use it to infer the
+  types, similarly as with [tRPC](https://trpc.io/).
 </Aside>
 
 </Step>
+<Step>
 
-</Steps>
+### Fetch authorization decisions on the client
 
-## Usage with frontend frameworks
+Now you can use `KilpiClient` to fetch authorization decisions from the server with a similar API as on the server.
 
-You can use `@kilpi/client` with your frontend framework of choice or use one of the provided plugins that provide hooks, components and other bindings for the KilpiClient.
+`KilpiClient` automatically provides **request caching, batching and deduplication** for performance.
+
+```ts
+// Similar decision object as on the server
+const decision = await KilpiClient.posts.edit(myPost).authorize();
+```
+
+</Step>
+
+<Step>
+
+### Use with your frontend framework
+
+You can use `@kilpi/client` with your frontend framework of choice or use one of the provided plugins that provide e.g. components and other useful bindings for `KilpiClient`.
 
 <Tabs syncKey="frontend">
   <Tab label="React">
-    The `@kilpi/react-client` package provides hooks and components for using Kilpi with React on the client.
 
-    View [the documentation](/docs/plugins/react-client) for the React Client plugin to start using it.
+#### React (client)
 
+    Get utility hooks and components for client-side React with the [`@kilpi/react-client`
+    package](/docs/plugins/react-client).
 
     ```tsx
-    const KilpiClient = createKilpiClient({
-      // ...,
-      plugins: [ReactClientComponentPlugin()],
-    });
+    import { KilpiClient } from "./kilpi-client";
+    const { AuthorizeClient } = KilpiClient.$createReactClientComponents();
 
-    const {
-      ClientAccess,
-      useSubject,
-      useIsAuthorized
-    } = KilpiClient.ReactClient.createComponents()
+    export function Component({ post }: { post: Post }) {
+      // Use via hooks
+      const { granted } = KilpiClient.posts.create().useAuthorize();
 
-    function Component() {
-      const subject = useSubject();
-      const { isAuthorized: canCreateDocuments } = useIsAuthorized("documents:create");
-
+      // Or components
       return (
-        <>
-          {/* Option 1 */}
-          {canCreateDocument && <button>Create document</button>}
-
-          {/* Option 2 */}
-          <ClientAccess
-            policy="documents:delete"
-            object={document}
-            fallback={<p>You are not authorized to create this document</p>}
-          >
-            <p>You are authorized to create this document</p>
-          </ClientAccess>
-        </>
-      )
+        <AuthorizeClient policy={KilpiClient.posts.delete(post)}>
+          <DeletePostForm />
+        </AuthorizeClient>
+      );
     }
     ```
 
   </Tab>
 </Tabs>
 
-<Aside>
-  More plugins for more frameworks coming in the future. [How to support
-  development](/docs/getting-started/support).
+</Step>
+
+</Steps>
+
+---
+
+## The `authorize()` API
+
+The `authorize()` API is similar to the server-side `authorize()` API and it returns the same decision object. You can provide it additional options as shown below.
+
+```ts
+const decision = await KilpiClient.some.policy().authorize({
+  abortSignal, // Provide a custom abort signal for the fetch call
+});
+```
+
+---
+
+## Caching
+
+On top of **deduplicating** and **batching** queries for performance, `KilpiClient` also caches all requests for you automatically.
+
+All authorization decisions are cached indefinitely, until the cache is invalidated.
+
+### Invalidating the cache
+
+Use the `KilpiClient.$cache` API to invalidate the cache.
+
+```ts
+// Fully clears the cache
+KilpiClient.$cache.invalidate();
+
+// Fine-grained invalidation: Only invalidate this policy
+KilpiClient.my.policy().invalidate();
+```
+
+<Aside type="tip">
+  You should clear the cache at least **when the user signs in or out** to avoid leaking cached data between users.
+
+```ts
+onAuthStateChanged(() => KilpiClient.$cache.invalidate());
+```
+
 </Aside>
+
+<Collapsible title="Cache invalidation in more detail">
+
+#### Hooks
+
+To react to cache invalidations, you can use the hooks API as follows.
+
+```ts
+const unregister = KilpiClient.$hooks.onCacheInvalidate(({ key }) => {
+  // When any cache invalidation happens
+  console.log("Some cache invalidation!");
+
+  // When the full cache is invalidated
+  if (key === null) console.log("Full cache invalidation!");
+  // When a specific cache key is invalidated
+  else console.log(`Cache invalidation for key:`, key);
+});
+```
+
+---
+
+#### Cache keys
+
+Kilpi uses [Tanstack Query](https://tanstack.com/query/latest) inspired keys of type `unknown[]`, which must be serializable. Internally, their stable string representation is used. This means each key must be stringifiable. To compare whether two cache keys are equal, use:
+
+```ts
+const keyA = ["some-key", { value: 1 }];
+const keyB = ["some-key", { value: 1 }];
+
+// False due to referential equivalence
+keyA === keyB;
+
+// True, due to stable stringification
+KilpiClientCache.areCacheKeysEqual(keyA, keyB);
+```
+
+---
+
+#### Getting a policy's cache key
+
+Each policy exposes its cache key as `KilpiClient.my.policy().$cacheKey`. While not recommended, you may also use the cache key directly as
+
+```ts
+// Not recommended but possible
+KilpiClient.$cache.invalidateKey(KilpiClient.my.policy().$cacheKey);
+```
+
+Or you may use it in `onCacheInvalidate` hooks.
+
+```ts
+const policy = KilpiClient.my.policy();
+const unregister = KilpiClient.$hooks.onCacheInvalidate(({ key }) => {
+  if (
+    key === null ||
+    KilpiClientCache.areCacheKeysEqual(key, policy.$cacheKey)
+  ) {
+    console.log("My policy was invalidated");
+  }
+});
+```
+
+</Collapsible>

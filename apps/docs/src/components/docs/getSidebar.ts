@@ -1,4 +1,4 @@
-import { SIDEBAR_FOLDER_CONFIG } from "@/consts";
+import { SIDEBAR_FOLDER_CONFIG } from "@/sidebar.config";
 import { getCollection, type CollectionEntry } from "astro:content";
 
 export type SidebarDocument = {

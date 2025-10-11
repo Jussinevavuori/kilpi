@@ -10,14 +10,26 @@ type Props = {
 };
 
 const { blogs } = Astro.props;
+
+const shownBlogs = blogs.filter((_) => !_.data.archivedAt).slice(0, N_LATEST_BLOGS);
 ---
 
 <Section class="py-32" id="latest-blogs">
   <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Latest articles</h2>
 
-  <div class="flex flex-col gap-16">
-    {blogs.slice(0, N_LATEST_BLOGS).map((blog) => <BlogPost blog={blog} />)}
-  </div>
+  {
+    shownBlogs.length === 0 ? (
+      <div class="p-16 rounded border border-dashed text-black/50 text-center">
+        No articles to show
+      </div>
+    ) : (
+      <div class="flex flex-col gap-16">
+        {shownBlogs.map((blog) => (
+          <BlogPost blog={blog} />
+        ))}
+      </div>
+    )
+  }
 
   <a href="/blog" class="underline font-medium"> View all articles </a>
 </Section>

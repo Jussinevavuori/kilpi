@@ -1,125 +1,155 @@
 ---
 import {
   BicepsFlexedIcon,
+  BlocksIcon,
   BrainCircuitIcon,
-  CodeIcon,
-  DatabaseZapIcon,
-  FingerprintIcon,
+  ComponentIcon,
   LaptopIcon,
-  Loader2Icon,
-  PlugZapIcon,
+  ParenthesesIcon,
   PuzzleIcon,
-  SearchCodeIcon,
-  ShieldCheckIcon,
+  ServerIcon,
+  ShieldIcon,
+  StarIcon,
+  SwordsIcon,
+  TimerIcon,
+  TrendingUpIcon,
   UnplugIcon,
+  ZapIcon,
 } from "lucide-react";
 import FullBleed from "../layout/FullBleed.astro";
 import Section from "../layout/Section.astro";
 
-const FEATURES = [
+const ITEMS = [
   {
-    title: "Framework agnostic",
+    Icon: BrainCircuitIcon,
+    title: "Designed for developers",
     description:
-      "Bring any framework. Kilpi works seamlessly with your existing tech stack, with or without an existing integration.",
-    Icon: PlugZapIcon,
+      "The Kilpi API is designed to be intuitive to read and learn, fast to write and expressive of the developer's intent.",
   },
   {
-    title: "Server-first authorization",
+    Icon: ParenthesesIcon,
+    title: "Policies as functions",
     description:
-      "Kilpi is designed for server-first applications and runs all authorizations on the server for security.",
-    Icon: DatabaseZapIcon,
+      "Not only are policies versionable, but simply functions with the full power of TypeScript.",
   },
   {
-    title: "Any auth provider",
+    Icon: UnplugIcon,
+    title: "Works with everything",
     description:
-      "Better-auth, Next-auth, Lucia, Auth0, Clerk or rolled your own? We support all auth providers via the Subject API.",
-    Icon: FingerprintIcon,
+      "Kilpi works with any TS / JS runtime, library or framework, any authentication provider.",
   },
   {
-    title: "Policies as code",
+    Icon: ComponentIcon,
+    title: "Authorization components",
     description:
-      "Implement policies in type-safe TypeScript for better maintainability, readability and the most flexible authorization API.",
-    Icon: CodeIcon,
+      "First-class support for frameworks with plugins that provide hooks and components to authorize your UI.",
   },
   {
-    title: "Async policies",
-    description:
-      "All policies are functions, allowing you to fetch data from your database, API, or any other source.",
-    Icon: Loader2Icon,
-  },
-  {
-    title: "All authorization models",
-    description:
-      "Supports RBAC, ABAC, ReBAC and any authorization model as simple or as complex as you need.",
     Icon: BicepsFlexedIcon,
+    title: "Flexible authorization model",
+    description:
+      "The Kilpi model can implement DAC, MAC, ABAC, RBAC, ReBAC, EBAC, ROBAC and many more models.",
   },
   {
+    Icon: PuzzleIcon,
     title: "Protected queries",
     description:
-      "Wrap your queries in a protective layer to ensure no-one can ever access data without authorization (optional).",
-    Icon: PuzzleIcon,
+      "Authorizing reads or redacting data can be a surprisingly complex issue without a good tool such as Kilpi.",
   },
   {
-    title: "Client-side authorization",
+    Icon: ServerIcon,
+    title: "Server-first authorization",
     description:
-      "Performant solution for fetching your subject and authorization decisions from the server with deduping, batching and caching.",
+      "All authorization decisions are made on the server side, ensuring security and compliance.",
+  },
+  {
     Icon: LaptopIcon,
+    title: "Type-safe authorization client",
+    description:
+      "Infer the types and query authorization decisions on the client using a tRPC inspired client.",
   },
   {
-    title: "Plugin API & Library",
-    description:
-      "Extend Kilpi with ready-made & custom plugins to fit your use case. See below for list of plugins.",
-    Icon: UnplugIcon,
+    Icon: BlocksIcon,
+    title: "Extensions with plugins",
+    description: "Extend Kilpi with ready-made or custom plugins to fit your use case.",
   },
   {
-    title: "Developer-friendly API",
-    description:
-      "Clean, simple, and intuitive API designed with developer experience in mind. We aim to make authorization a one-liner.",
-    Icon: BrainCircuitIcon,
+    Icon: ShieldIcon,
+    title: "Type-safety at 100%",
+    description: "Autocomplete everything — Kilpi is designed to the highest TypeScript standards.",
   },
   {
-    title: "Hassle-free type-safety",
+    Icon: ZapIcon,
+    title: "High performance",
     description:
-      "Minimal type definitions. Maximal inference. Type-safe everything. Subject narrowing. We promise the best TypeScript authorization experience.",
-    Icon: SearchCodeIcon,
+      "Not only does Kilpi add no overhead, it can even improve your authorization performance.",
   },
   {
-    title: "Production tested",
+    Icon: SwordsIcon,
+    title: "Battle tested and secure",
     description:
-      "Battle-tested in production environments to ensure reliability and validate the design.",
-    Icon: ShieldCheckIcon,
+      "Production-ready, tested and secure authorization layer trusted in real-world applications.",
+  },
+  {
+    Icon: TimerIcon,
+    title: "Fast installation",
+    description: "Install the package and protect your first feature in minutes.",
+  },
+  {
+    Icon: TrendingUpIcon,
+    title: "Gradually adoptible",
+    description: "Start using policy by policy, feature by feature.",
+  },
+  {
+    Icon: StarIcon,
+    title: "Open source",
+    description:
+      "Ditch authorization-as-a-service and vendor lock-in — Kilpi is free and open source.",
   },
 ];
 ---
 
 <FullBleed>
-  <Section id="features" class="py-24">
-    <div class="flex flex-col gap-4">
-      <h2 class="text-3xl text-center font-bold tracking-tight sm:text-4xl">
+  <Section id="features" class="py-32 flex flex-col gap-24">
+    <div class="flex flex-col gap-4 max-w-xl">
+      <h2 class="text-4xl font-bold tracking-tight">
         Your authorization layer with everything your need.
       </h2>
 
-      <p class="max-w-xl text-center mx-auto text-muted-fg">
-        Designed to solve real problems for real applications, Kilpi was born after solving the same
-        problem time after time, for client after client.
+      <p class="text-muted-fg">
+        Designed to solve real problems for real applications, Kilpi was born after trying to solve
+        the same problem time after time, in project after project.
       </p>
     </div>
 
     <div
-      class="grid grid-cols-1 gap-8"
-      style={{
-        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-      }}
+      class="grid gap-8"
+      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}
     >
       {
-        FEATURES.map((feature, index) => (
-          <div class="flex flex-col gap-2">
-            <feature.Icon className="size-5 text-accent-500" />
-            <h3 class="text-2xl font-bold tracking-tight">{feature.title}</h3>
-            <p class="text-sm text-muted-fg">{feature.description}</p>
-          </div>
-        ))
+        ITEMS.map((item, index) => {
+          const hue = (index / ITEMS.length) * 360;
+          return (
+            <div class="space-y-2 max-w-md">
+              <div
+                class="size-12 flex items-center justify-center rounded-xl"
+                style={{
+                  backgroundColor: `oklch(97% 0.067 ${hue})`,
+                  color: `oklch(60% 0.219 ${hue})`,
+                }}
+              >
+                <item.Icon />
+              </div>
+              <h2 class="text-2xl font-bold tracking-tight text-balance">{item.title}</h2>
+              <p class="text-balance opacity-70">{item.description}</p>
+            </div>
+          );
+        })
       }
     </div>
+
+    <h2 class="text-center text-muted-fg text-2xl font-bold tracking-tight text-balance">
+      And so much more...
+    </h2>
   </Section>
 </FullBleed>
