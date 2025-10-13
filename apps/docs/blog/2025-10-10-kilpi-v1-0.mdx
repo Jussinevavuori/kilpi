@@ -3,7 +3,7 @@ title: Kilpi 1.0 and the new Kilpi API
 author: Jussi Nevavuori
 authorUrl: https://jussinevavuori.com
 authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
-date: 2025-03-24
+date: 2025-10-12
 summary: Kilpi 1.0 brings with it massive improvements in developer experience and simplifies integrating Kilpi.
 ---
 
@@ -120,7 +120,7 @@ const decision = await Kilpi.posts.create().authorize();
 Optionally, you can assert an authorization to receive a granted decision or throw.
 
 ```ts "subject" "assert()"
-const { subject } = Kilpi.posts.create().authorize().assert();
+const { subject } = await Kilpi.posts.create().authorize().assert();
 ```
 
 These fully replace the multiple old (and potentially confusing) methods `Kilpi.authorize`, `Kilpi.isAuthorized`, `Kilpi.unauthorized` and `Kilpi.getAuthorizationDecision`.
