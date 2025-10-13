@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 1.1.1
+
+### Patch Changes
+
+- 137cec3: fix Kilpi.$getSubject type signature
+
 ## 1.1.0
 
 ### Minor Changes
