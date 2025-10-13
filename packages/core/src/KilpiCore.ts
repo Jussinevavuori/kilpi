@@ -160,7 +160,9 @@ export class KilpiCore<
    * const subject = await Kilpi.$getSubject({ ctx });
    * ```
    */
-  public async $getSubject(options: Partial<{ ctx: InferContext<TGetSubject> }> = {}) {
+  public async $getSubject(
+    options: Partial<{ ctx: InferContext<TGetSubject> }> = {},
+  ): Promise<Awaited<ReturnType<TGetSubject>>> {
     return await this[KilpiCoreSymbol_GetSubject](options.ctx);
   }
 
