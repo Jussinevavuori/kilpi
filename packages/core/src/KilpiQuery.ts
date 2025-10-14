@@ -86,7 +86,7 @@ export class KilpiQuery<
   /**
    * Unsafe access. No authorization or redaction.
    */
-  public async unauthorized(...args: TInput): Promise<TRawOutput> {
+  public async unauthorized(...args: TInput): Promise<Awaited<TRawOutput>> {
     return await this.query(...args);
   }
 
