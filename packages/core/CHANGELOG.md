@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 1.1.2
+
+### Patch Changes
+
+- e148caa: fix kilpiquery unauthorized return type
+
 ## 1.1.1
 
 ### Patch Changes
