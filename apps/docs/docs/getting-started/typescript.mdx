@@ -1,0 +1,43 @@
+---
+title: TypeScript
+description: Information on using Kilpi with TypeScript.
+---
+
+Kilpi is recommended to be used with TypeScript **with strict mode** enabled. No additional TypeScript configuration is required.
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true
+    // ...
+  }
+  // ...
+}
+```
+
+<Aside>
+
+Without strict mode, Kilpi is not able to infer types properly and may lead to policies being types as `any`.
+
+</Aside>
+
+<Collapsible title="Not able to use strict mode?">
+
+If you are not able to use strict mode, Kilpi can't guarantee full type-safety.
+
+Ensure you at least have the following options enabled, as without them, Kilpi fails to infer types properly.
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "strictFunctionTypes": true
+    // ...
+  }
+  // ...
+}
+```
+
+</Collapsible>
