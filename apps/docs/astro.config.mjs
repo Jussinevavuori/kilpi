@@ -36,6 +36,9 @@ export default defineConfig({
 
   // Configure redirects
   redirects: {
+    // Upgrade guides
+    "/docs/upgrade/v10": "/docs/upgrade/v1-0",
+
     // Docs -> Introduction
     "/docs": "/docs/getting-started/quickstart",
     // All [...docs] without /docs/ prefix to /docs/[...docs]

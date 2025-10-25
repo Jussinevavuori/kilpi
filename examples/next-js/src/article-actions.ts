@@ -13,9 +13,7 @@ const createArticleAction_schema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
 });
-export async function createArticleAction(
-  raw: z.infer<typeof createArticleAction_schema>,
-) {
+export async function createArticleAction(raw: z.infer<typeof createArticleAction_schema>) {
   const input = createArticleAction_schema.parse(raw);
   const id = await ArticleService.createArticle(input);
   redirect(`/article/${id}`);
@@ -28,9 +26,7 @@ const updateArticleAction_schema = z.object({
   id: z.string(),
   isPublished: z.boolean(),
 });
-export async function updateArticleAction(
-  raw: z.infer<typeof updateArticleAction_schema>,
-) {
+export async function updateArticleAction(raw: z.infer<typeof updateArticleAction_schema>) {
   const input = updateArticleAction_schema.parse(raw);
   await ArticleService.updateArticle(input);
 }
@@ -41,9 +37,7 @@ export async function updateArticleAction(
 const deleteArticleAction_schema = z.object({
   id: z.string(),
 });
-export async function deleteArticleAction(
-  raw: z.infer<typeof deleteArticleAction_schema>,
-) {
+export async function deleteArticleAction(raw: z.infer<typeof deleteArticleAction_schema>) {
   const input = deleteArticleAction_schema.parse(raw);
   await ArticleService.deleteArticle(input.id);
 }
