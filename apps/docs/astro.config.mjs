@@ -39,8 +39,17 @@ export default defineConfig({
     // Upgrade guides
     "/docs/upgrade/v10": "/docs/upgrade/v1-0",
 
+    // Some "getting-started" pages moved to "resources"
+    ...Object.fromEntries(
+      ["llms", "changelog", "support", "typescript"].map((page) => [
+        `/docs/getting-started/${page}`,
+        `/docs/resources/${page}`,
+      ]),
+    ),
+
     // Docs -> Introduction
     "/docs": "/docs/getting-started/quickstart",
+
     // All [...docs] without /docs/ prefix to /docs/[...docs]
     ...Object.fromEntries(
       // Load all `.mdx` files from the `docs` directory

@@ -8,6 +8,10 @@ export const SIDEBAR_FOLDER_CONFIG: Array<{
     name: "Getting Started",
   },
   {
+    id: "resources",
+    name: "Resources",
+  },
+  {
     id: "concepts",
     name: "Concepts",
   },
