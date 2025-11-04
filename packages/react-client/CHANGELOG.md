@@ -1,5 +1,13 @@
 # @kilpi/react-client
 
+## 1.0.5
+
+### Patch Changes
+
+- a72e5a4: granular client-side cache invalidation, improved cache control APIs
+- Updated dependencies [a72e5a4]
+  - @kilpi/client@1.1.0
+
 ## 1.0.4
 
 ### Patch Changes
