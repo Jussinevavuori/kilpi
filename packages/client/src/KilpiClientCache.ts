@@ -1,6 +1,7 @@
 import fastJsonStableStringify from "fast-json-stable-stringify";
 import type { AnyKilpiClient } from "./KilpiClient";
 import type { KilpiClientHooks } from "./KilpiClientHooks";
+import { removeStringSuffix } from "./utils/removeStringSuffix";
 
 export class KilpiClientCache<TClient extends AnyKilpiClient> {
   #hooks: KilpiClientHooks<TClient>;
@@ -32,28 +33,67 @@ export class KilpiClientCache<TClient extends AnyKilpiClient> {
   }
 
   /**
-   * Invalidate the cache by deleting a specific key.
+   * Invalidate the full cache, a single key or a path of keys.
+   *
+   * @usage
+   * ```ts
+   * cache.invalidate();            // Invalidate all
+   * cache.invalidate([]);          // Invalidate all
+   * cache.invalidate(['a']);       // Invalidates "a" and all keys under it (e.g. "a.b", "a.b.c")
+   * cache.invalidate(['b', 'c']);  // Invalidate "b.c" and all keys under it (e.g. "b.c.d")
+   * ```
    *
    * Calls all onCacheInvalidate hooks.
    */
-  public invalidate() {
-    this.#asyncCache.clear();
-    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) => hook({ key: null }));
+  public invalidate(path: unknown[] = []) {
+    this.#asyncCache.keys().forEach((key) => {
+      if (KilpiClientCache.keyMatchesPath(key, path)) {
+        this.#asyncCache.delete(key);
+      }
+    });
+
+    // Dispatch hook
+    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) =>
+      hook({
+        path,
+        // Construct utility function to match keys
+        matches(key) {
+          const extractedKey = typeof key === "object" && "$cacheKey" in key ? key.$cacheKey : key;
+          return KilpiClientCache.keyMatchesPath(extractedKey, path);
+        },
+      }),
+    );
   }
 
   /**
    * Fine-grained invalidation: invalidate a specific cache key.
+   *
+   * Only supports invalidating a single key. Use `invalidate` to invalidate single keys,
+   * paths or the full cache.
+   *
+   * @deprecated Will be removed in future versions. Use `invalidate` instead.
    */
   public invalidateKey(key: unknown[]) {
     const stringifiedKey = fastJsonStableStringify(key);
     this.#asyncCache.delete(stringifiedKey);
-    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) => hook({ key }));
+    this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) =>
+      hook({
+        path: key,
+        matches(key) {
+          const extractedKey = typeof key === "object" && "$cacheKey" in key ? key.$cacheKey : key;
+          return fastJsonStableStringify(extractedKey) === stringifiedKey;
+        },
+      }),
+    );
   }
 
   /**
-   * Compare two cache keys
+   * Check if a target cache key matches a path. Matches if the key is a prefix of the path
+   * or equals the path.
    */
-  static areCacheKeysEqual(keyA: unknown[], keyB: unknown[]) {
-    return fastJsonStableStringify(keyA) === fastJsonStableStringify(keyB);
+  static keyMatchesPath(key: unknown[] | string, path: unknown[]) {
+    const keyStr = typeof key === "string" ? key : fastJsonStableStringify(key);
+    const pathStr = removeStringSuffix(fastJsonStableStringify(path), "]");
+    return keyStr.startsWith(pathStr);
   }
 }

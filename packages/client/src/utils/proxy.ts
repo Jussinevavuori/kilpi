@@ -10,17 +10,38 @@ export type RecursiveProxyCallback = (opts: RecursiveProxyCallbackOptions) => un
 /**
  * Utility for creating a recursive proxy.
  */
-export function createRecursiveProxy(callback: RecursiveProxyCallback, path: readonly string[]) {
+export function createRecursiveProxy<TNamespace extends object>(
+  callback: RecursiveProxyCallback,
+  options: {
+    path: readonly string[];
+    decorateNamespace?: (path: readonly string[]) => TNamespace;
+  },
+) {
+  // Instantiate namespace decoration once per proxy
+  const namespaceDecoration = options.decorateNamespace?.(options.path);
+
   return new Proxy(() => {}, {
     get(_obj, key) {
       if (typeof key !== "string") return undefined;
 
+      // Reflect namespace decoration properties
+      if (namespaceDecoration && Reflect.has(namespaceDecoration, key)) {
+        const value = Reflect.get(namespaceDecoration, key);
+        if (typeof value === "function") {
+          return value.bind(namespaceDecoration);
+        }
+        return value;
+      }
+
       // Recursively compose the full path until a function is invoked
-      return createRecursiveProxy(callback, [...path, key]);
+      return createRecursiveProxy(callback, {
+        decorateNamespace: options.decorateNamespace,
+        path: [...options.path, key],
+      });
     },
+
     apply(_1, _2, args) {
-      // Call the callback function with the entire path and forward the arguments
-      return callback({ path, args });
+      return callback({ path: options.path, args });
     },
   }) as unknown;
 }

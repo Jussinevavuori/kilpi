@@ -1,54 +1,54 @@
 {
-  "name": "@kilpi/client",
-  "description": "Kilpi client-side API · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
-  "version": "1.0.0",
-  "license": "MIT",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  },
-  "type": "module",
-  "private": false,
-  "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "build:watch": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "lint": "eslint && tsc",
-    "lint:eslint": "eslint",
-    "lint:tsc": "tsc",
-    "test": "vitest run",
-    "dev": "vitest watch"
-  },
-  "dependencies": {
-    "fast-json-stable-stringify": "^2.1.0",
-    "nanoid": "^5.1.5",
-    "superjson": "^2.2.2",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@kilpi/core": "workspace:*"
-  },
-  "author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
-  "homepage": "https://kilpi.vercel.app",
-  "bugs": "https://github.com/jussinevavuori/kilpi/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jussinevavuori/kilpi.git"
-  },
-  "keywords": [
-    "fine-grained",
-    "authorization",
-    "abac",
-    "rbac"
-  ]
+	"name": "@kilpi/client",
+	"description": "Kilpi client-side API · Kilpi is the authorization framework for full-stack TypeScript applications, designed for flexible, powerful, agnostic, intuitive and developer friendly authorization.",
+	"version": "1.0.0",
+	"license": "MIT",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		}
+	},
+	"type": "module",
+	"private": false,
+	"scripts": {
+		"build": "tsup src/index.ts --format cjs,esm --dts",
+		"build:watch": "tsup src/index.ts --format cjs,esm --dts --watch",
+		"lint": "eslint && tsc",
+		"lint:eslint": "eslint",
+		"lint:tsc": "tsc",
+		"test": "vitest run",
+		"dev": "vitest watch"
+	},
+	"dependencies": {
+		"fast-json-stable-stringify": "^2.1.0",
+		"nanoid": "^5.1.5",
+		"superjson": "^2.2.2",
+		"zod": "^3.24.1"
+	},
+	"devDependencies": {
+		"@kilpi/core": "workspace:*"
+	},
+	"author": "Jussi Nevavuori <nevavuori.jussi@gmail.com>",
+	"homepage": "https://kilpi.vercel.app",
+	"bugs": "https://github.com/jussinevavuori/kilpi/issues",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jussinevavuori/kilpi.git"
+	},
+	"keywords": [
+		"fine-grained",
+		"authorization",
+		"abac",
+		"rbac"
+	]
 }

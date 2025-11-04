@@ -42,7 +42,7 @@ export class KilpiClientPolicy<
    * The cache key for this policy + inputs.
    */
   public get $cacheKey() {
-    return [this.$action, this.#object];
+    return [...this.$action.split("."), this.#object];
   }
 
   /**
@@ -140,8 +140,8 @@ export class KilpiClientPolicy<
   /**
    * Allow fine-grained invalidation of the cache for this specific policy + inputs.
    */
-  public invalidate() {
-    this.#client.$cache.invalidateKey(this.$cacheKey);
+  public $invalidate() {
+    this.#client.$cache.invalidate(this.$cacheKey);
   }
 }
 

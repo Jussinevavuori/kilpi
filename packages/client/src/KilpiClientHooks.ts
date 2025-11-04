@@ -17,8 +17,12 @@ export type KilpiOnBeforeSendRequestEvent<T extends AnyKilpiClient> = {};
  * On cache invalidate event
  */
 export type KilpiOnCacheInvalidateEvent<T extends AnyKilpiClient> = {
-  // If null, all keys invalidated. Otherwise, the specific key that was invalidated.
-  key: null | unknown[];
+  path: unknown[];
+
+  /**
+   * Utility function to check if a given key matches the invalidated path
+   */
+  matches(key: string | unknown[] | { $cacheKey: string | unknown[] }): boolean;
 };
 
 // =================================================================================================

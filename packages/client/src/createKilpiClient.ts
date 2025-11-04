@@ -6,6 +6,7 @@ import type {
   PolicysetActions,
 } from "@kilpi/core";
 import { KilpiClient, type AnyKilpiClient } from "./KilpiClient";
+import { KilpiClientNamespace, type IKilpiClientNamespace } from "./KilpiClientNamespace";
 import type { KilpiClientPlugin } from "./KilpiClientPlugin";
 import { KilpiClientPolicy, type IKilpiClientPolicy } from "./KilpiClientPolicy";
 import type { AnyLengthHead, KilpiClientOptions } from "./types";
@@ -14,20 +15,22 @@ import { createRecursiveProxy } from "./utils/proxy";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Recursive type of fulent proxy API
+ * Recursive type of fluent proxy API
  */
 type FluentPolicyProxyApi<TClient extends AnyKilpiClient, T, TPath extends string = ""> = {
   [TKey in keyof T]: TKey extends string // Only consider string keys
     ? T[TKey] extends infer $Value // $Value := T[TKey]
       ? (TPath extends "" ? TKey : `${TPath}.${TKey}`) extends infer $TAction // $TAction := TPath ? `TPath.TKey` : TKey
         ? $Value extends Policy<infer $TInputs, any, any> // $Value is a policy? (Infer policy types)
-          ? // ==== POLICY REACHED: Decorate as KilpiPolicy ====
+          ? // ==== POLICY REACHED: Decorate with KilpiClientPolicy and KilpiClientNamespace ====
             $TAction extends PolicysetActions<TClient["$$infer"]["policies"]>
-            ? (...inputs: $TInputs) => IKilpiClientPolicy<TClient, $TAction> // Decorate policies as KilpiPolicy with plugins
+            ? ((...inputs: $TInputs) => IKilpiClientPolicy<TClient, $TAction>) & // Decorate policies as KilpiPolicy with plugins
+                IKilpiClientNamespace<TClient, TPath> // Decorate with namespace features
             : `TS Error: $TAction is invalid (${$TAction extends string ? $TAction : "not-a-string"})` // $TAction not a valid action?
-          : // ==== NAMESPACE REACHED: Recurse without changes ====
+          : // ==== NAMESPACE REACHED: Recurse + Decorate with KilpiClientNamespace ====
             $TAction extends string
-            ? FluentPolicyProxyApi<TClient, $Value, $TAction> // Recurse
+            ? FluentPolicyProxyApi<TClient, $Value, $TAction> & // Recurse & decorate
+                IKilpiClientNamespace<TClient, $TAction> // Decorate with namespace features
             : "TS Error: $TAction is not a string"
         : "TS Error: $Value assignment failed"
       : "TS Error: $TAction assignment failed"
@@ -123,7 +126,18 @@ export function createKilpiClient<
           // in the plugin files.
           return Object.assign(Policy, ...PolicyPlugins) as typeof Policy;
         },
-        [String(prop)],
+        {
+          // Decorate namespaces
+          decorateNamespace(path) {
+            return new KilpiClientNamespace({
+              client: ClientWithPlugins as KilpiClient<T>,
+              path: path.join("."),
+            });
+          },
+
+          // Start with the current prop as the first path segment
+          path: [String(prop)],
+        },
       );
     },
   }) as FluentPolicyProxyApi<typeof Client, T["$$infer"]["policies"]> & typeof ClientWithPlugins;

@@ -1,0 +1,32 @@
+---
+title: Kilpi 1.1 release notes
+author: Jussi Nevavuori
+authorUrl: https://jussinevavuori.com
+authorImage: https://cdn.bsky.app/img/avatar/plain/did:plc:55joowvmvf4vw6n734h7skux/bafkreih2usu2wuuwrytodiqhylcfio77mozhzoqfbxi2sugvwf5g5wvxc4@jpeg
+date: 2025-11-04
+summary: Kilpi 1.1 brings upgrades to the client-side caching system
+---
+
+## `@kilpi/client` changes
+
+- Deprecate `KilpiClientCache.invalidateKey`
+  - Replaced by more comprehensive `KilpiClientCache.invalidate` which supports path-based invalidation
+  - Will be removed in a future major version
+- `...policy().invalidate` now uses `...policy().$invalidate` internally
+- Added partial invalidation APIs, e.g.
+  - `KilpiClient.orgs.members.read({ userId: "1" }).$invalidate()` only invalidates cache entries for that specific user
+  - `KilpiClient.orgs.members.read.$invalidate()` invalidates orgs.members.read for all users
+  - `KilpiClient.orgs.members.$invalidate()` invalidates all orgs.members.\* policies
+  - `KilpiClient.orgs.$invalidate()` invalidates all orgs.\* policies
+  - `KilpiClient.$invalidate()` invalidates the full cache
+  - Each layer (expect root layer) also has `$cacheKey` property available.
+- Removed `KilpiClientCache.areCacheKeysEqual` utility method
+- KilpiHooks `onCacheInvalidate` event
+  - `key: null | unknown[]` replaced by `path: unknown[]`
+  - Added `matches(key | policy | layer)` utility method to check if a given key matches the invalidated path
+    - Can be called with a key directly `.matches(key)`
+    - Can be called with any object that has `$cacheKey` property
+      - `.matches(KilpiClient.orgs.members.read({ userId: "1" }))`
+      - `.matches(KilpiClient.orgs.members.read)`
+      - `.matches(KilpiClient.orgs.members)`
+      - `.matches(KilpiClient.orgs)`

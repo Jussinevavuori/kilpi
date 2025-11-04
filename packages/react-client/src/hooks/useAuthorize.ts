@@ -1,4 +1,4 @@
-import { KilpiClientCache, type AnyKilpiClient, type KilpiClientPolicy } from "@kilpi/client";
+import { type AnyKilpiClient, type KilpiClientPolicy } from "@kilpi/client";
 import type { Decision, DeniedDecision, GrantedDecision, PolicysetActions } from "@kilpi/core";
 import { useEffect, useState } from "react";
 import { useUnmountAbortSignalRef } from "./useUnmountAbortSignalRef";
@@ -99,8 +99,8 @@ export function create_useAuthorize<
     // Reset state on cache invalidate, automatically triggers re-fetch (unless disabled). Supports
     // fine-grained invalidation by comparing cache keys.
     useEffect(() => {
-      return Client.$hooks.onCacheInvalidate(({ key }) => {
-        if (key === null || KilpiClientCache.areCacheKeysEqual(key, policy.$cacheKey)) {
+      return Client.$hooks.onCacheInvalidate(({ matches }) => {
+        if (matches(policy)) {
           setStatus("idle");
           setError(null);
           setDecision(null);
