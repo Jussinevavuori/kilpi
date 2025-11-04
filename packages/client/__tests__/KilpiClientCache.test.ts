@@ -203,9 +203,6 @@ describe("KilpiClientCache", () => {
     expect(policyD).toHaveBeenCalledTimes(2);
 
     // Invalidate everything using root-level namespace
-    console.log("CLIENT:", Client);
-    console.log("CACHE KEY:", Client.$cacheKey);
-    console.log("INVALIDATE:", Client.$invalidate);
     Client.$invalidate();
 
     // All policies should be called again after invalidation

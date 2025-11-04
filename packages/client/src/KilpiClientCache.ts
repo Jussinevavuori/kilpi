@@ -46,8 +46,6 @@ export class KilpiClientCache<TClient extends AnyKilpiClient> {
    * Calls all onCacheInvalidate hooks.
    */
   public invalidate(path: unknown[] = []) {
-    console.log(`✅ Invalidating cache for path: ${fastJsonStableStringify(path)}`);
-
     if (path.length === 0) {
       this.#asyncCache.clear();
     } else {
