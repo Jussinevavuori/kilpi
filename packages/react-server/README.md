@@ -1,6 +1,6 @@
 # 🐢 Kilpi — Authorization made simple
 
-[Read the docs to get started](https://kilpi.vercel.app)
+## [Read the docs to get started](https://kilpi.vercel.app)
 
 Kilpi is the open-source TypeScript authorization library designed for developers who need flexible, powerful, and intuitive authorization.
 
