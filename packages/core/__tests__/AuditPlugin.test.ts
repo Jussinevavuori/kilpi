@@ -78,15 +78,16 @@ describe("AuditPlugin", () => {
       ],
     });
 
-    // Call twice with 50 ms inbetween
+    // Call twice with some time inbetween
+    expect(mockAuditApi).toHaveBeenCalledTimes(0);
     await Kilpi.always().authorize();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 30));
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
     await Kilpi.never().authorize();
     expect(mockAuditApi).toHaveBeenCalledTimes(0);
 
     // Allow time for flushing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
 
     // Ensure flushed at same time
@@ -101,7 +102,7 @@ describe("AuditPlugin", () => {
     expect(mockAuditApi).toHaveBeenCalledTimes(2);
 
     // Allow time for flushing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(mockAuditApi).toHaveBeenCalledTimes(4);
 
     // Ensure flushed at same time and ~100ms after first

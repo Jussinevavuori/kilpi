@@ -177,7 +177,7 @@ describe("KilpiClientCache", () => {
     expect(policyD).toHaveBeenCalledTimes(5);
   });
 
-  it.only("should support root-level namespace invalidation to invalidate everything", async () => {
+  it("should support root-level namespace invalidation to invalidate everything", async () => {
     const Client = init({ subject: { id: "1" } });
     const expected = { granted: true, subject: { id: "1" } };
 
