@@ -19,7 +19,7 @@ export function ClearKilpiClientCacheButton(props: ClearKilpiClientCacheButtonPr
     <button
       className={cn("cursor-pointer", props.className)}
       onClick={() => {
-        KilpiClient.$cache.invalidate();
+        KilpiClient.$invalidate();
       }}
     >
       Clear Kilpi Client Cache

@@ -24,13 +24,13 @@ type FluentPolicyProxyApi<TClient extends AnyKilpiClient, T, TPath extends strin
         ? $Value extends Policy<infer $TInputs, any, any> // $Value is a policy? (Infer policy types)
           ? // ==== POLICY REACHED: Decorate with KilpiClientPolicy and KilpiClientNamespace ====
             $TAction extends PolicysetActions<TClient["$$infer"]["policies"]>
-            ? ((...inputs: $TInputs) => IKilpiClientPolicy<TClient, $TAction>) & // Decorate policies as KilpiPolicy with plugins
-                IKilpiClientNamespace<TClient, TPath> // Decorate with namespace features
+            ? ((...inputs: $TInputs) => IKilpiClientPolicy<TClient, $TAction>) &
+                IKilpiClientNamespace<TClient, TPath>
             : `TS Error: $TAction is invalid (${$TAction extends string ? $TAction : "not-a-string"})` // $TAction not a valid action?
           : // ==== NAMESPACE REACHED: Recurse + Decorate with KilpiClientNamespace ====
             $TAction extends string
-            ? FluentPolicyProxyApi<TClient, $Value, $TAction> & // Recurse & decorate
-                IKilpiClientNamespace<TClient, $TAction> // Decorate with namespace features
+            ? FluentPolicyProxyApi<TClient, $Value, $TAction> &
+                IKilpiClientNamespace<TClient, $TAction>
             : "TS Error: $TAction is not a string"
         : "TS Error: $Value assignment failed"
       : "TS Error: $TAction assignment failed"
@@ -84,11 +84,26 @@ export function createKilpiClient<
   // Instantiate all plugins
   const ClientPlugins = plugins.map((instantiatePlugin) => instantiatePlugin(Client));
 
+  // Root namespace for invalidation
+  const RootNamespace = new KilpiClientNamespace({ client: Client, path: "" });
+
   // Add plugin interfaces to client
+  // Root namespace is only included in types, but proxy handles runtime access
   const ClientWithPlugins = Object.assign(
     Client,
     ...ClientPlugins.map((_) => _.extendClient?.() || {}),
-  ) as typeof Client & P_00 & P_01 & P_02 & P_03 & P_04 & P_05 & P_06 & P_07 & P_08 & P_09;
+  ) as typeof Client &
+    typeof RootNamespace &
+    P_00 &
+    P_01 &
+    P_02 &
+    P_03 &
+    P_04 &
+    P_05 &
+    P_06 &
+    P_07 &
+    P_08 &
+    P_09;
 
   // =========================================================
   // IMPLEMENT FLUENT POLICY PROXY API
@@ -100,8 +115,19 @@ export function createKilpiClient<
 
   return new Proxy(ClientWithPlugins, {
     get(target, prop, receiver) {
-      // Reflect core properties (e.g. $hooks, $query, etc.)
-      if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+      // Reflect to RootNamespace
+      if (Reflect.has(RootNamespace, prop)) {
+        const value = Reflect.get(RootNamespace, prop, RootNamespace);
+        if (typeof value === "function") return value.bind(RootNamespace);
+        return value;
+      }
+
+      // Reflect to KilpiClient
+      if (Reflect.has(target, prop)) {
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value === "function") return value.bind(target);
+        return value;
+      }
 
       // Enter dynamic namespace
       return createRecursiveProxy(
@@ -129,10 +155,7 @@ export function createKilpiClient<
         {
           // Decorate namespaces
           decorateNamespace(path) {
-            return new KilpiClientNamespace({
-              client: ClientWithPlugins as KilpiClient<T>,
-              path: path.join("."),
-            });
+            return new KilpiClientNamespace({ client: Client, path: path.join(".") });
           },
 
           // Start with the current prop as the first path segment

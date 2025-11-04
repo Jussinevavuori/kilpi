@@ -1,0 +1,88 @@
+---
+title: Changelog
+description: History of changes made to Kilpi since 1.0.
+sidebar:
+  badge: New
+---
+
+## 4.11.2025 — `@kilpi/client@1.1.0`
+
+### Client-side cache management improvements
+
+<Collapsible title="Upgraded granular client-side cache invalidation">
+Previously you could only invalidate the entire client-side cache or a specific policy as follows.
+
+```ts
+// BEFORE
+KilpiClient.$cache.invalidate();
+KilpiClient.users.read({ userId: "1" }).invalidate();
+```
+
+You can now perform more granular invalidation based on paths, and the naming has been updated to use `$invalidate` method.
+
+```ts
+// NOW
+KilpiClient.$invalidate(); // Invalidates all (alias for KilpiClient.$cache.invalidate())
+KilpiClient.users.$invalidate(); // Invalidate all users.* policies
+KilpiClient.users.read.$invalidate(); // Invalidate all users.read with any parameters
+KilpiClient.users.read({ userId: "1" }).$invalidate(); // Invalidate specific cache entry
+```
+
+All paths with the `$invalidate` method also have a `$cacheKey` property that can be used for custom cache management needs, e.g.
+
+```ts
+// This is what `KilpiClient.users.read.$invalidate()` does internally
+KilpiClient.$cache.invalidate(KilpiClient.users.read.$cacheKey);
+```
+
+These are based on the upgraded `KilpiClient.$cache.invalidate` method. The previous `KilpiClient.$cache.invalidateKey` method is now deprecated and will be removed in a future major version.
+
+</Collapsible>
+
+<Collapsible title="Upgraded onCacheInvalidate hook and KilpiClientCache utility functions">
+The `onCacheInvalidate` hook no longer contains the `key: unknown[] | null`, but instead the `path: unknown[]` of the cache invalidation.
+
+Previously, exact keys could be matched with
+
+```ts
+const myKey = [...];
+KilpiClient.$hooks.onCacheInvalidate(({ key }) => {
+  if (key === null || KilpiClientCache.areCacheKeysEqual(key, myKey)) {
+    // Do something
+  }
+});
+```
+
+Now, you can use the new `matches` utility method to check if a given key matches the invalidated path.
+
+```ts
+KilpiClient.$hooks.onCacheInvalidate(({ path, matches }) => {
+  console.log(`Cache invalidated for path: ${path}`);
+  if (matches(myKey)) {
+    // Do something
+  }
+});
+```
+
+It is based on the new `KilpiClientCache.keyMatchesPath` utility method that is also used internally for matching cache keys to invalidated paths. The method replaces the now deleted `KilpiClientCache.areCacheKeysEqual` method.
+
+Additionally, the `matches` path can be called with any object that has a `$cacheKey` property, such as policies or namespaces.
+
+```ts
+KilpiClient.$hooks.onCacheInvalidate(({ path, matches }) => {
+  if (matches(KilpiClient.users.read({ userId: "1" }))) {
+    // Do something
+  }
+  if (matches(KilpiClient.users.read)) {
+    // Do something
+  }
+  if (matches(KilpiClient.users)) {
+    // Do something
+  }
+  if (matches(KilpiClient) /* Always true */) {
+    // Do something
+  }
+});
+```
+
+</Collapsible>

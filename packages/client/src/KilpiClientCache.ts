@@ -46,17 +46,22 @@ export class KilpiClientCache<TClient extends AnyKilpiClient> {
    * Calls all onCacheInvalidate hooks.
    */
   public invalidate(path: unknown[] = []) {
-    this.#asyncCache.keys().forEach((key) => {
-      if (KilpiClientCache.keyMatchesPath(key, path)) {
-        this.#asyncCache.delete(key);
-      }
-    });
+    console.log(`✅ Invalidating cache for path: ${fastJsonStableStringify(path)}`);
 
-    // Dispatch hook
+    if (path.length === 0) {
+      this.#asyncCache.clear();
+    } else {
+      this.#asyncCache.keys().forEach((key) => {
+        if (KilpiClientCache.keyMatchesPath(key, path)) {
+          this.#asyncCache.delete(key);
+        }
+      });
+    }
+
+    // Dispatch hook with constructed utility function
     this.#hooks.registeredHooks.onCacheInvalidate.forEach((hook) =>
       hook({
         path,
-        // Construct utility function to match keys
         matches(key) {
           const extractedKey = typeof key === "object" && "$cacheKey" in key ? key.$cacheKey : key;
           return KilpiClientCache.keyMatchesPath(extractedKey, path);

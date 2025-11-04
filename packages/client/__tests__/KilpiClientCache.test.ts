@@ -59,6 +59,10 @@ function init(options: { subject: Subject | null }) {
 describe("KilpiClientCache", () => {
   beforeEach(() => {
     policyA.mockReset();
+    policyB.mockReset();
+    policyCA.mockReset();
+    policyCB.mockReset();
+    policyD.mockReset();
   });
 
   it("should cache the call", async () => {
@@ -171,6 +175,56 @@ describe("KilpiClientCache", () => {
     await expect(Client.d({ id: "1" }).authorize()).resolves.toMatchObject(expected);
     await expect(Client.d({ id: "2" }).authorize()).resolves.toMatchObject(expected);
     expect(policyD).toHaveBeenCalledTimes(5);
+  });
+
+  it.only("should support root-level namespace invalidation to invalidate everything", async () => {
+    const Client = init({ subject: { id: "1" } });
+    const expected = { granted: true, subject: { id: "1" } };
+
+    // Call a few policies multiple times to populate cache
+    await expect(Client.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "1" }).authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "1" }).authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "2" }).authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "2" }).authorize()).resolves.toMatchObject(expected);
+
+    // All policies should have been cached and only called once
+    expect(policyA).toHaveBeenCalledTimes(1);
+    expect(policyB).toHaveBeenCalledTimes(1);
+    expect(policyCA).toHaveBeenCalledTimes(1);
+    expect(policyCB).toHaveBeenCalledTimes(1);
+    expect(policyD).toHaveBeenCalledTimes(2);
+
+    // Invalidate everything using root-level namespace
+    console.log("CLIENT:", Client);
+    console.log("CACHE KEY:", Client.$cacheKey);
+    console.log("INVALIDATE:", Client.$invalidate);
+    Client.$invalidate();
+
+    // All policies should be called again after invalidation
+    await expect(Client.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.a().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.c.b().authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "1" }).authorize()).resolves.toMatchObject(expected);
+    await expect(Client.d({ id: "2" }).authorize()).resolves.toMatchObject(expected);
+
+    expect(policyA).toHaveBeenCalledTimes(2);
+    expect(policyB).toHaveBeenCalledTimes(2);
+    expect(policyCA).toHaveBeenCalledTimes(2);
+    expect(policyCB).toHaveBeenCalledTimes(2);
+    expect(policyD).toHaveBeenCalledTimes(4);
+
+    // Check that $cacheKey exists and is an empty array
+    expect(Array.isArray(Client.$cacheKey)).toBe(true);
+    expect(Client.$cacheKey.length).toBe(0);
   });
 
   describe("keyMatchesPath", async () => {

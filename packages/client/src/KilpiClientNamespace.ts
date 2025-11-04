@@ -20,6 +20,7 @@ export class KilpiClientNamespace<TClient extends AnyKilpiClient, TPath extends 
    * The cache key for this policy + inputs.
    */
   public get $cacheKey() {
+    if (this.path === "") return [];
     return this.path.split(".");
   }
 
@@ -27,6 +28,7 @@ export class KilpiClientNamespace<TClient extends AnyKilpiClient, TPath extends 
    * Allow fine-grained invalidation of the cache for this specific policy + inputs.
    */
   public $invalidate() {
+    console.log(`🗑️ Invalidating cache for namespace: ${this.path} / ${this.$cacheKey}`);
     this.#client.$cache.invalidate(this.$cacheKey);
   }
 }
