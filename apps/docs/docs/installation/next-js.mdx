@@ -97,6 +97,24 @@ Since Next.js supports throwing redirections, handling unauthorized exceptions i
 </Step>
 
 <Step>
+### Recommended: Skip subject fetching during build time
+
+```diff lang="ts"
++ import { PHASE_PRODUCTION_BUILD } from "next/constants";
+
+  export const Kilpi = createKilpi({
+    async getSubject() {
++     if (process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD) return null;
+    }
+    // ...,
+  });
+```
+
+> Otherwise, Kilpi will most likely attempt to call `headers()` or `cookies()` during build time, which will throw an error. See [this issue](https://github.com/vercel/next.js/discussions/66832) for details.
+
+</Step>
+
+<Step>
 ### Next steps
 
 Here are some tips on how to best use Kilpi in a Next.js application.
