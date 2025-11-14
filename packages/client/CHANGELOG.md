@@ -1,5 +1,11 @@
 # @kilpi/client
 
+## 1.1.0
+
+### Minor Changes
+
+- a72e5a4: granular client-side cache invalidation, improved cache control APIs
+
 ## 1.0.0
 
 ### Major Changes
