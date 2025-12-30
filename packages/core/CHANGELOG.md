@@ -1,5 +1,11 @@
 # @kilpi/core
 
+## 1.1.3
+
+### Patch Changes
+
+- eecf957: change internal implementation of kilpi query to allow for usage with declaration files
+
 ## 1.1.2
 
 ### Patch Changes
