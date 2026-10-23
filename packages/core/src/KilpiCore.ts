@@ -1,7 +1,7 @@
 import { KilpiError } from "./KilpiError";
 import { KilpiHooks } from "./KilpiHooks";
-import type { KilpiQueryAuthorizeFn } from "./KilpiQuery";
-import { KilpiQuery } from "./KilpiQuery";
+import type { KilpiQuery, KilpiQueryAuthorizeFn } from "./KilpiQuery";
+import { createKilpiQuery } from "./KilpiQuery";
 import type {
   AnyGetSubject,
   DeniedDecision,
@@ -142,9 +142,9 @@ export class KilpiCore<
     options: {
       authorize?: KilpiQueryAuthorizeFn<TInput, TRawOutput, TRedactedOutput, TGetSubject>;
     } = {},
-  ) {
-    // Return a new KilpiQuery instance which implements the authorization logic.
-    return new KilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
+  ): KilpiQuery<this, TInput, TRawOutput, TRedactedOutput> {
+    // Return a new KilpiQuery object which implements the authorization logic.
+    return createKilpiQuery<this, TInput, TRawOutput, TRedactedOutput>(this, query, options);
   }
 
   /**
